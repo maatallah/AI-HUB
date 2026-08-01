@@ -38,7 +38,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - CLI: `python -m app.main score list/set`, `recommend top/chain`,
   `fallback status`.
 - Docs: `docs/review/PHASE3-SCORING-SPEC.md`, spec v1.2 Sections 3/7/8/10
-  updated.
+  updated, `docs/release/PHASE3-RELEASE-MANIFEST.md` (pending approval).
 - Tests: 59 new tests (scoring 24, recommendation 16, fallback 10,
   provenance 6, config 3); 162 total.
 
