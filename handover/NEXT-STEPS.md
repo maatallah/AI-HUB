@@ -17,7 +17,8 @@ Phase 2 is released - see `handover/PHASE-2-CLOSURE.md`, plus
 
 Phase 3 implementation is complete (162/162 tests) - see
 `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`,
-`docs/review/PHASE3-SCORING-SPEC.md` and (pending owner review)
+`docs/review/PHASE3-SCORING-SPEC.md`,
+`handover/PHASE-3-CLOSURE.md` (owner sign-off) and (pending owner review)
 `docs/release/PHASE3-RELEASE-MANIFEST.md`.
 
 ---
@@ -25,7 +26,7 @@ Phase 3 implementation is complete (162/162 tests) - see
 # Pre-Phase 4 Actions (owner)
 
 - [ ] Review and approve Phase 3 release
-- [ ] Sign off Phase 3 closure
+- [ ] Sign off Phase 3 closure (handover/PHASE-3-CLOSURE.md)
 
 ---
 
