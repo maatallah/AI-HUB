@@ -10,6 +10,7 @@ Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
 
 Phase 2 implementation is complete (99/99 tests) - see
+`handover/PHASE-2-CLOSURE.md` (owner sign-off), plus
 `docs/review/PHASE2-IMPLEMENTATION-PLAN.md`,
 `docs/review/PHASE2-MONITORING-SPEC.md` and
 `docs/release/PHASE2-RELEASE-MANIFEST.md`.
