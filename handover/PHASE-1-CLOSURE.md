@@ -201,10 +201,10 @@ Recommended conditions before starting Phase 2:
 
 Signature line for the owner:
 
-```
-Approved by: ________________________________    Date: ____________
-Action:  [ ] Accept Phase 1 closure   [ ] Request changes
-```
+Approved by: Maatallah
+Date: 2026-08-01
+
+Action:  [x] Accept Phase 1 closure   [ ] Request changes
 
 ---
 
