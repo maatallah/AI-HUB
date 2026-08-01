@@ -195,7 +195,13 @@ Signature line for the owner:
 Approved by: Maatallah
 Date: 2026-08-01
 
-Action:  [ ] Accept Phase 2 closure   [ ] Request changes
+Approval covers the following commits:
+
+* `ae0a6c2` — Phase 2: monitoring engine (release commit)
+* `2c6e3eb` — Finalize Phase 2 release manifest (manifest commit)
+* `28f0b86` — Add Phase 2 closure report (this document)
+
+Action:  [x] Accept Phase 2 closure   [ ] Request changes
 
 ---
 
