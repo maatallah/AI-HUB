@@ -16,10 +16,10 @@
 
 **Current branch:** `main`
 
-**Status:** PENDING OWNER APPROVAL
+**Status:** APPROVED (owner review complete)
 
-> This document is the reference baseline for Phase 4 once approved. It
-> records the state at release. Later project evolution must not rewrite it.
+> This document is the immutable reference baseline for Phase 4. It records
+> the state at release. Later project evolution must not rewrite it.
 
 ---
 

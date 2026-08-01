@@ -207,9 +207,9 @@ Approval covers the following commits:
 * `d6dd3c9` — Phase 3: scoring, recommendation and fallback engines (release
   commit)
 * `ff4b8a7` — Finalize Phase 3 release manifest (manifest commit)
-* this document — Add Phase 3 closure report (commit added at approval)
+* `c6327f4` — Add Phase 3 closure report (this document)
 
-Action:  [ ] Accept Phase 3 closure   [ ] Request changes
+Action:  [x] Accept Phase 3 closure   [ ] Request changes
 
 ---
 
