@@ -507,6 +507,9 @@ path = "database/ai_hub.db"
 [monitoring]
 enabled = true
 interval_minutes = 60
+timeout_seconds = 10
+failure_threshold = 3
+latency_threshold_ms = 10000
 
 [fallback]
 max_chain_length = 5
@@ -527,6 +530,23 @@ root = "M:\\dev"
 [registry]
 path = "projects/registry.json"
 ```
+
+Monitoring keys (Phase 2):
+
+* `monitoring.enabled` - enable/disable monitoring (boolean, default `true`).
+* `monitoring.interval_minutes` - monitoring frequency (positive integer,
+  default `60`).
+* `monitoring.timeout_seconds` - per-check HTTP timeout (positive integer,
+  default `10`).
+* `monitoring.failure_threshold` - consecutive check failures that mark a
+  provider DEGRADED; a further full run of failures while DEGRADED marks it
+  OFFLINE (integer >= 1, default `3`).
+* `monitoring.latency_threshold_ms` - response time above this is treated as
+  high latency and counts as a failure signal (positive integer, default
+  `10000`).
+
+Thresholds are global configuration values; per-provider overrides are not
+supported.
 
 Configuration belongs exclusively to AI-Hub.
 

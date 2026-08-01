@@ -1,4 +1,4 @@
-"""AI-Hub command line interface (Phase 1).
+"""AI-Hub command line interface (Phase 1 + Phase 2).
 
 Run from the repository root:
 
@@ -7,6 +7,9 @@ Run from the repository root:
     python -m app.main provider add Gemini --company Google
     python -m app.main provider list
     python -m app.main provider archive 1 --reason "Officially retired"
+    python -m app.main monitor run
+    python -m app.main monitor status
+    python -m app.main monitor validate
 """
 
 from __future__ import annotations
@@ -18,6 +21,7 @@ from pathlib import Path
 from app.config import ConfigError, effective_config_text, load_config
 from core import providers
 from database import database as db_util
+from monitoring import availability, health, validation
 
 
 def _get_db(config) -> Path:
@@ -103,6 +107,97 @@ def cmd_provider(args) -> None:
         conn.close()
 
 
+def cmd_monitor(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "run":
+            _monitor_run(config, conn, args.provider_id)
+        elif args.action == "status":
+            rows = availability.list_availability(conn)
+            if not rows:
+                print("No availability data yet.")
+            for row in rows:
+                reason = f" reason={row['reason']!r}" if row["reason"] else ""
+                print(
+                    f"#{row['provider_id']} {row['provider_name']} state={row['state']}"
+                    f" failures={row['consecutive_failures']}{reason}"
+                )
+        elif args.action == "validate":
+            results = validation.validate_seed(
+                conn,
+                reachability_check=config.monitoring_enabled,
+            )
+            for r in results:
+                print(
+                    f"{r['name']}: {r['event_type']}"
+                    f" base_url_valid={r['base_url_valid']}"
+                    f" reachable={r['reachable']}"
+                    + (" details=" + ", ".join(r["details"]) if r["details"] else "")
+                )
+    except (providers.RegistryError, health.HealthCheckError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def _monitor_run(config, conn, provider_id) -> None:
+    threshold = config.monitoring_failure_threshold
+    if provider_id is not None:
+        provider_ids = [provider_id]
+    else:
+        provider_ids = [r["id"] for r in conn.execute(
+            "SELECT id FROM providers ORDER BY name"
+        ).fetchall()]
+
+    if not provider_ids:
+        print("No providers to check.")
+        return
+
+    for pid in provider_ids:
+        result = health.check_provider(
+            conn,
+            pid,
+            timeout_seconds=config.monitoring_timeout_seconds,
+            latency_threshold_ms=config.monitoring_latency_threshold_ms,
+        )
+        availability.update_availability(conn, pid, result.state)
+        _apply_monitoring_lifecycle(conn, pid, result, threshold)
+        name = conn.execute(
+            "SELECT name FROM providers WHERE id = ?", (pid,)
+        ).fetchone()["name"]
+        latency = f" {result.latency_ms}ms" if result.latency_ms is not None else ""
+        error = f" ({result.error})" if result.error else ""
+        print(f"{name}: {result.state}{latency}{error}")
+
+
+def _apply_monitoring_lifecycle(conn, pid, result, threshold) -> None:
+    row = conn.execute(
+        "SELECT p.status AS status, a.consecutive_failures AS failures"
+        " FROM providers p"
+        " LEFT JOIN availability a ON a.provider_id = p.id AND a.model_id IS NULL"
+        " WHERE p.id = ?",
+        (pid,),
+    ).fetchone()
+    if row is None:
+        return
+    status = row["status"]
+    failures = int(row["failures"] or 0)
+
+    if result.ok:
+        if status == "OFFLINE":
+            availability.apply_lifecycle(conn, pid, "ACTIVE", "Successful recovery.")
+        return
+
+    if status == "ACTIVE" and failures >= threshold:
+        availability.apply_lifecycle(conn, pid, "DEGRADED", "Repeated failures.")
+    elif status == "DEGRADED" and failures >= threshold:
+        availability.apply_lifecycle(
+            conn, pid, "OFFLINE", "Repeated monitoring failures beyond configured threshold."
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-hub", description="AI-Hub Phase 1 CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -152,6 +247,19 @@ def build_parser() -> argparse.ArgumentParser:
     arc.add_argument("provider_id", type=int)
     arc.add_argument("--reason", required=True)
     arc.set_defaults(func=cmd_provider)
+
+    mon = sub.add_parser("monitor", help="Monitoring engine (Phase 2)")
+    mon_sub = mon.add_subparsers(dest="action", required=True)
+
+    run = mon_sub.add_parser("run", help="Run health checks for all providers")
+    run.add_argument("--provider", dest="provider_id", type=int, help="Check a single provider")
+    run.set_defaults(func=cmd_monitor)
+
+    status = mon_sub.add_parser("status", help="Show current availability state")
+    status.set_defaults(func=cmd_monitor)
+
+    val = mon_sub.add_parser("validate", help="Validate provider seed metadata")
+    val.set_defaults(func=cmd_monitor)
 
     return parser
 

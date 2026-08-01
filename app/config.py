@@ -43,6 +43,9 @@ DEFAULT_CONFIG: dict = {
     "monitoring": {
         "enabled": True,
         "interval_minutes": 60,
+        "timeout_seconds": 10,
+        "failure_threshold": 3,
+        "latency_threshold_ms": 10000,
     },
     "fallback": {
         "max_chain_length": 5,
@@ -66,6 +69,9 @@ class Config:
     database_path: str
     monitoring_enabled: bool
     monitoring_interval_minutes: int
+    monitoring_timeout_seconds: int
+    monitoring_failure_threshold: int
+    monitoring_latency_threshold_ms: int
     fallback_max_chain_length: int
     recommendation_default_profile: str
     dashboard_refresh_seconds: int
@@ -119,6 +125,18 @@ def validate(data: dict) -> Config:
         raise ConfigError("monitoring.enabled must be a boolean.")
     if not isinstance(monitoring.get("interval_minutes"), int) or monitoring["interval_minutes"] <= 0:
         raise ConfigError("monitoring.interval_minutes must be a positive integer.")
+    if not isinstance(monitoring.get("timeout_seconds"), int) or monitoring["timeout_seconds"] <= 0:
+        raise ConfigError("monitoring.timeout_seconds must be a positive integer.")
+    if (
+        not isinstance(monitoring.get("failure_threshold"), int)
+        or monitoring["failure_threshold"] < 1
+    ):
+        raise ConfigError("monitoring.failure_threshold must be an integer >= 1.")
+    if (
+        not isinstance(monitoring.get("latency_threshold_ms"), int)
+        or monitoring["latency_threshold_ms"] <= 0
+    ):
+        raise ConfigError("monitoring.latency_threshold_ms must be a positive integer.")
 
     fallback = data["fallback"]
     if not isinstance(fallback.get("max_chain_length"), int) or fallback["max_chain_length"] < 1:
@@ -146,6 +164,9 @@ def validate(data: dict) -> Config:
         database_path=db_path.strip(),
         monitoring_enabled=monitoring["enabled"],
         monitoring_interval_minutes=monitoring["interval_minutes"],
+        monitoring_timeout_seconds=monitoring["timeout_seconds"],
+        monitoring_failure_threshold=monitoring["failure_threshold"],
+        monitoring_latency_threshold_ms=monitoring["latency_threshold_ms"],
         fallback_max_chain_length=fallback["max_chain_length"],
         recommendation_default_profile=profile,
         dashboard_refresh_seconds=dashboard["refresh_seconds"],
@@ -183,6 +204,9 @@ def effective_config_text(config: Config) -> str:
         "\n[monitoring]\n"
         f"enabled = {str(config.monitoring_enabled).lower()}\n"
         f"interval_minutes = {config.monitoring_interval_minutes}\n"
+        f"timeout_seconds = {config.monitoring_timeout_seconds}\n"
+        f"failure_threshold = {config.monitoring_failure_threshold}\n"
+        f"latency_threshold_ms = {config.monitoring_latency_threshold_ms}\n"
         "\n[fallback]\n"
         f"max_chain_length = {config.fallback_max_chain_length}\n"
         "\n[recommendation]\n"

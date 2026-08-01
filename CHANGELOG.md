@@ -4,6 +4,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 2 - Monitoring Engine)
+
+- Monitoring engine package `monitoring/`:
+  - `health.py` - HTTP reachability checks (urllib, no auth, no secrets,
+    timeout and latency driven). Providers without a base_url report UNKNOWN.
+  - `availability.py` - availability tracking + lifecycle transitions using
+    the v1.2 Section 5 legal transition table through the existing registry.
+  - `quota.py` - quota architecture (quota_type, reset detection,
+    ACTIVE -> LIMITED on quota signal).
+  - `validation.py` - provider seed metadata validation; results recorded
+    only as events; providers never modified.
+- Monitoring event types added to `core/events.py`:
+  `HEALTH_CHECK_OK`, `HEALTH_CHECK_FAILED`, `HEALTH_CHECK_UNKNOWN`,
+  `MONITOR_STATUS_CHANGED`, `QUOTA_SIGNAL`, `VALIDATION_PASSED`,
+  `VALIDATION_FAILED`, `VALIDATION_UNKNOWN`.
+- Monitoring configuration keys (v1.2 Section 10):
+  `monitoring.timeout_seconds` (10), `monitoring.failure_threshold` (3),
+  `monitoring.latency_threshold_ms` (10000). Global values only.
+- CLI: `python -m app.main monitor run/status/validate`.
+- Tests: 50 new tests (health, availability, quota, validation); 99 total.
+
 ### Added (Phase 1 - Repository Foundation)
 
 - Repository skeleton: `app/`, `core/`, `database/`, `monitoring/`,

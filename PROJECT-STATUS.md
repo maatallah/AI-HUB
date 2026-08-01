@@ -8,29 +8,26 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 1 — Repository Foundation (released, awaiting owner
-sign-off of LICENSE + closure)
+**Current phase:** Phase 2 — Monitoring Engine (implementation in progress)
 
-**Completion %:** ~17% (Phase 1 of 6; baseline committed at
-`7ceac80c9b0b1718ec090307b2220e1350ca85dd`)
+**Completion %:** ~33% (Phases 1-2 of 6; monitoring core implemented)
 
 **Last update:** 2026-08-01
 
-**Repository health:** Good (49/49 tests passing, no open defects)
+**Repository health:** Good (99/99 tests passing, no open defects)
 
-**Blocking issues:** None architectural. LICENSE change (MIT) is staged by the
-owner but not yet committed; copyright line still needs owner's name/year.
+**Blocking issues:** None. Phase 2 implementation in progress; release
+pending owner review.
 
 ---
 
 ## Current Phase
 
-Phase 1 is complete, tested, and documented. The git baseline is committed
-(`7ceac80`, branch `main`, remote `origin` =
-`https://github.com/maatallah/AI-HUB.git`). ADR-0002 and ADR-0003 are
-ACCEPTED. Configuration alignment (log_root, workspace.root, registry.path)
-is applied across v1.2, `config.toml`, `templates/config.toml`, and both
-specs. 49/49 tests pass on the committed baseline.
+Phase 1 is released (baseline `7ceac80`, committed at
+`96cbe35` for release docs). Phase 2 — Monitoring Engine is under
+implementation: health checks, availability/lifecycle tracking, quota
+architecture, and seed validation are implemented and tested (99/99).
+Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
 Release documents:
 
@@ -38,32 +35,30 @@ Release documents:
 * `docs/release/PHASE1-RELEASE-NOTES.md`
 * `docs/release/OWNER-CHECKLIST.md`
 * `docs/release/PHASE1-CLOSURE-SUMMARY.md`
+* `docs/review/PHASE2-IMPLEMENTATION-PLAN.md`
+* `docs/review/PHASE2-MONITORING-SPEC.md`
 
 ## Architecture Maturity
 
-* Specifications: v1.2 approved; two proposal specs (agent-logging,
-  project-registry) documented; S-01/S-02/S-03 resolved.
+* Specifications: v1.2 approved; agent-logging, project-registry, and
+  monitoring proposal specs documented.
 * ADRs: ADR-0002, ADR-0003 ACCEPTED; ADR-0001 PROPOSED (Phase 3).
-* Reviews: R-01..R-08 amendments applied; final review PASS.
+* Reviews: R-01..R-08 amendments applied; final review PASS; Phase 2 plan
+  approved 2026-08-01.
 
 ## Pending Owner Decisions
 
-* Commit the MIT `LICENSE` change and fill the copyright line
-  (`[year] [fullname]` → owner name + year), then push
-* Sign off Phase 1 closure (`handover/PHASE-1-CLOSURE.md`)
-* Approve removal of superseded `handover/AGENT-LOG.md`
+* Review Phase 2 implementation + release
+* Sign off Phase 2 closure
 * Accept ADR-0001 (before Phase 3)
 
 ## Next Milestone
 
-Phase 2 — Monitoring Engine (after owner commits the LICENSE and signs off
-closure).
+Phase 2 release review, then Phase 3 — Scoring, Recommendation, Fallback
+Engines (after ADR-0001 acceptance).
 
 ## Open Documentation Items
 
-* `LICENSE` uncommitted; copyright line placeholder
-* `handover/AGENT-LOG.md` removal (pending owner confirmation - irreversible
-  without git)
 * `projects/registry.json` seed conformance (`renamed_to`,
   `has_credentials_remote`) - non-blocking
 
@@ -71,8 +66,8 @@ closure).
 
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
-| Provider API endpoints change rapidly | High | Seed is metadata only; validate base URLs in Phase 2 |
+| Provider API endpoints change rapidly | High | Seed is metadata only; `monitor validate` reports status; base URLs maintained in Phase 2 |
 | Architecture drift | Medium | ADRs + specs + reviews |
 | Temporary outages mistaken for retirement | Medium | Lifecycle rules (v1.2 Section 5) enforced in Phase 2 |
 | Schema drift between spec and implementation | Low | Schema tests assert spec columns |
-| LICENSE not committed (legal/branding risk) | Medium | Owner must commit MIT LICENSE + push before Phase 2 |
+| Network dependence of health checks | Medium | Injected transports; tests run offline |

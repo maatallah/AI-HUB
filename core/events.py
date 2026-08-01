@@ -13,8 +13,8 @@ import json
 import sqlite3
 from typing import Optional, Sequence
 
-#: Base set of event types used by the Phase 1 registry. Further event types
-#: (e.g. QUOTA_EXHAUSTED, PROVIDER_OFFLINE) will be added by later phases.
+#: Base set of event types used by the Phase 1 registry plus the Phase 2
+#: monitoring engine (health checks, quota signals, seed validation).
 EVENT_TYPES = {
     "PROVIDER_ADDED",
     "PROVIDER_UPDATED",
@@ -23,6 +23,14 @@ EVENT_TYPES = {
     "MODEL_ADDED",
     "MODEL_UPDATED",
     "MODEL_ARCHIVED",
+    "HEALTH_CHECK_OK",
+    "HEALTH_CHECK_FAILED",
+    "HEALTH_CHECK_UNKNOWN",
+    "MONITOR_STATUS_CHANGED",
+    "QUOTA_SIGNAL",
+    "VALIDATION_PASSED",
+    "VALIDATION_FAILED",
+    "VALIDATION_UNKNOWN",
 }
 
 

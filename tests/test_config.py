@@ -122,7 +122,13 @@ def test_validate_returns_config():
     config = validate(
         {
             "database": {"path": "x.db"},
-            "monitoring": {"enabled": True, "interval_minutes": 1},
+            "monitoring": {
+                "enabled": True,
+                "interval_minutes": 1,
+                "timeout_seconds": 5,
+                "failure_threshold": 2,
+                "latency_threshold_ms": 5000,
+            },
             "fallback": {"max_chain_length": 1},
             "recommendation": {"default_profile": "free"},
             "dashboard": {"refresh_seconds": 1},
@@ -131,3 +137,6 @@ def test_validate_returns_config():
     )
     assert config.recommendation_default_profile == "free"
     assert config.logging_level == "CRITICAL"
+    assert config.monitoring_timeout_seconds == 5
+    assert config.monitoring_failure_threshold == 2
+    assert config.monitoring_latency_threshold_ms == 5000

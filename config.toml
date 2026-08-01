@@ -13,6 +13,12 @@ path = "database/ai_hub.db"
 [monitoring]
 enabled = true
 interval_minutes = 60
+# Per-check HTTP timeout in seconds.
+timeout_seconds = 10
+# Consecutive check failures that mark a provider DEGRADED.
+failure_threshold = 3
+# Response time above this (milliseconds) is treated as high latency.
+latency_threshold_ms = 10000
 
 [fallback]
 # Maximum number of fallback providers in a generated chain.

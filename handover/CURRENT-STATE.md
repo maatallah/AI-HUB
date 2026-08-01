@@ -4,7 +4,7 @@
 
 Last Updated:
 
-2026-08-01 (Phase 1 released, baseline `7ceac80`)
+2026-08-01 (Phase 2 implementation complete, awaiting review)
 
 ---
 
@@ -12,17 +12,35 @@ Last Updated:
 
 Phase 1 (Repository Foundation) released.
 
+Phase 2 (Monitoring Engine) implementation complete: health checks,
+availability/lifecycle tracking, quota architecture, seed validation.
+99/99 tests passing. Awaiting owner release review.
+
 Architecture approved.
 
-Phase 1 implementation delivered, tested, and released
-(see `docs/release/PHASE1-CLOSURE-SUMMARY.md` and
-`PHASE-1-CLOSURE.md`).
-
-Git baseline committed (`7ceac80`, branch `main`, remote `origin`).
+Git baseline committed; Phase 2 work uncommitted pending review.
 
 ---
 
 # Completed
+
+## Phase 2 - Monitoring Engine
+
+Completed:
+
+* Health checks (`monitoring/health.py`) - HTTP reachability, no auth/secrets,
+  timeout + latency thresholds, UNKNOWN for missing base_url
+* Availability + lifecycle (`monitoring/availability.py`) - v1.2 Section 5
+  legal transitions, no automatic archival
+* Quota architecture (`monitoring/quota.py`) - quota_type, reset detection,
+  ACTIVE -> LIMITED on quota signal
+* Seed validation (`monitoring/validation.py`) - metadata checks, results via
+  events only, never mutates providers
+* Monitoring event types (`core/events.py`)
+* Monitoring config keys (v1.2 Section 10): timeout_seconds=10,
+  failure_threshold=3, latency_threshold_ms=10000
+* CLI: `python -m app.main monitor run/status/validate`
+* Tests: 99/99 passing (50 new)
 
 ## Phase 1 - Repository Foundation
 
@@ -39,7 +57,7 @@ Completed:
 * Initial provider seed dataset (`scripts/seed_providers.py`, 9 providers)
 * Phase 1 closure (`handover/PHASE-1-CLOSURE.md`, `PROJECT-STATUS.md`,
   `docs/release/PHASE1-CLOSURE-SUMMARY.md`)
-* `LICENSE` set to MIT (copyright line pending owner)
+* `LICENSE` set to MIT
 
 ---
 
@@ -62,26 +80,29 @@ AI-Hub/
   app/            __init__.py, config.py, main.py
   core/           __init__.py, providers.py, events.py
   database/       __init__.py, database.py, schema.sql
-  monitoring/     (empty - Phase 2)
+  monitoring/     __init__.py, health.py, availability.py, quota.py,
+                  validation.py (Phase 2)
   connectors/     vscode/, mcp/ (empty - Phase 5)
   dashboard/      (empty - Phase 4)
   tests/          conftest.py, test_database.py, test_schema.py,
-                  test_config.py, test_providers.py
+                  test_config.py, test_providers.py, test_health.py,
+                  test_availability.py, test_quota.py, test_validation.py
   scripts/        seed_providers.py
   backup/         (empty)
-  docs/           review/ (immutable), release/ (manifest, notes,
-                  closure summary, owner checklist)
+  docs/           review/ (immutable + Phase 2 plan/spec), release/
+                  (Phase 1 manifest, Phase 2 manifest draft, notes,
+                  closure summaries, owner checklist)
   spec/           agent-logging.md, project-registry.md
   decisions/      README.md, 0001-model-score-representation.md (PROPOSED),
                   0002-agent-logging.md (ACCEPTED),
                   0003-project-registry.md (ACCEPTED)
   templates/      config.toml
   handover/       AGENT-HANDOVER.md, CURRENT-STATE.md, NEXT-STEPS.md,
-                  SESSION-SUMMARY.md, AGENT-LOG.md, PHASE-1-CLOSURE.md
+                  SESSION-SUMMARY.md, PHASE-1-CLOSURE.md
   config.toml     documented defaults
   requirements.txt
   CHANGELOG.md
-  LICENSE         MIT (copyright line pending owner)
+  LICENSE         MIT
   PROJECT-STATUS.md
 ```
 
@@ -116,18 +137,25 @@ TOML, local only, secret-like keys rejected at load time
 
 ## Provider Registry
 
-Manual only for Phase 1. No automatic discovery, no monitoring.
+Manual only. No automatic discovery (v1.2 Section 9 - discoveries stay in
+PENDING_REVIEW, deferred).
 
 Providers are archived, never deleted (Constitution Article 5).
 
 Reason is mandatory for runtime states LIMITED, DEGRADED, OFFLINE, ARCHIVED
 (v1.2 Section 6).
 
+## Monitoring (Phase 2)
+
+Health checks, availability/lifecycle tracking, quota architecture and seed
+validation implemented. Monitoring never modifies provider information
+directly; transitions use the v1.2 Section 5 legal table. No automatic
+archival.
+
 ---
 
 # Not Yet Implemented
 
-* Monitoring engine (Phase 2)
 * Scoring engine (Phase 3)
 * Recommendation engine (Phase 3)
 * Fallback engine (Phase 3)
@@ -158,7 +186,8 @@ Verified with Python 3.14.2.
 
 Providers evolve rapidly.
 
-Solution: Monitoring and history preservation (future phases).
+Solution: Monitoring and history preservation (`monitor validate` reports
+endpoint status; availability history preserved in Phase 2).
 
 ## Multiple AI Agents
 
@@ -178,6 +207,8 @@ Solution: lifecycle rules (v1.2 Section 5).
 
 Architecture: High
 
-Phase 1 implementation: High (49 tests passing, Phase 1 closed)
+Phase 1 implementation: High (49 tests passing, Phase 1 released)
+
+Phase 2 implementation: High (99 tests passing, awaiting release review)
 
 Concept: Validated
