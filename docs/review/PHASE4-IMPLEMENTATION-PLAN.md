@@ -91,7 +91,7 @@ Constraints (Constitution Articles 1, 4, 5, 7, 8, 10, 11):
 
 | File | Change |
 |------|--------|
-| `app/main.py` | Add `dashboard` CLI subcommands: `dashboard status`, `dashboard report <name>`, `dashboard history --model N [--dimension D]` |
+| `app/main.py` | Add `dashboard` CLI subcommands: `dashboard status`, `dashboard report <name>`, `dashboard history --model N [--dimension D]`. Follows the existing argparse subcommand architecture (verified present in Phases 1-3). |
 | `core/events.py` | Extend `EVENT_TYPES` with `SNAPSHOT_RECORDED` if point-in-time snapshots are stored (see D-2) |
 | `database/schema.sql` | NOT changed unless a snapshot table is approved via ADR-0004 (see section 5). |
 | `database/database.py` | `EXPECTED_TABLES` updated ONLY if a snapshot table is added. |
@@ -187,7 +187,9 @@ python -m app.main dashboard history --availability --provider P  # availability
 
 * Every query/report has an explicit ordering; no reliance on rowid order
   (Article 7).
-* Every report is self-describing (column headers + generated-at timestamp).
+* Every report is self-describing (column headers). A generated-at timestamp is
+  optional and injected by the caller so tests pass a fixed value, preserving
+  deterministic output.
 * No hidden aggregation weights; totals are simple counts/sums (Article 4).
 
 ---
@@ -237,12 +239,18 @@ access.
 ## 10. Suggested implementation order
 
 1. Confirm push state + owner approval.
-2. `dashboard/engine.py` aggregation queries + `tests/test_dashboard_engine.py`.
-3. `dashboard/reports.py` report builders + `tests/test_dashboard_reports.py`.
-4. `dashboard/history.py` event-derived history + `tests/test_dashboard_history.py`.
-5. CLI wiring (`dashboard status / report / history`) + integration tests.
-6. `docs/review/PHASE4-DASHBOARD-SPEC.md` + v1.2 Phase 4 sections + CHANGELOG +
-   PROJECT-STATUS + handover updates.
+2. `docs/review/PHASE4-DASHBOARD-SPEC.md` proposal spec + v1.2 Phase 4
+   sections + CHANGELOG + PROJECT-STATUS + handover updates (Article 11
+   doc-before-code: specification and documentation are finalized and
+   reviewed before any implementation begins).
+3. `dashboard/engine.py` aggregation queries + `tests/test_dashboard_engine.py`.
+4. `dashboard/reports.py` report builders + `tests/test_dashboard_reports.py`.
+5. `dashboard/history.py` event-derived history + `tests/test_dashboard_history.py`.
+6. CLI wiring (`dashboard status / report / history`) + integration tests.
+   (`app/main.py` already provides the argparse subcommand architecture used
+   by Phases 1-3 - `build_parser`, `subparsers`, `set_defaults(func=...)` -
+   so the new `dashboard` subcommands follow the existing pattern; no
+   redesign required.)
 7. Phase 4 manifest + release review (owner approval).
 8. Re-evaluate D-2 (snapshot table + ADR-0004) only if trend performance
    demands it.
