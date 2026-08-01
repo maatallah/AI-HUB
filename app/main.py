@@ -1,4 +1,4 @@
-"""AI-Hub command line interface (Phase 1 + Phase 2).
+"""AI-Hub command line interface (Phases 1-3).
 
 Run from the repository root:
 
@@ -10,6 +10,11 @@ Run from the repository root:
     python -m app.main monitor run
     python -m app.main monitor status
     python -m app.main monitor validate
+    python -m app.main score list [--model N]
+    python -m app.main score set --model N --dimension coding --value 85 --source MANUAL
+    python -m app.main recommend --task "python" [--profile coding]
+    python -m app.main recommend chain --task "python" [--max 5]
+    python -m app.main fallback status
 """
 
 from __future__ import annotations
@@ -21,7 +26,11 @@ from pathlib import Path
 from app.config import ConfigError, effective_config_text, load_config
 from core import providers
 from database import database as db_util
+from fallback import build_chain, check_recovery
 from monitoring import availability, health, validation
+from recommendation import RecommendationError, list_recommendations, recommend, record_recommendation
+from scoring import ingest as score_ingest
+from scoring import list_scores
 
 
 def _get_db(config) -> Path:
@@ -198,6 +207,126 @@ def _apply_monitoring_lifecycle(conn, pid, result, threshold) -> None:
         )
 
 
+def cmd_score(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "list":
+            rows = list_scores(conn, model_id=args.model)
+            if not rows:
+                print("No scores stored.")
+            for row in rows:
+                print(
+                    f"model={row['model_identifier']} provider={row['provider_name']}"
+                    f" dimension={row['dimension']} value={row['value']}"
+                    f" confidence={row['confidence']} source={row['source']}"
+                    f" scored_at={row['scored_at']}"
+                )
+        elif args.action == "set":
+            if args.model is None:
+                raise score_ingest.ScoreError("--model is required.")
+            stored = score_ingest.set_score(
+                conn,
+                args.model,
+                args.dimension,
+                args.value,
+                confidence=args.confidence,
+                source=args.source,
+            )
+            print(
+                f"Score stored: model={stored['model_id']}"
+                f" dimension={stored['dimension']} value={stored['value']}"
+                f" source={stored['source']}"
+            )
+    except score_ingest.ScoreError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def cmd_recommend(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "chain":
+            chain = build_chain(
+                conn,
+                args.task,
+                profile=args.profile or config.recommendation_default_profile,
+                max_chain_length=args.max or config.fallback_max_chain_length,
+            )
+            if not chain.recommendations:
+                print("No eligible recommendations.")
+            for rank, rec in enumerate(chain.recommendations):
+                label = "primary" if rank == 0 else f"fallback {rank}"
+                print(
+                    f"[{label}] {rec.provider_name} {rec.model_identifier}"
+                    f" score={rec.final_score} confidence={rec.confidence}"
+                    + (f" ({', '.join(rec.flags)})" if rec.flags else "")
+                )
+            return
+        results = recommend(
+            conn,
+            args.task,
+            profile=args.profile or config.recommendation_default_profile,
+        )
+        if not results:
+            print("No eligible recommendations.")
+        for rec in results:
+            record_recommendation(
+                conn, rec, decision_version=config.recommendation_decision_version
+            )
+        top = results[0]
+        print(
+            f"Recommended: {top.provider_name} {top.model_identifier}"
+            f" score={top.final_score} confidence={top.confidence}"
+            + (f" ({', '.join(top.flags)})" if top.flags else "")
+        )
+        print()
+        print(top.explanation)
+        print()
+        recent = list_recommendations(conn, limit=1)
+        if recent:
+            print(f"Provenance id: {recent[0]['id']}")
+    except RecommendationError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def cmd_fallback(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "status":
+            chain = build_chain(
+                conn,
+                "default",
+                profile=config.recommendation_default_profile,
+                max_chain_length=config.fallback_max_chain_length,
+            )
+            if not chain.recommendations:
+                print("No eligible providers.")
+            for rank, rec in enumerate(chain.recommendations):
+                label = "primary" if rank == 0 else f"fallback {rank}"
+                print(
+                    f"[{label}] {rec.provider_name} {rec.model_identifier}"
+                    f" score={rec.final_score}"
+                )
+            recovered = check_recovery(conn, chain)
+            if recovered is not None:
+                print(f"Primary recovered: {recovered.provider_name}")
+            else:
+                print("Primary not recovered.")
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-hub", description="AI-Hub Phase 1 CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -260,6 +389,40 @@ def build_parser() -> argparse.ArgumentParser:
 
     val = mon_sub.add_parser("validate", help="Validate provider seed metadata")
     val.set_defaults(func=cmd_monitor)
+
+    sc = sub.add_parser("score", help="Scoring engine (Phase 3)")
+    sc_sub = sc.add_subparsers(dest="action", required=True)
+    sc_list = sc_sub.add_parser("list", help="List stored scores")
+    sc_list.add_argument("--model", type=int, help="Filter by model id")
+    sc_list.set_defaults(func=cmd_score)
+    sc_set = sc_sub.add_parser("set", help="Store a score for a model dimension")
+    sc_set.add_argument("--model", type=int, required=True)
+    sc_set.add_argument("--dimension", required=True)
+    sc_set.add_argument("--value", type=float, required=True)
+    sc_set.add_argument("--confidence", type=float)
+    sc_set.add_argument(
+        "--source",
+        choices=score_ingest.ALLOWED_SOURCES,
+        default="MANUAL",
+    )
+    sc_set.set_defaults(func=cmd_score)
+
+    rec = sub.add_parser("recommend", help="Recommendation engine (Phase 3)")
+    rec_sub = rec.add_subparsers(dest="action", required=True)
+    rec_top = rec_sub.add_parser("top", help="Top recommendation (records provenance)")
+    rec_top.add_argument("--task", required=True)
+    rec_top.add_argument("--profile")
+    rec_top.set_defaults(func=cmd_recommend)
+    rec_chain = rec_sub.add_parser("chain", help="Show the full fallback chain")
+    rec_chain.add_argument("--task", required=True)
+    rec_chain.add_argument("--profile")
+    rec_chain.add_argument("--max", type=int)
+    rec_chain.set_defaults(func=cmd_recommend)
+
+    fb = sub.add_parser("fallback", help="Fallback engine (Phase 3)")
+    fb_sub = fb.add_subparsers(dest="action", required=True)
+    fb_status = fb_sub.add_parser("status", help="Show current fallback chain")
+    fb_status.set_defaults(func=cmd_fallback)
 
     return parser
 

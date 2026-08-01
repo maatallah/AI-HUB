@@ -17,6 +17,11 @@ path = "database/ai_hub.db"
 enabled = true
 interval_minutes = 30
 
+[scoring]
+aging_fresh_days = 20
+aging_aging_days = 60
+aging_old_days = 120
+
 [fallback]
 max_chain_length = 3
 
@@ -36,8 +41,13 @@ def test_defaults_used_when_file_missing(tmp_path):
     assert config.database_path == DEFAULT_CONFIG["database"]["path"]
     assert config.monitoring_enabled is True
     assert config.monitoring_interval_minutes == 60
+    assert config.scoring_aging_fresh_days == 30
+    assert config.scoring_aging_aging_days == 90
+    assert config.scoring_aging_old_days == 180
+    assert config.scoring_derive_operational is True
     assert config.fallback_max_chain_length == 5
     assert config.recommendation_default_profile == "coding"
+    assert config.recommendation_decision_version == "3.0.0"
     assert config.dashboard_refresh_seconds == 60
     assert config.logging_level == "INFO"
 
@@ -47,6 +57,9 @@ def test_file_overrides_defaults(tmp_path):
     path.write_text(VALID_TOML, encoding="utf-8")
     config = load_config(path)
     assert config.monitoring_interval_minutes == 30
+    assert config.scoring_aging_fresh_days == 20
+    assert config.scoring_aging_aging_days == 60
+    assert config.scoring_aging_old_days == 120
     assert config.fallback_max_chain_length == 3
     assert config.recommendation_default_profile == "reasoning"
     assert config.dashboard_refresh_seconds == 15
@@ -95,6 +108,42 @@ def test_invalid_default_profile_rejected(tmp_path):
         raise AssertionError("Expected ConfigError for invalid profile.")
 
 
+def test_invalid_scoring_boundaries_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        "[scoring]\naging_fresh_days = 90\naging_aging_days = 30\naging_old_days = 180\n",
+        encoding="utf-8",
+    )
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "strictly increasing" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for non-increasing aging boundaries.")
+
+
+def test_invalid_scoring_derive_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[scoring]\nderive_operational = \"yes\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "derive_operational" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for non-boolean derive_operational.")
+
+
+def test_invalid_decision_version_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[recommendation]\ndecision_version = \"\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "decision_version" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for empty decision_version.")
+
+
 def test_secret_key_rejected(tmp_path):
     path = tmp_path / "config.toml"
     path.write_text("[database]\napi_key = \"sk-123\"\n", encoding="utf-8")
@@ -129,8 +178,14 @@ def test_validate_returns_config():
                 "failure_threshold": 2,
                 "latency_threshold_ms": 5000,
             },
+            "scoring": {
+                "aging_fresh_days": 10,
+                "aging_aging_days": 30,
+                "aging_old_days": 60,
+                "derive_operational": False,
+            },
             "fallback": {"max_chain_length": 1},
-            "recommendation": {"default_profile": "free"},
+            "recommendation": {"default_profile": "free", "decision_version": "9.9.9"},
             "dashboard": {"refresh_seconds": 1},
             "logging": {"level": "CRITICAL"},
         }
@@ -140,3 +195,7 @@ def test_validate_returns_config():
     assert config.monitoring_timeout_seconds == 5
     assert config.monitoring_failure_threshold == 2
     assert config.monitoring_latency_threshold_ms == 5000
+    assert config.scoring_aging_fresh_days == 10
+    assert config.scoring_aging_old_days == 60
+    assert config.scoring_derive_operational is False
+    assert config.recommendation_decision_version == "9.9.9"

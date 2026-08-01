@@ -4,7 +4,7 @@
 
 Last Updated:
 
-2026-08-01 (Phase 2 implementation complete, awaiting review)
+2026-08-01 (Phase 3 implementation complete, awaiting review)
 
 ---
 
@@ -12,17 +12,37 @@ Last Updated:
 
 Phase 1 (Repository Foundation) released.
 
-Phase 2 (Monitoring Engine) implementation complete: health checks,
-availability/lifecycle tracking, quota architecture, seed validation.
-99/99 tests passing. Awaiting owner release review.
+Phase 2 (Monitoring Engine) released: health checks, availability/lifecycle
+tracking, quota architecture, seed validation. 99/99 tests passing.
+
+Phase 3 (Scoring / Recommendation / Fallback) implementation complete:
+162/162 tests passing. Awaiting owner release review.
 
 Architecture approved.
 
-Git baseline committed; Phase 2 work uncommitted pending review.
+Git baseline committed and pushed (`main` == `origin/main`).
 
 ---
 
 # Completed
+
+## Phase 3 - Scoring / Recommendation / Fallback
+
+Completed:
+
+* Scoring engine (`scoring/engine.py`, `scoring/ingest.py`,
+  `scoring/derive.py`) - normalized `scores` table (ADR-0001), aging,
+  operational dimensions derived from monitoring, no fabricated values
+* Recommendation engine (`recommendation/`) - built-in + custom profiles,
+  deterministic ranking, explainability, provenance records
+* Fallback engine (`fallback/engine.py`) - deterministic chain, eligibility
+  from monitoring, recovery handling
+* Phase 3 event types (`core/events.py`)
+* Phase 3 config keys (v1.2 Section 10): scoring.aging_*_days,
+  scoring.derive_operational, recommendation.decision_version
+* CLI: `python -m app.main score list/set`, `recommend top/chain`,
+  `fallback status`
+* Tests: 162/162 passing (59 new)
 
 ## Phase 2 - Monitoring Engine
 
@@ -82,19 +102,25 @@ AI-Hub/
   database/       __init__.py, database.py, schema.sql
   monitoring/     __init__.py, health.py, availability.py, quota.py,
                   validation.py (Phase 2)
+  scoring/        __init__.py, engine.py, ingest.py, derive.py (Phase 3)
+  recommendation/ __init__.py, engine.py, profiles.py, explain.py,
+                  provenance.py (Phase 3)
+  fallback/       __init__.py, engine.py (Phase 3)
   connectors/     vscode/, mcp/ (empty - Phase 5)
   dashboard/      (empty - Phase 4)
   tests/          conftest.py, test_database.py, test_schema.py,
                   test_config.py, test_providers.py, test_health.py,
-                  test_availability.py, test_quota.py, test_validation.py
-                  (103 tests total)
+                  test_availability.py, test_quota.py, test_validation.py,
+                  test_scoring_engine.py, test_recommendation.py,
+                  test_fallback.py, test_provenance.py
+                  (162 tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
                   (Phase 1 manifest, Phase 2 manifest draft, notes,
                   closure summaries, owner checklist)
   spec/           agent-logging.md, project-registry.md
-  decisions/      README.md, 0001-model-score-representation.md (PROPOSED),
+  decisions/      README.md, 0001-model-score-representation.md (ACCEPTED),
                   0002-agent-logging.md (ACCEPTED),
                   0003-project-registry.md (ACCEPTED)
   templates/      config.toml
@@ -155,13 +181,17 @@ validation implemented. Monitoring never modifies provider information
 directly; transitions use the v1.2 Section 5 legal table. No automatic
 archival.
 
+## Scoring / Recommendation / Fallback (Phase 3)
+
+Scores stored in the ADR-0001 `scores` table; operational dimensions derived
+from monitoring at read time; recommendations deterministic + explainable
+with provenance records; fallback chain consumes monitoring outputs only and
+never mutates providers.
+
 ---
 
 # Not Yet Implemented
 
-* Scoring engine (Phase 3)
-* Recommendation engine (Phase 3)
-* Fallback engine (Phase 3)
 * Dashboard (Phase 4)
 * Connectors (Phase 5)
 * Ecosystem intelligence (Phase 6)
@@ -212,6 +242,8 @@ Architecture: High
 
 Phase 1 implementation: High (49 tests passing, Phase 1 released)
 
-Phase 2 implementation: High (99 tests passing, awaiting release review)
+Phase 2 implementation: High (99 tests passing, Phase 2 released)
+
+Phase 3 implementation: High (162 tests passing, awaiting release review)
 
 Concept: Validated

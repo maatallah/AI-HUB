@@ -47,11 +47,18 @@ DEFAULT_CONFIG: dict = {
         "failure_threshold": 3,
         "latency_threshold_ms": 10000,
     },
+    "scoring": {
+        "aging_fresh_days": 30,
+        "aging_aging_days": 90,
+        "aging_old_days": 180,
+        "derive_operational": True,
+    },
     "fallback": {
         "max_chain_length": 5,
     },
     "recommendation": {
         "default_profile": "coding",
+        "decision_version": "3.0.0",
     },
     "dashboard": {
         "refresh_seconds": 60,
@@ -72,8 +79,13 @@ class Config:
     monitoring_timeout_seconds: int
     monitoring_failure_threshold: int
     monitoring_latency_threshold_ms: int
+    scoring_aging_fresh_days: int
+    scoring_aging_aging_days: int
+    scoring_aging_old_days: int
+    scoring_derive_operational: bool
     fallback_max_chain_length: int
     recommendation_default_profile: str
+    recommendation_decision_version: str
     dashboard_refresh_seconds: int
     logging_level: str
 
@@ -138,6 +150,20 @@ def validate(data: dict) -> Config:
     ):
         raise ConfigError("monitoring.latency_threshold_ms must be a positive integer.")
 
+    scoring = data["scoring"]
+    for key in ("aging_fresh_days", "aging_aging_days", "aging_old_days"):
+        if not isinstance(scoring.get(key), int) or scoring[key] <= 0:
+            raise ConfigError(f"scoring.{key} must be a positive integer.")
+    if not (
+        scoring["aging_fresh_days"] < scoring["aging_aging_days"] < scoring["aging_old_days"]
+    ):
+        raise ConfigError(
+            "scoring aging boundaries must be strictly increasing:"
+            " fresh < aging < old."
+        )
+    if not isinstance(scoring.get("derive_operational"), bool):
+        raise ConfigError("scoring.derive_operational must be a boolean.")
+
     fallback = data["fallback"]
     if not isinstance(fallback.get("max_chain_length"), int) or fallback["max_chain_length"] < 1:
         raise ConfigError("fallback.max_chain_length must be an integer >= 1.")
@@ -148,6 +174,9 @@ def validate(data: dict) -> Config:
         raise ConfigError(
             f"recommendation.default_profile must be one of {sorted(VALID_PROFILES)}; got {profile!r}."
         )
+    decision_version = recommendation.get("decision_version")
+    if not isinstance(decision_version, str) or not decision_version.strip():
+        raise ConfigError("recommendation.decision_version must be a non-empty string.")
 
     dashboard = data["dashboard"]
     if not isinstance(dashboard.get("refresh_seconds"), int) or dashboard["refresh_seconds"] <= 0:
@@ -167,8 +196,13 @@ def validate(data: dict) -> Config:
         monitoring_timeout_seconds=monitoring["timeout_seconds"],
         monitoring_failure_threshold=monitoring["failure_threshold"],
         monitoring_latency_threshold_ms=monitoring["latency_threshold_ms"],
+        scoring_aging_fresh_days=scoring["aging_fresh_days"],
+        scoring_aging_aging_days=scoring["aging_aging_days"],
+        scoring_aging_old_days=scoring["aging_old_days"],
+        scoring_derive_operational=scoring["derive_operational"],
         fallback_max_chain_length=fallback["max_chain_length"],
         recommendation_default_profile=profile,
+        recommendation_decision_version=decision_version,
         dashboard_refresh_seconds=dashboard["refresh_seconds"],
         logging_level=level,
     )
@@ -207,10 +241,16 @@ def effective_config_text(config: Config) -> str:
         f"timeout_seconds = {config.monitoring_timeout_seconds}\n"
         f"failure_threshold = {config.monitoring_failure_threshold}\n"
         f"latency_threshold_ms = {config.monitoring_latency_threshold_ms}\n"
+        "\n[scoring]\n"
+        f"aging_fresh_days = {config.scoring_aging_fresh_days}\n"
+        f"aging_aging_days = {config.scoring_aging_aging_days}\n"
+        f"aging_old_days = {config.scoring_aging_old_days}\n"
+        f"derive_operational = {str(config.scoring_derive_operational).lower()}\n"
         "\n[fallback]\n"
         f"max_chain_length = {config.fallback_max_chain_length}\n"
         "\n[recommendation]\n"
         f'default_profile = "{config.recommendation_default_profile}"\n'
+        f'decision_version = "{config.recommendation_decision_version}"\n'
         "\n[dashboard]\n"
         f"refresh_seconds = {config.dashboard_refresh_seconds}\n"
         "\n[logging]\n"

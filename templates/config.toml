@@ -17,11 +17,21 @@ failure_threshold = 3
 # Response time above this (milliseconds) is treated as high latency.
 latency_threshold_ms = 10000
 
+[scoring]
+# Score aging boundaries in days (v1.2 Section 4). Must be strictly increasing.
+aging_fresh_days = 30
+aging_aging_days = 90
+aging_old_days = 180
+# When true, operational dimensions (availability, reliability, latency) are
+# derived from current monitoring data at recommendation time (never stored).
+derive_operational = true
+
 [fallback]
 max_chain_length = 5
 
 [recommendation]
 default_profile = "coding"
+decision_version = "3.0.0"
 
 [dashboard]
 refresh_seconds = 60

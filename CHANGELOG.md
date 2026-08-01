@@ -4,6 +4,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 3 - Scoring / Recommendation / Fallback)
+
+- Scoring engine package `scoring/`:
+  - `engine.py` - effective aged per-dimension scores (v1.2 Section 4 aging:
+    fresh 1.00 / aging 0.90 / old 0.75 / stale 0.50).
+  - `ingest.py` - score ingestion into the ADR-0001 `scores` table (sources:
+    MANUAL, BENCHMARK, AUTOMATED_TEST, USER_FEEDBACK, OFFICIAL_INFORMATION);
+    value 0-100, confidence 0-1 validation; SCORE_RECORDED / SCORE_UPDATED
+    events.
+  - `derive.py` - operational dimensions derived at read time from monitoring:
+    availability (state map), reliability (failures), latency (health event),
+    context_window (models table). Never fabricated (Article 10).
+- Recommendation engine package `recommendation/`:
+  - `profiles.py` - built-in profiles (coding, reasoning, free, long_context)
+    with exact v1.2 Section 2 weights; custom profiles from `preferences`
+    (JSON), validated to sum to 1.0.
+  - `engine.py` - deterministic ranking (Section 7 Step 4 ordering), filtering
+    (eligible status, context, capabilities), no hidden weighting.
+  - `explain.py` - human-readable explanations (Article 4).
+  - `provenance.py` - `recommendations` records (UUID id, decision_version,
+    score_breakdown, explanation, confidence) + RECOMMENDATION_CREATED events.
+- Fallback engine package `fallback/engine.py`: chain = primary +
+  `fallback.max_chain_length` fallbacks; eligibility from monitoring
+  (ACTIVE/LIMITED preferred, DEGRADED last resort); FALLBACK_TRIGGERED /
+  FALLBACK_RECOVERED events; never mutates providers.
+- Phase 3 event types added to `core/events.py`: `SCORE_RECORDED`,
+  `SCORE_UPDATED`, `RECOMMENDATION_CREATED`, `FALLBACK_TRIGGERED`,
+  `FALLBACK_RECOVERED`, `PROFILE_UPDATED`.
+- Phase 3 configuration keys (v1.2 Section 10): `scoring.aging_*_days`
+  (30/90/180), `scoring.derive_operational` (true),
+  `recommendation.decision_version` (`3.0.0`).
+- CLI: `python -m app.main score list/set`, `recommend top/chain`,
+  `fallback status`.
+- Docs: `docs/review/PHASE3-SCORING-SPEC.md`, spec v1.2 Sections 3/7/8/10
+  updated.
+- Tests: 59 new tests (scoring 24, recommendation 16, fallback 10,
+  provenance 6, config 3); 162 total.
+
 ### Added (ADR-0001 acceptance - 2026-08-01)
 
 - ADR-0001 (Model Score Representation) ACCEPTED.

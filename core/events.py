@@ -13,8 +13,9 @@ import json
 import sqlite3
 from typing import Optional, Sequence
 
-#: Base set of event types used by the Phase 1 registry plus the Phase 2
-#: monitoring engine (health checks, quota signals, seed validation).
+#: Base set of event types used by the Phase 1 registry, the Phase 2
+#: monitoring engine (health checks, quota signals, seed validation) and the
+#: Phase 3 scoring / recommendation / fallback engines.
 EVENT_TYPES = {
     "PROVIDER_ADDED",
     "PROVIDER_UPDATED",
@@ -31,6 +32,12 @@ EVENT_TYPES = {
     "VALIDATION_PASSED",
     "VALIDATION_FAILED",
     "VALIDATION_UNKNOWN",
+    "SCORE_RECORDED",
+    "SCORE_UPDATED",
+    "RECOMMENDATION_CREATED",
+    "FALLBACK_TRIGGERED",
+    "FALLBACK_RECOVERED",
+    "PROFILE_UPDATED",
 }
 
 

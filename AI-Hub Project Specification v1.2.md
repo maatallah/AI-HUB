@@ -222,6 +222,17 @@ No hidden weighting is permitted.
 
 ---
 
+### Implementation (Phase 3)
+
+Scores are stored in the normalized `scores` table (ADR-0001). Operational
+dimensions (availability, reliability, latency) are derived at read time from
+monitoring outputs (`scoring/derive.py`); the `context_window` dimension is
+derived from the `models` table. Aging multipliers from Section 4 apply to
+stored-score confidence. Missing dimensions contribute 0 and are flagged
+"insufficient data" - they are never fabricated (Constitution Article 10).
+
+---
+
 # 4. Score Aging
 
 Scores become less trustworthy over time.
@@ -462,6 +473,17 @@ Five fallback providers
 
 ---
 
+### Implementation (Phase 3)
+
+Eligibility derives from monitoring outputs: ACTIVE/LIMITED preferred,
+DEGRADED last resort (flagged), OFFLINE/ARCHIVED/NEW/EVALUATING excluded.
+On a failure signal the next eligible provider in the chain is selected
+(`FALLBACK_TRIGGERED`); recovery to the primary is detected when it returns
+to ACTIVE/LIMITED (`FALLBACK_RECOVERED`). Fallback never probes providers and
+never modifies the provider lifecycle (Section 9).
+
+---
+
 # 8. Decision Provenance
 
 Every recommendation is reproducible.
@@ -487,6 +509,16 @@ Explanation
 Confidence
 
 This enables auditing and comparison across AI-Hub versions.
+
+---
+
+### Implementation (Phase 3)
+
+Every top recommendation is recorded in the `recommendations` table with a
+UUID id, decision version (`recommendation.decision_version`, default
+`3.0.0`), score breakdown (JSON), explanation and confidence, plus an
+append-only `RECOMMENDATION_CREATED` event. The UUID identifies the record;
+recommendation *content* remains deterministic (Constitution Article 7).
 
 ---
 
@@ -519,11 +551,18 @@ timeout_seconds = 10
 failure_threshold = 3
 latency_threshold_ms = 10000
 
+[scoring]
+aging_fresh_days = 30
+aging_aging_days = 90
+aging_old_days = 180
+derive_operational = true
+
 [fallback]
 max_chain_length = 5
 
 [recommendation]
 default_profile = "coding"
+decision_version = "3.0.0"
 
 [dashboard]
 refresh_seconds = 60
@@ -555,6 +594,20 @@ Monitoring keys (Phase 2):
 
 Thresholds are global configuration values; per-provider overrides are not
 supported.
+
+Scoring keys (Phase 3):
+
+* `scoring.aging_fresh_days` - days before a score ages (confidence
+  multiplier 1.00; positive integer, default `30`).
+* `scoring.aging_aging_days` - days before a score becomes old (multiplier
+  0.90; positive integer, default `90`).
+* `scoring.aging_old_days` - days before a score becomes stale (multiplier
+  0.75; positive integer, default `180`; stale scores use 0.50). Boundaries
+  must be strictly increasing.
+* `scoring.derive_operational` - derive operational dimensions from monitoring
+  at read time (boolean, default `true`).
+* `recommendation.decision_version` - version of the recommendation decision
+  logic, recorded in provenance (non-empty string, default `3.0.0`).
 
 Configuration belongs exclusively to AI-Hub.
 

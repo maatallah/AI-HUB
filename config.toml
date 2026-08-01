@@ -20,6 +20,17 @@ failure_threshold = 3
 # Response time above this (milliseconds) is treated as high latency.
 latency_threshold_ms = 10000
 
+[scoring]
+# Score aging boundaries in days (v1.2 Section 4). Confidence multipliers
+# are applied to stored scores: fresh 1.00, aging 0.90, old 0.75, stale 0.50.
+# Boundaries must be strictly increasing.
+aging_fresh_days = 30
+aging_aging_days = 90
+aging_old_days = 180
+# When true, operational dimensions (availability, reliability, latency) are
+# derived from current monitoring data at recommendation time (never stored).
+derive_operational = true
+
 [fallback]
 # Maximum number of fallback providers in a generated chain.
 max_chain_length = 5
@@ -27,6 +38,8 @@ max_chain_length = 5
 [recommendation]
 # One of: coding, reasoning, free, long_context
 default_profile = "coding"
+# Version of the recommendation decision logic (recorded for reproducibility).
+decision_version = "3.0.0"
 
 [dashboard]
 refresh_seconds = 60

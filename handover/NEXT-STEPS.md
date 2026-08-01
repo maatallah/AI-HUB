@@ -4,23 +4,28 @@
 
 ## Immediate Goal
 
-Complete Phase 2 (Monitoring Engine) release review, then begin Phase 3.
+Complete Phase 3 (Scoring / Recommendation / Fallback) release review, then
+begin Phase 4 (Dashboard).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
 
-Phase 2 implementation is complete (99/99 tests) - see
-`handover/PHASE-2-CLOSURE.md` (owner sign-off), plus
+Phase 2 is released - see `handover/PHASE-2-CLOSURE.md`, plus
 `docs/review/PHASE2-IMPLEMENTATION-PLAN.md`,
 `docs/review/PHASE2-MONITORING-SPEC.md` and
 `docs/release/PHASE2-RELEASE-MANIFEST.md`.
 
+Phase 3 implementation is complete (162/162 tests) - see
+`docs/review/PHASE3-IMPLEMENTATION-PLAN.md`,
+`docs/review/PHASE3-SCORING-SPEC.md` and (pending owner review)
+`docs/release/PHASE3-RELEASE-MANIFEST.md`.
+
 ---
 
-# Pre-Phase 3 Actions (owner)
+# Pre-Phase 4 Actions (owner)
 
-- [ ] Review and approve Phase 2 release
-- [ ] Accept ADR-0001 (normalized `scores` table) before Phase 3
+- [ ] Review and approve Phase 3 release
+- [ ] Sign off Phase 3 closure
 
 ---
 
@@ -47,40 +52,54 @@ Phase 2 implementation is complete (99/99 tests) - see
 - [x] Monitoring config keys + docs (v1.2 Section 10)
 - [x] CLI `monitor run/status/validate`
 - [x] Tests: 99/99 passing (50 new)
-- [ ] Phase 2 release review + approval (owner)
+- [x] Phase 2 release review + approval (owner)
+
+# Phase 3 Completion Status
+
+- [x] Scoring engine (`scoring/`) - scores, aging, derived operational dims
+- [x] Recommendation engine (`recommendation/`) - profiles, ranking, explain
+- [x] Fallback engine (`fallback/`) - chain, eligibility, recovery
+- [x] Provenance records (`recommendations` table + events)
+- [x] Event vocabulary extension (`core/events.py`)
+- [x] Scoring config keys + docs (v1.2 Section 10)
+- [x] CLI `score`, `recommend`, `fallback`
+- [x] Tests: 162/162 passing (59 new)
+- [ ] Phase 3 release review + approval (owner)
 
 ---
 
 # Step 1 — Finish Owner Actions
 
 ```
-# Phase 2 review
+# Phase 3 review
 python -m pytest -q
 python -m app.main monitor status
-python -m app.main monitor validate
+python -m app.main recommend top --task "python"
+python -m app.main recommend chain --task "python"
 ```
 
 ---
 
-# Step 2 — Phase 3: Scoring / Recommendation / Fallback
+# Step 2 — Phase 4: Dashboard / Reporting / History
 
-Before Phase 3, the owner must accept ADR-0001 (normalized `scores` table)
-and migrate `database/schema.sql` + specifications, then implement scoring,
-recommendation and fallback engines. Fallback Step 2 filters on availability
-(v1.2 Section 7), which Phase 2 now maintains.
+Phase 3 (scoring, recommendation, fallback) is implemented. Phase 4 adds the
+dashboard, reporting and history/score snapshots. Fallback Step 2 filters on
+availability (v1.2 Section 7), which Phase 2 maintains; scoring feeds the
+dashboard.
 
 ---
 
 # Next Recommended Agent
 
-Backend-focused implementation agent for Phase 2 (Monitoring Engine).
+Backend-focused implementation agent for Phase 4 (Dashboard).
 
 Recommended input:
 
 * START-HERE.md
 * CONSTITUTION.md
 * AI-Hub Specification v1.2
-* docs/release/PHASE1-RELEASE-MANIFEST.md
+* docs/release/PHASE2-RELEASE-MANIFEST.md
+* docs/review/PHASE3-SCORING-SPEC.md
 * handover/CURRENT-STATE.md
-* handover/PHASE-1-CLOSURE.md
+* handover/PHASE-3-CLOSURE.md (pending)
 * this document
