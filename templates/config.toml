@@ -1,0 +1,33 @@
+# Configuration template (see app/config.py for validation rules)
+#
+# Copy this file to config.toml at the repository root and adjust as needed.
+# AI-Hub configuration belongs exclusively to AI-Hub.
+# Raw secrets are never stored here - secret-like keys are rejected at load time.
+
+[database]
+path = "database/ai_hub.db"
+
+[monitoring]
+enabled = true
+interval_minutes = 60
+
+[fallback]
+max_chain_length = 5
+
+[recommendation]
+default_profile = "coding"
+
+[dashboard]
+refresh_seconds = 60
+
+[logging]
+level = "INFO"
+log_root = "logs"
+
+# Machine-specific example default - configure per machine, never hardcode.
+# Paths are never project identity (R-03).
+[workspace]
+root = "M:\\dev"
+
+[registry]
+path = "projects/registry.json"

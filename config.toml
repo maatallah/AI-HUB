@@ -1,0 +1,42 @@
+# AI-Hub configuration (documented defaults - v1.2 Section 10)
+#
+# AI-Hub configuration belongs exclusively to AI-Hub.
+# AI-Hub NEVER stores raw secrets. Do NOT place API keys, tokens or
+# credentials in this file - such keys are rejected at load time.
+#
+# To use defaults only, delete this file.
+
+[database]
+# Path to the SQLite database file, relative to the repository root.
+path = "database/ai_hub.db"
+
+[monitoring]
+enabled = true
+interval_minutes = 60
+
+[fallback]
+# Maximum number of fallback providers in a generated chain.
+max_chain_length = 5
+
+[recommendation]
+# One of: coding, reasoning, free, long_context
+default_profile = "coding"
+
+[dashboard]
+refresh_seconds = 60
+
+[logging]
+# One of: DEBUG, INFO, WARNING, ERROR, CRITICAL
+level = "INFO"
+# Agent log root (ADR-0002). Relative to the repository root; may point anywhere.
+log_root = "logs"
+
+[workspace]
+# Development workspace scanned for project candidates (ADR-0003).
+# Machine-specific example default - configure per machine, never hardcode.
+# Paths are never project identity (R-03).
+root = "M:\\dev"
+
+[registry]
+# Project registry file (ADR-0003). Relative to the repository root.
+path = "projects/registry.json"

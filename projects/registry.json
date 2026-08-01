@@ -1,0 +1,23 @@
+{
+  "registry_version": 1,
+  "projects": [
+    {
+      "id": "ai-hub",
+      "name": "AI-Hub",
+      "path": "M:\\dev\\AI-Hub",
+      "source": "manual",
+      "status": "ACTIVE",
+      "first_detected": "2026-07-31T00:00:00Z",
+      "last_seen": "2026-07-31T00:00:00Z",
+      "notes": "AI-Hub's own repository. Registered manually.",
+      "repository": {
+        "type": "git",
+        "branch": null,
+        "remote": null,
+        "last_commit": null,
+        "last_commit_date": null,
+        "status": "unknown"
+      }
+    }
+  ]
+}
