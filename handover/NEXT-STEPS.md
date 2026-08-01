@@ -25,8 +25,27 @@ Phase 3 implementation is complete (162/162 tests) - see
 
 # Pre-Phase 4 Actions (owner)
 
-- [ ] Review and approve Phase 3 release
-- [ ] Sign off Phase 3 closure (handover/PHASE-3-CLOSURE.md)
+- [x] Review and approve Phase 3 release (approved 2026-08-01,
+  `docs/release/PHASE3-RELEASE-MANIFEST.md` status = APPROVED)
+- [x] Sign off Phase 3 closure (handover/PHASE-3-CLOSURE.md, accepted
+  2026-08-01)
+
+---
+
+# Step 3 — Phase 4 Entry Conditions
+
+Phase 4 (Dashboard / Reporting / History) must NOT start until a separate
+owner authorization prompt is provided. Before coding, the Phase 4 plan must
+be produced and approved (same pattern as Phase 2/3).
+
+Entry conditions (all met as of 2026-08-01):
+
+- [x] Phase 3 release approved (immutable baseline `d6dd3c9`, manifest
+  APPROVED)
+- [x] Phase 3 closure signed off (`handover/PHASE-3-CLOSURE.md`)
+- [x] `main` synchronized with `origin/main`
+- [x] 162/162 tests passing
+- [x] ADR-0001 accepted (`scores` table) - scoring data model available
 
 ---
 
