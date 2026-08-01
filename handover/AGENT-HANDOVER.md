@@ -38,7 +38,8 @@ v1.2
 
 Status:
 
-Ready for Phase 1 implementation.
+Phase 1 released (baseline `7ceac80`, branch `main`). Ready for Phase 2 after
+owner commits the MIT `LICENSE` and signs off closure.
 
 ---
 

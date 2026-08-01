@@ -92,9 +92,10 @@ all passed with no remaining BLOCKERs.
 ## Known Limitations
 
 See `docs/release/PHASE1-RELEASE-MANIFEST.md` and
-`docs/release/OWNER-CHECKLIST.md`. Key points: git is not yet initialized,
-`LICENSE` is a placeholder pending owner selection, and ADR-0001 remains
-PROPOSED for Phase 3.
+`docs/release/OWNER-CHECKLIST.md`. Key points: `LICENSE` is set to MIT but the
+copyright line is still a placeholder and the change is not yet committed;
+ADR-0001 remains PROPOSED for Phase 3; the registry seed does not yet carry
+the R-01/R-07 schema fields.
 
 ---
 

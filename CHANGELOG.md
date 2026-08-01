@@ -34,6 +34,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - Fixed ADR reference in `CHANGELOG.md`.
 - Added `.pytest_cache/` to `.gitignore`.
 
+### Phase 1 Release Finalization (2026-08-01)
+
+- Git baseline initialized and committed (`7ceac80`, branch `main`); remote
+  `origin` = `https://github.com/maatallah/AI-HUB.git`.
+- Accepted ADR-0002 (agent logging) and ADR-0003 (project registry);
+  related-document status labels updated.
+- Aligned configuration keys `logging.log_root`, `workspace.root`,
+  `registry.path` across v1.2 Section 10, `config.toml`,
+  `templates/config.toml` and both specs.
+- Set `LICENSE` to MIT (copyright line still requires owner attribution;
+  change uncommitted).
+- Added release package under `docs/release/` (manifest, release notes,
+  closure summary, owner checklist, owner-action status).
+- Refreshed living docs: `PROJECT-STATUS.md`, `START-HERE.md`,
+  `handover/CURRENT-STATE.md`, `handover/NEXT-STEPS.md`,
+  `handover/AGENT-HANDOVER.md`.
+- Re-verified tests on committed baseline: 49/49 passed.
+
 ### Decisions
 
 - `decisions/0001-model-score-representation.md` (PROPOSED) - assessed as

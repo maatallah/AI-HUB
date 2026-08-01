@@ -4,17 +4,21 @@
 
 ## Immediate Goal
 
-Begin Phase 2 (Monitoring Engine).
+Begin Phase 2 (Monitoring Engine) once the owner commits the LICENSE change.
 
-Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md`.
+Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
+`docs/release/PHASE1-CLOSURE-SUMMARY.md`.
 
 ---
 
 # Pre-Phase 2 Actions (owner)
 
-- [ ] Initialize the git repository and commit the Phase 1 baseline
+- [x] Initialize the git repository and commit the Phase 1 baseline
+      (`7ceac80`, branch `main`)
+- [x] Create remote `origin` (`https://github.com/maatallah/AI-HUB.git`)
+- [ ] Commit the MIT `LICENSE` change and fill the copyright line
+      (`[year] [fullname]` → owner name + year), then push
 - [ ] Sign off `handover/PHASE-1-CLOSURE.md` (accept closure)
-- [ ] Select a `LICENSE` (placeholder currently in place)
 - [ ] Accept ADR-0001 before Phase 3 (not required for Phase 2)
 
 ---
@@ -27,23 +31,21 @@ Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md`.
 - [x] Implement manual provider registry
 - [x] Create test framework (49 tests passing)
 - [x] Create initial provider seed dataset (`scripts/seed_providers.py`)
-- [x] Create `LICENSE` placeholder
+- [x] Select a `LICENSE` (MIT; copyright line pending owner)
 - [x] Review ADR-0001 (PROPOSED, assessed ready for ACCEPTED)
 - [x] Create `handover/PHASE-1-CLOSURE.md` and `PROJECT-STATUS.md`
-- [ ] Re-verify tests on a clean checkout (after git init)
+- [x] Re-verify tests on a clean checkout (49/49 passed, 2026-08-01)
 
 ---
 
-# Step 1 — Initialize Git
+# Step 1 — Finish Owner Actions
 
 ```
-git init
-git add -A
-git commit -m "Phase 1: repository foundation"
+# fill [year] [fullname] in LICENSE first
+git add LICENSE
+git commit -m "Add MIT license with owner attribution"
+git push -u origin main
 ```
-
-Confirm `.gitignore` covers `__pycache__/`, `*.db`, `.pytest_cache/` (already
-present).
 
 ---
 
@@ -80,6 +82,7 @@ Recommended input:
 * START-HERE.md
 * CONSTITUTION.md
 * AI-Hub Specification v1.2
+* docs/release/PHASE1-RELEASE-MANIFEST.md
 * handover/CURRENT-STATE.md
 * handover/PHASE-1-CLOSURE.md
 * this document

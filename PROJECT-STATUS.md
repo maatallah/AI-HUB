@@ -8,33 +8,36 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 1 — Repository Foundation (release prepared)
+**Current phase:** Phase 1 — Repository Foundation (released, awaiting owner
+sign-off of LICENSE + closure)
 
-**Completion %:** ~17% (Phase 1 of 6; release package ready, awaiting owner
-manual actions)
+**Completion %:** ~17% (Phase 1 of 6; baseline committed at
+`7ceac80c9b0b1718ec090307b2220e1350ca85dd`)
 
 **Last update:** 2026-08-01
 
 **Repository health:** Good (49/49 tests passing, no open defects)
 
-**Blocking issues:** None architectural. Owner manual actions pending
-(git init, LICENSE).
+**Blocking issues:** None architectural. LICENSE change (MIT) is staged by the
+owner but not yet committed; copyright line still needs owner's name/year.
 
 ---
 
 ## Current Phase
 
-Phase 1 is complete, tested, and documented. ADR-0002 and ADR-0003 are
+Phase 1 is complete, tested, and documented. The git baseline is committed
+(`7ceac80`, branch `main`, remote `origin` =
+`https://github.com/maatallah/AI-HUB.git`). ADR-0002 and ADR-0003 are
 ACCEPTED. Configuration alignment (log_root, workspace.root, registry.path)
 is applied across v1.2, `config.toml`, `templates/config.toml`, and both
-specs.
+specs. 49/49 tests pass on the committed baseline.
 
 Release documents:
 
-* `docs/release/PHASE1-RELEASE-MANIFEST.md`
+* `docs/release/PHASE1-RELEASE-MANIFEST.md` (immutable, git SHA `7ceac80`)
 * `docs/release/PHASE1-RELEASE-NOTES.md`
 * `docs/release/OWNER-CHECKLIST.md`
-* `docs/release/WAITING-FOR-OWNER.md`
+* `docs/release/PHASE1-CLOSURE-SUMMARY.md`
 
 ## Architecture Maturity
 
@@ -45,24 +48,24 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Initialize git + first commit (mandatory, manual)
-* Select a `LICENSE` (mandatory, manual)
-* Repository publication decision (mandatory, manual)
-* Sign off Phase 1 closure
+* Commit the MIT `LICENSE` change and fill the copyright line
+  (`[year] [fullname]` → owner name + year), then push
+* Sign off Phase 1 closure (`handover/PHASE-1-CLOSURE.md`)
+* Approve removal of superseded `handover/AGENT-LOG.md`
 * Accept ADR-0001 (before Phase 3)
 
 ## Next Milestone
 
-Phase 2 — Monitoring Engine (after owner manual actions complete).
+Phase 2 — Monitoring Engine (after owner commits the LICENSE and signs off
+closure).
 
 ## Open Documentation Items
 
+* `LICENSE` uncommitted; copyright line placeholder
 * `handover/AGENT-LOG.md` removal (pending owner confirmation - irreversible
   without git)
-* `START-HERE.md` reference to `logs/` and `projects/` (ADR-0002 follow-up)
 * `projects/registry.json` seed conformance (`renamed_to`,
   `has_credentials_remote`) - non-blocking
-* `handover/CURRENT-STATE.md` / `SESSION-SUMMARY.md` refresh for ADR-0002/0003
 
 ## Risk Assessment
 
@@ -72,4 +75,4 @@ Phase 2 — Monitoring Engine (after owner manual actions complete).
 | Architecture drift | Medium | ADRs + specs + reviews |
 | Temporary outages mistaken for retirement | Medium | Lifecycle rules (v1.2 Section 5) enforced in Phase 2 |
 | Schema drift between spec and implementation | Low | Schema tests assert spec columns |
-| No git baseline yet | High (until owner acts) | Owner git init + first commit required |
+| LICENSE not committed (legal/branding risk) | Medium | Owner must commit MIT LICENSE + push before Phase 2 |

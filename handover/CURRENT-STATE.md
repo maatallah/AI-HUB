@@ -4,18 +4,21 @@
 
 Last Updated:
 
-2026-07-31 (Phase 1 complete)
+2026-08-01 (Phase 1 released, baseline `7ceac80`)
 
 ---
 
 # Overall Status
 
-Phase 1 (Repository Foundation) closed.
+Phase 1 (Repository Foundation) released.
 
 Architecture approved.
 
-Phase 1 implementation delivered, tested, and formally closed
-(see `PHASE-1-CLOSURE.md`).
+Phase 1 implementation delivered, tested, and released
+(see `docs/release/PHASE1-CLOSURE-SUMMARY.md` and
+`PHASE-1-CLOSURE.md`).
+
+Git baseline committed (`7ceac80`, branch `main`, remote `origin`).
 
 ---
 
@@ -32,10 +35,11 @@ Completed:
 * Append-only event log
 * Minimal CLI (`python -m app.main`)
 * Test framework (49 tests, all passing)
-* ADR-0001 proposal (PROPOSED)
+* ADR-0002 / ADR-0003 accepted (2026-07-31)
 * Initial provider seed dataset (`scripts/seed_providers.py`, 9 providers)
-* Phase 1 closure (`handover/PHASE-1-CLOSURE.md`, `PROJECT-STATUS.md`)
-* `LICENSE` placeholder (owner decision pending)
+* Phase 1 closure (`handover/PHASE-1-CLOSURE.md`, `PROJECT-STATUS.md`,
+  `docs/release/PHASE1-CLOSURE-SUMMARY.md`)
+* `LICENSE` set to MIT (copyright line pending owner)
 
 ---
 
@@ -65,25 +69,38 @@ AI-Hub/
                   test_config.py, test_providers.py
   scripts/        seed_providers.py
   backup/         (empty)
-  docs/           (empty - documentation index to be added)
-  spec/           (empty)
-  decisions/      README.md, 0001-model-score-representation.md (PROPOSED)
+  docs/           review/ (immutable), release/ (manifest, notes,
+                  closure summary, owner checklist)
+  spec/           agent-logging.md, project-registry.md
+  decisions/      README.md, 0001-model-score-representation.md (PROPOSED),
+                  0002-agent-logging.md (ACCEPTED),
+                  0003-project-registry.md (ACCEPTED)
   templates/      config.toml
   handover/       AGENT-HANDOVER.md, CURRENT-STATE.md, NEXT-STEPS.md,
                   SESSION-SUMMARY.md, AGENT-LOG.md, PHASE-1-CLOSURE.md
   config.toml     documented defaults
   requirements.txt
   CHANGELOG.md
-  LICENSE         placeholder (owner decision pending)
+  LICENSE         MIT (copyright line pending owner)
   PROJECT-STATUS.md
 ```
 
 A database file (`database/ai_hub.db`) is created on demand by
 `python -m app.main init-db`. It is ignored by git.
 
+Agent session logs are written under `logs/` and the project registry lives
+at `projects/registry.json` (ADR-0002 / ADR-0003, ACCEPTED).
+
 ---
 
-# Decisions Already Made
+## Decisions Already Made
+
+ADR-0002 (Agent Logging Architecture) and ADR-0003 (Project Registry and
+Workspace Discovery) are **ACCEPTED** (2026-07-31).
+
+ADR-0001 (Model Score Representation) is **PROPOSED**, assessed as ready for
+ACCEPTED status, and recommended for acceptance before Phase 3 (no impact on
+Phase 2).
 
 ## Database
 
@@ -105,12 +122,6 @@ Providers are archived, never deleted (Constitution Article 5).
 
 Reason is mandatory for runtime states LIMITED, DEGRADED, OFFLINE, ARCHIVED
 (v1.2 Section 6).
-
-## Pending Decision
-
-ADR-0001 (Model Score Representation) is PROPOSED and assessed as ready for
-ACCEPTED status. Recommended for acceptance before Phase 3; no impact on
-Phase 2.
 
 ---
 

@@ -8,7 +8,7 @@ Architecture Specification: **v1.1**
 
 Implementation Specification: **v1.2**
 
-Project Status: **Documentation Complete – Ready for Phase 1 Implementation**
+Project Status: **Phase 1 Released – Ready for Phase 2 (after owner actions)**
 
 ---
 
@@ -18,18 +18,14 @@ Before writing a single line of code, read this repository in the following orde
 
 1. `README.md`
 2. `CONSTITUTION.md`
-3. `docs/01-Vision.md`
-4. `docs/02-Requirements.md`
-5. `docs/03-Architecture.md`
-6. `docs/04-Database-Schema.md`
-7. `docs/06-Scoring-Engine.md`
-8. `docs/07-Fallback-Engine.md`
-9. `docs/09-Security.md`
-10. `docs/13-Roadmap.md`
-11. `handover/AGENT-HANDOVER.md`
-12. `handover/CURRENT-STATE.md`
-13. `handover/NEXT-STEPS.md`
-14. `handover/SESSION-SUMMARY.md`
+3. `AI-Hub Project Specification v1.2.md` (Architecture v1.1 included)
+4. `spec/agent-logging.md` (ADR-0002)
+5. `spec/project-registry.md` (ADR-0003)
+6. `handover/AGENT-HANDOVER.md`
+7. `handover/CURRENT-STATE.md`
+8. `handover/NEXT-STEPS.md`
+9. `handover/SESSION-SUMMARY.md`
+10. `docs/release/PHASE1-RELEASE-MANIFEST.md`
 
 Do not begin implementation until these documents have been reviewed.
 
@@ -45,7 +41,7 @@ Its purpose is to help developers make informed decisions—not to automatically
 
 # Current Development Phase
 
-**Phase 1 – Repository Foundation**
+**Phase 1 – Repository Foundation (RELEASED, baseline `7ceac80`)**
 
 Deliverables:
 
@@ -56,6 +52,12 @@ Deliverables:
 * Implement configuration system
 * No online monitoring yet
 * No VS Code integration yet
+
+Runtime directories created by the project (ADR-0002/ADR-0003):
+
+* `logs/` — agent session logs (see `spec/agent-logging.md`)
+* `projects/` — project registry (`projects/registry.json`, see
+  `spec/project-registry.md`)
 
 ---
 
