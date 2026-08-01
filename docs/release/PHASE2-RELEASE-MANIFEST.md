@@ -1,6 +1,6 @@
 # PHASE2-RELEASE-MANIFEST.md
 
-# AI-Hub Phase 2 Release Manifest (Draft for Review)
+# AI-Hub Phase 2 Release Manifest (Immutable Baseline)
 
 **Project name:** AI-Hub
 
@@ -10,13 +10,16 @@
 
 **Release date:** 2026-08-01
 
+**Git commit SHA:** `ae0a6c2a917586e597df5dd51ff9c51522dd9afe`
+
 **Phase 1 baseline:** `7ceac80c9b0b1718ec090307b2220e1350ca85dd` (immutable)
 
 **Current branch:** `main`
 
-**Status:** PENDING OWNER REVIEW - implementation complete, awaiting approval.
+**Status:** APPROVED (owner review complete)
 
-> This manifest becomes the immutable Phase 3 baseline once approved.
+> This document is the immutable reference baseline for Phase 3. It records
+> the state at release. Later project evolution must not rewrite it.
 
 ---
 
@@ -83,6 +86,7 @@ tests.
 | OFFLINE -> ACTIVE | successful check |
 | ACTIVE -> LIMITED | quota signal |
 | LIMITED -> ACTIVE | quota reset detected |
+| DEGRADED (quota) | quota signal recorded as event only; no transition (v1.2 Section 5) |
 | -> ARCHIVED | never automatic |
 
 ---
@@ -100,4 +104,4 @@ tests.
 
 ---
 
-*End of Phase 2 release manifest draft. Awaiting owner review.*
+*End of Phase 2 Release Manifest. Immutable from 2026-08-01.*
