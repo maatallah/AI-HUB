@@ -4,6 +4,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (ADR-0001 acceptance - 2026-08-01)
+
+- ADR-0001 (Model Score Representation) ACCEPTED.
+- Normalized `scores` table added to `database/schema.sql`:
+  `id, model_id, dimension, value, confidence, source, scored_at, created_at`
+  (one row per model/dimension; satisfies v1.2 Section 1.2).
+- `EXPECTED_TABLES` in `database/database.py` includes `scores`.
+- v1.2 Section 1.2 updated to reference the `scores` table.
+- The v1.1 scalar score columns on `models` are superseded and retained for
+  backward compatibility (retirement deferred to a cleanup migration).
+- Tests: 4 new schema tests (scores columns, FK, unique dimension, source
+  constraint); 103 total.
+
 ### Added (Phase 2 - Monitoring Engine)
 
 - Monitoring engine package `monitoring/`:

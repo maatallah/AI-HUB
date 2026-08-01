@@ -8,16 +8,17 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 2 — Monitoring Engine (implementation in progress)
+**Current phase:** Phase 2 — Monitoring Engine (released); ADR-0001 accepted;
+Phase 3 prerequisite done
 
-**Completion %:** ~33% (Phases 1-2 of 6; monitoring core implemented)
+**Completion %:** ~40% (Phases 1-2 of 6; Phase 3 unlocked by ADR-0001)
 
 **Last update:** 2026-08-01
 
-**Repository health:** Good (99/99 tests passing, no open defects)
+**Repository health:** Good (103/103 tests passing, no open defects)
 
-**Blocking issues:** None. Phase 2 implementation in progress; release
-pending owner review.
+**Blocking issues:** None. Phase 3 (Scoring/Recommendation/Fallback) is
+unlocked by ADR-0001 acceptance.
 
 ---
 

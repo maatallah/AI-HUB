@@ -32,6 +32,11 @@ Each score must remain visible and explainable.
 
 Every model maintains independent scores.
 
+Scores are stored in the normalized `scores` table (ADR-0001, accepted
+2026-08-01): one row per (model, dimension). The v1.1 scalar score columns on
+the `models` table are superseded and retained for backward compatibility
+only.
+
 ### Capability
 
 * Coding
@@ -61,6 +66,9 @@ Every score records:
 * confidence
 * timestamp
 * source
+
+These map to the `scores` columns `value`, `confidence`, `scored_at` and
+`source`.
 
 ---
 

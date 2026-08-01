@@ -15,10 +15,12 @@ DEFAULT_DB_PATH = Path("database") / "ai_hub.db"
 #: Schema file shipped with the repository.
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
-#: Tables defined by the specification (v1.1 Section 8 / v1.2 Section 8).
+#: Tables defined by the specification (v1.1 Section 8 / v1.2 Section 8)
+#: plus the normalized scores table (ADR-0001).
 EXPECTED_TABLES = {
     "providers",
     "models",
+    "scores",
     "availability",
     "events",
     "preferences",

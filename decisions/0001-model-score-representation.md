@@ -1,8 +1,15 @@
 # ADR-0001: Model Score Representation
 
-**Status:** PROPOSED
+**Status:** ACCEPTED
 
 **Date:** 2026-07-31
+
+**Acceptance date:** 2026-08-01
+
+**Acceptance note:** Accepted before Phase 3 (Scoring Engine). The normalized
+`scores` table is added to `database/schema.sql`; the v1.1 scalar score
+columns on `models` are retained for backward compatibility and superseded by
+the `scores` table (their retirement is documented).
 
 **Author:** Phase 1 Implementation Agent
 
@@ -62,27 +69,39 @@ need scores yet.
 
 ## Decision
 
-**Not decided yet - proposed for Phase 3.**
+**Accepted: Option B - normalized `scores` table.**
 
-For Phase 1, the `models` table keeps the v1.1 scalar columns
-(`coding_score`, `reasoning_score`, `latency_score`, `reliability_score`,
-`score_source`, `confidence_level`), because scoring is out of Phase 1 scope.
+A normalized `scores` table is introduced at the start of Phase 3 (Scoring
+Engine) to satisfy v1.2 Section 1.2:
 
-The recommendation is to introduce a normalized `scores` table at the start
-of Phase 3 (Scoring Engine) to satisfy v1.2 Section 1.2, superseding the
-scalar score columns on `models`.
+```
+scores:
+  id, model_id, dimension, value, confidence, source, scored_at, created_at
+```
+
+The v1.1 scalar score columns on `models` (`coding_score`, `reasoning_score`,
+`latency_score`, `reliability_score`, `score_source`, `confidence_level`) are
+superseded. They are retained in the schema for backward compatibility with
+existing rows; new scores are stored in the `scores` table. Their removal is
+deferred to a later cleanup migration.
 
 ## Consequences
 
 * Positive: Phase 1 schema is stable and migration-free; v1.2 requirements
   remain satisfiable without redesign.
 * Positive: score dimensions stay extensible (Article 9).
-* Negative: a migration or column retirement will be needed when Phase 3
-  begins; the v1.1 scalar columns become redundant.
-* Follow-up: update `database/schema.sql` and the `models` section of the
-  Architecture Specification when this ADR is accepted.
+* Positive: per-score confidence, source and timestamp are native (v1.2
+  Section 1.2).
+* Negative: the v1.1 scalar columns on `models` remain present but redundant;
+  their retirement is deferred to a cleanup migration.
+* Follow-up: the `scores` table is added to `database/schema.sql`; the
+  Architecture Specification v1.1 and Implementation Specification v1.2 are
+  updated to reference it.
 
 ## Acceptance Criteria
 
 This ADR is accepted when the Phase 3 planning agrees to the normalized
 `scores` table and the specifications are updated accordingly.
+
+**Acceptance status:** DONE (2026-08-01) - `scores` table added to
+`database/schema.sql`; v1.2 Section 1.2 updated.

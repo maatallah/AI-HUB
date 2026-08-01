@@ -21,6 +21,7 @@ def test_expected_tables_present(conn):
     assert db_util.EXPECTED_TABLES == {
         "providers",
         "models",
+        "scores",
         "availability",
         "events",
         "preferences",
@@ -51,6 +52,61 @@ def test_availability_columns(conn):
         "reset_at", "last_success", "last_failure", "consecutive_failures",
         "created_at", "updated_at",
     } <= _columns(conn, "availability")
+
+
+def test_scores_columns(conn):
+    assert {
+        "id", "model_id", "dimension", "value", "confidence", "source",
+        "scored_at", "created_at",
+    } <= _columns(conn, "scores")
+
+
+def test_scores_references_models(conn):
+    fks = _foreign_keys(conn, "scores")
+    assert any(fk["table"] == "models" for fk in fks)
+
+
+def test_scores_unique_dimension_per_model(conn):
+    conn.execute("INSERT INTO providers (name) VALUES ('P')")
+    conn.commit()
+    provider_id = conn.execute("SELECT id FROM providers WHERE name='P'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO models (provider_id, model_name, model_identifier)"
+        " VALUES (?, 'M', 'm-1')",
+        (provider_id,),
+    )
+    model_id = conn.execute("SELECT id FROM models WHERE model_identifier='m-1'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO scores (model_id, dimension, value, confidence, source)"
+        " VALUES (?, 'coding', 80.0, 0.9, 'MANUAL')",
+        (model_id,),
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO scores (model_id, dimension, value, confidence, source)"
+            " VALUES (?, 'coding', 70.0, 0.8, 'MANUAL')",
+            (model_id,),
+        )
+        conn.commit()
+
+
+def test_scores_invalid_source_rejected(conn):
+    conn.execute("INSERT INTO providers (name) VALUES ('P')")
+    conn.commit()
+    provider_id = conn.execute("SELECT id FROM providers WHERE name='P'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO models (provider_id, model_name, model_identifier)"
+        " VALUES (?, 'M', 'm-1')",
+        (provider_id,),
+    )
+    model_id = conn.execute("SELECT id FROM models WHERE model_identifier='m-1'").fetchone()["id"]
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO scores (model_id, dimension, value, confidence, source)"
+            " VALUES (?, 'coding', 80.0, 0.9, 'BOGUS')",
+            (model_id,),
+        )
+        conn.commit()
 
 
 def test_events_columns(conn):

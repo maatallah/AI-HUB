@@ -87,6 +87,7 @@ AI-Hub/
   tests/          conftest.py, test_database.py, test_schema.py,
                   test_config.py, test_providers.py, test_health.py,
                   test_availability.py, test_quota.py, test_validation.py
+                  (103 tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
@@ -116,19 +117,21 @@ at `projects/registry.json` (ADR-0002 / ADR-0003, ACCEPTED).
 
 ## Decisions Already Made
 
+ADR-0001 (Model Score Representation) is **ACCEPTED** (2026-08-01): the
+normalized `scores` table is added to `database/schema.sql`; v1.1 scalar
+score columns on `models` are superseded and retained for backward
+compatibility.
+
 ADR-0002 (Agent Logging Architecture) and ADR-0003 (Project Registry and
 Workspace Discovery) are **ACCEPTED** (2026-07-31).
-
-ADR-0001 (Model Score Representation) is **PROPOSED**, assessed as ready for
-ACCEPTED status, and recommended for acceptance before Phase 3 (no impact on
-Phase 2).
 
 ## Database
 
 Technology: SQLite.
 
-Schema: `providers`, `models`, `availability`, `events`, `preferences`,
-`recommendations` (matches v1.1 Section 8 and v1.2 Section 8).
+Schema: `providers`, `models`, `scores`, `availability`, `events`,
+`preferences`, `recommendations` (v1.1 Section 8, v1.2 Section 8, and
+ADR-0001 for `scores`).
 
 ## Configuration
 

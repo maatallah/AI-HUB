@@ -36,8 +36,9 @@ CREATE TABLE IF NOT EXISTS providers (
 -- -----------------------------------------------------------------------------
 -- models
 -- One row per model belonging to a provider.
--- Scores are scalar dimensions defined by v1.1 Section 8.
--- Every score records its source and confidence (v1.2 Section 1.2).
+-- The v1.1 scalar score columns below are superseded by the normalized
+-- `scores` table (ADR-0001, accepted 2026-08-01) and are retained for
+-- backward compatibility only. New scores are stored in `scores`.
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS models (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,6 +61,27 @@ CREATE TABLE IF NOT EXISTS models (
     updated_at        TEXT    NOT NULL DEFAULT (datetime('now')),
     UNIQUE (provider_id, model_identifier),
     FOREIGN KEY (provider_id) REFERENCES providers (id)
+);
+
+-- -----------------------------------------------------------------------------
+-- scores
+-- Normalized per-dimension model scores (ADR-0001, accepted 2026-08-01).
+-- Satisfies v1.2 Section 1.2: every score records value, confidence,
+-- timestamp and source. Any dimension (including custom benchmarks) is a
+-- row, never a migration (Constitution Article 9).
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS scores (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_id   INTEGER NOT NULL REFERENCES models (id),
+    dimension  TEXT    NOT NULL,
+    value      REAL    NOT NULL CHECK (value >= 0),
+    confidence REAL    CHECK (confidence IS NULL OR (confidence >= 0 AND confidence <= 1)),
+    source     TEXT    NOT NULL
+        CHECK (source IN ('MANUAL', 'BENCHMARK', 'AUTOMATED_TEST', 'USER_FEEDBACK', 'OFFICIAL_INFORMATION')),
+    scored_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (model_id, dimension),
+    FOREIGN KEY (model_id) REFERENCES models (id)
 );
 
 -- -----------------------------------------------------------------------------
@@ -139,6 +161,7 @@ CREATE TABLE IF NOT EXISTS recommendations (
 -- Indexes
 -- -----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_models_provider            ON models (provider_id);
+CREATE INDEX IF NOT EXISTS idx_scores_model               ON scores (model_id);
 CREATE INDEX IF NOT EXISTS idx_availability_provider      ON availability (provider_id);
 CREATE INDEX IF NOT EXISTS idx_events_occurred            ON events (occurred_at);
 CREATE INDEX IF NOT EXISTS idx_events_type                ON events (event_type);
