@@ -4,9 +4,9 @@
 
 ## Immediate Goal
 
-Execute Phase 4 (Dashboard / Reporting / History): finalize the documentation
-set (doc-before-code), then implement the read-only dashboard, reports and
-history engine, then release review.
+Phase 4 (Dashboard / Reporting / History) implemented (`c49ea9b`, 216/216
+tests). Complete the Phase 4 release review + owner approval, then start
+Phase 5 (Connectors) planning.
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -22,21 +22,19 @@ Phase 3 is released (162/162 tests) - see
 `handover/PHASE-3-CLOSURE.md` and
 `docs/release/PHASE3-RELEASE-MANIFEST.md` (status APPROVED).
 
-Phase 4 is authorized (2026-08-17, owner approval, plan baseline `f9316e4`) -
-see `docs/review/PHASE4-IMPLEMENTATION-PLAN.md` and
-`docs/review/PHASE4-DASHBOARD-SPEC.md`. Documentation step in progress;
-implementation not yet begun.
+Phase 4 is implemented (`c49ea9b`, 216/216 tests) - see
+`docs/review/PHASE4-IMPLEMENTATION-PLAN.md`,
+`docs/review/PHASE4-DASHBOARD-SPEC.md`,
+`docs/release/PHASE4-RELEASE-MANIFEST.md` (pending owner approval) and
+`handover/PHASE-4-CLOSURE.md`.
 
 ---
 
-# Pre-Phase 4 Actions (owner)
+# Pre-Phase 5 Actions (owner)
 
-- [x] Review and approve Phase 3 release (approved 2026-08-01,
-  `docs/release/PHASE3-RELEASE-MANIFEST.md` status = APPROVED)
-- [x] Sign off Phase 3 closure (handover/PHASE-3-CLOSURE.md, accepted
-  2026-08-01)
-- [x] Approve finalized Phase 4 plan (approved 2026-08-17, baseline
-  `f9316e4`)
+- [ ] Approve Phase 4 release (`docs/release/PHASE4-RELEASE-MANIFEST.md`)
+- [ ] Sign off Phase 4 closure (`handover/PHASE-4-CLOSURE.md`)
+- [ ] Authorize Phase 5 (Connectors - VS Code / MCP) planning
 
 ---
 
@@ -54,6 +52,16 @@ Entry conditions (all met as of 2026-08-01):
 - [x] `main` synchronized with `origin/main`
 - [x] 162/162 tests passing
 - [x] ADR-0001 accepted (`scores` table) - scoring data model available
+
+---
+
+# Phase 4 Entry Authorization
+
+Phase 4 authorized by owner 2026-08-17 (plan baseline `f9316e4`). Plan and
+proposal spec:
+
+* `docs/review/PHASE4-IMPLEMENTATION-PLAN.md` (approved)
+* `docs/review/PHASE4-DASHBOARD-SPEC.md` (proposal spec)
 
 ---
 
@@ -96,50 +104,47 @@ Entry conditions (all met as of 2026-08-01):
 
 # Phase 4 Completion Status
 
-- [ ] `docs/review/PHASE4-DASHBOARD-SPEC.md` + v1.2 Section 18 (in progress)
-- [ ] `dashboard/engine.py` aggregation views
-- [ ] `dashboard/reports.py` report builders
-- [ ] `dashboard/history.py` event-derived history
-- [ ] CLI `dashboard status/report/history`
-- [ ] Tests: dashboard engine, reports, history
-- [ ] Phase 4 release review + approval (owner)
+- [x] `docs/review/PHASE4-DASHBOARD-SPEC.md` + v1.2 Section 18
+- [x] `dashboard/engine.py` aggregation views
+- [x] `dashboard/reports.py` report builders
+- [x] `dashboard/history.py` event-derived history
+- [x] CLI `dashboard status/report/history`
+- [x] Tests: dashboard engine, reports, history (54 new; 216/216 total)
+- [ ] Phase 4 release review + approval (owner) - release review complete
+  (`c49ea9b`); owner approval pending
 
 ---
 
 # Step 1 — Phase 4 Documentation (doc-before-code)
 
-```
-# Article 11: finalize spec + docs first (in progress)
-docs/review/PHASE4-DASHBOARD-SPEC.md
-v1.2 Section 18
-CHANGELOG.md
-PROJECT-STATUS.md
-handover/CURRENT-STATE.md
-handover/NEXT-STEPS.md
-```
+Completed in `36d4aef`: `docs/review/PHASE4-DASHBOARD-SPEC.md`, v1.2 Section
+18, CHANGELOG.md, PROJECT-STATUS.md, handover/CURRENT-STATE.md,
+handover/NEXT-STEPS.md.
 
 # Step 2 — Phase 4 Implementation
 
-Phase 3 (scoring, recommendation, fallback) is released. Phase 4 adds the
-read-only dashboard, reporting and event-derived history (see
-`docs/review/PHASE4-DASHBOARD-SPEC.md`). Fallback Step 2 filters on
-availability (v1.2 Section 7), which Phase 2 maintains; scoring feeds the
-dashboard. No schema changes unless ADR-0004 is approved.
+Completed in `c49ea9b`: read-only dashboard engine, deterministic reports and
+append-only event-derived history (see `docs/review/PHASE4-DASHBOARD-SPEC.md`).
+No schema changes unless ADR-0004 is approved.
+
+Step 2 done - dashboard is implemented and 216/216 tests pass. Phase 4
+release review complete; awaiting owner approval.
 
 ---
 
 # Next Recommended Agent
 
-Backend-focused implementation agent for Phase 4 (Dashboard).
+Backend-focused implementation agent for Phase 5 (Connectors - VS Code /
+MCP).
 
 Recommended input:
 
 * START-HERE.md
 * CONSTITUTION.md
 * AI-Hub Specification v1.2
-* docs/review/PHASE4-IMPLEMENTATION-PLAN.md
 * docs/review/PHASE4-DASHBOARD-SPEC.md
-* docs/review/PHASE3-SCORING-SPEC.md
+* docs/release/PHASE4-RELEASE-MANIFEST.md
+* handover/PHASE-4-CLOSURE.md
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md
 * this document

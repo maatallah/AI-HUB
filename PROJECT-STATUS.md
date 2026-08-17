@@ -8,17 +8,17 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 4 — Dashboard / Reporting / History (documentation
-step in progress; implementation authorized, spec secured)
+**Current phase:** Phase 4 — Dashboard / Reporting / History (implemented,
+216/216 tests passing; release review complete, awaiting owner approval)
 
-**Completion %:** ~60% (Phases 1-3 released; Phase 4 docs in progress)
+**Completion %:** ~65% (Phases 1-3 released, Phase 4 implemented; Phase 4
+release approval pending)
 
 **Last update:** 2026-08-17
 
-**Repository health:** Good (162/162 tests passing, no open defects)
+**Repository health:** Good (216/216 tests passing, no open defects)
 
-**Blocking issues:** None. Phase 4 implementation authorized 2026-08-17;
-doc-before-code step in flight.
+**Blocking issues:** None. Phase 4 release pending owner approval.
 
 ---
 
@@ -40,12 +40,18 @@ and released (implementation `d6dd3c9`, manifest `ff4b8a7`, closure
 * Tests: 162/162 passing (59 new in Phase 3).
 
 Phase 4 — Dashboard / Reporting / History authorized 2026-08-17 (plan
-baseline `f9316e4`). Documentation step (Article 11 doc-before-code) in
-progress:
+baseline `f9316e4`). Documentation step (Article 11 doc-before-code) completed
+in `36d4aef`; implementation completed in `c49ea9b` (release commit):
 
-* `docs/review/PHASE4-IMPLEMENTATION-PLAN.md` (approved)
-* `docs/review/PHASE4-DASHBOARD-SPEC.md` (proposal spec)
-* Spec v1.2 Section 18 - Dashboard / Reporting / History (Phase 4)
+* `dashboard/engine.py` - read-only aggregate views (overview, provider,
+  score, recommendation, event).
+* `dashboard/reports.py` - deterministic plain-text report builders
+  (`providers`, `scores`, `recommendations`, `monitoring`, `overview`).
+* `dashboard/history.py` - append-only event-derived score/availability
+  history; point-in-time snapshots deferred pending ADR-0004.
+* CLI: `dashboard status`, `dashboard report <name>`, `dashboard history`.
+* No schema changes, no new dependencies, no new config keys/event types.
+* Tests: 216/216 passing (54 new in Phase 4).
 
 Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
@@ -54,6 +60,8 @@ Release documents:
 * `docs/release/PHASE1-RELEASE-MANIFEST.md` (immutable, git SHA `7ceac80`)
 * `docs/release/PHASE2-RELEASE-MANIFEST.md` (immutable, git SHA `ae0a6c2`)
 * `docs/release/PHASE3-RELEASE-MANIFEST.md` (immutable, git SHA `ff4b8a7`)
+* `docs/release/PHASE4-RELEASE-MANIFEST.md` (release baseline `c49ea9b`,
+  pending owner approval)
 * `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE3-SCORING-SPEC.md`
 * `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
@@ -69,13 +77,13 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Approve the finalized Phase 4 documentation set (doc-before-code step)
-* Review Phase 4 implementation + release (at phase end)
+* Review + approve the Phase 4 release (`docs/release/PHASE4-RELEASE-MANIFEST.md`)
+* Sign off Phase 4 closure (`handover/PHASE-4-CLOSURE.md`)
 
 ## Next Milestone
 
-Phase 4 implementation: `dashboard/` engine + reports + history + CLI, then
-Phase 4 release review.
+Phase 4 release approval (owner), then Phase 5 planning (Connectors - VS Code
+/ MCP).
 
 ## Open Documentation Items
 

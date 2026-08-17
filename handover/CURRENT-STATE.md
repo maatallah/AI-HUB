@@ -4,7 +4,8 @@
 
 Last Updated:
 
-2026-08-17 (Phase 4 authorized; documentation step in progress)
+2026-08-17 (Phase 4 implemented; release review complete, awaiting owner
+approval)
 
 ---
 
@@ -18,10 +19,9 @@ tracking, quota architecture, seed validation. 99/99 tests passing.
 Phase 3 (Scoring / Recommendation / Fallback) released: scoring,
 recommendation with provenance and fallback chain. 162/162 tests passing.
 
-Phase 4 (Dashboard / Reporting / History) authorized 2026-08-17 (owner
-approval, plan baseline `f9316e4`). Documentation step (Article 11
-doc-before-code) in progress: `docs/review/PHASE4-DASHBOARD-SPEC.md` written,
-v1.2 Section 18 added. Implementation not yet begun.
+Phase 4 (Dashboard / Reporting / History) implemented (`c49ea9b`): read-only
+dashboard engine, deterministic reports, append-only event-derived history.
+216/216 tests passing. Release review complete; owner approval pending.
 
 Architecture approved.
 
@@ -31,20 +31,31 @@ Git baseline committed and pushed (`main` == `origin/main`).
 
 # Completed
 
-## Phase 4 (in progress) - Dashboard / Reporting / History
+## Phase 4 (awaiting owner approval) - Dashboard / Reporting / History
 
 Authorized:
 
 * Owner approval 2026-08-17 of `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
   (baseline `f9316e4`).
-* `docs/review/PHASE4-DASHBOARD-SPEC.md` - proposal spec.
+
+Completed:
+
+* `docs/review/PHASE4-DASHBOARD-SPEC.md` - proposal spec (doc-before-code).
 * Spec v1.2 Section 18 - Dashboard / Reporting / History (Phase 4).
+* `dashboard/engine.py` - read-only aggregate views: overview, provider_view,
+  score_view, recommendation_view, event_view.
+* `dashboard/reports.py` - deterministic plain-text report builders
+  (providers, scores, recommendations, monitoring, overview).
+* `dashboard/history.py` - append-only score/availability history from
+  `SCORE_*` / `MONITOR_STATUS_CHANGED` / `HEALTH_CHECK_*` events.
+* CLI: `dashboard status`, `dashboard report <name>`, `dashboard history`.
+* Tests: 216/216 passing (54 new).
+* `docs/release/PHASE4-RELEASE-MANIFEST.md` (baseline `c49ea9b`) and
+  `handover/PHASE-4-CLOSURE.md`.
 
 Pending:
 
-* Implementation of `dashboard/engine.py`, `dashboard/reports.py`,
-  `dashboard/history.py`, CLI wiring, tests.
-* Phase 4 release review + approval (owner).
+* Phase 4 release approval + closure sign-off (owner).
 * Optional snapshots only if ADR-0004 is approved.
 
 ## Phase 3 - Scoring / Recommendation / Fallback
@@ -128,13 +139,15 @@ AI-Hub/
                   provenance.py (Phase 3)
   fallback/       __init__.py, engine.py (Phase 3)
   connectors/     vscode/, mcp/ (empty - Phase 5)
-  dashboard/      (empty - Phase 4, in progress)
+  dashboard/      __init__.py, engine.py, reports.py, history.py (Phase 4)
   tests/          conftest.py, test_database.py, test_schema.py,
                   test_config.py, test_providers.py, test_health.py,
                   test_availability.py, test_quota.py, test_validation.py,
                   test_scoring_engine.py, test_recommendation.py,
-                  test_fallback.py, test_provenance.py
-                  (162 tests total)
+                  test_fallback.py, test_provenance.py,
+                  test_dashboard_engine.py, test_dashboard_reports.py,
+                  test_dashboard_history.py, test_dashboard_cli.py
+                  (216 tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
@@ -211,17 +224,19 @@ never mutates providers.
 
 ## Dashboard / Reporting / History (Phase 4)
 
-Authorized. Read-only aggregation views, deterministic plain-text reports
-and append-only event-derived history. No schema changes unless ADR-0004 is
-approved (snapshots). See `docs/review/PHASE4-DASHBOARD-SPEC.md` and v1.2
-Section 18.
+Implemented in `c49ea9b`: read-only aggregation views, deterministic
+plain-text reports and append-only event-derived history - all in
+conformance with v1.2 Section 18. No schema changes (7 tables unchanged);
+point-in-time snapshots deferred pending ADR-0004 approval. See
+`docs/review/PHASE4-DASHBOARD-SPEC.md`, `docs/release/PHASE4-RELEASE-MANIFEST.md`
+and `handover/PHASE-4-CLOSURE.md`.
 
 ---
 
 # Not Yet Implemented
 
-* Dashboard (Phase 4) - in progress
-* Connectors (Phase 5)
+* Phase 5 Connectors (VS Code / MCP) - dashboard reports are plain-text and
+  connector-safe
 * Ecosystem intelligence (Phase 6)
 * Model seeding
 
@@ -275,6 +290,9 @@ Phase 2 implementation: High (99 tests passing, Phase 2 released)
 Phase 3 implementation: High (162 tests passing, Phase 3 released)
 
 Phase 4 documentation: High (plan approved, spec written; implementation
-pending)
+complete)
+
+Phase 4 implementation: High (216 tests passing; release review complete,
+awaiting owner approval)
 
 Concept: Validated

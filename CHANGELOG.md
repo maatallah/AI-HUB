@@ -4,6 +4,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 4 - Dashboard / Reporting / History - implementation)
+
+- Dashboard engine package `dashboard/`:
+  - `engine.py` - read-only aggregate views: `overview` (provider/model/
+    score counts, lifecycle status counts, available providers),
+    `provider_view` (status, availability, failures, model/score counts),
+    `score_view` (current scores joined with model/provider),
+    `recommendation_view` (provenance ordered by requested_at DESC),
+    `event_view` (append-only event log with optional type filter + limit).
+  - `reports.py` - deterministic plain-text report builders:
+    `report_providers`, `report_scores`, `report_recommendations`,
+    `report_monitoring`, `report_overview` (tab-separated, self-describing
+    headers, caller-injected optional generated_at timestamp).
+  - `history.py` - append-only event-derived history: per-model score series
+    from `SCORE_RECORDED` / `SCORE_UPDATED` events, availability series from
+    `MONITOR_STATUS_CHANGED` / `HEALTH_CHECK_*`. Never fabricates data;
+    snapshots deferred pending ADR-0004.
+- CLI: `python -m app.main dashboard status`, `dashboard report
+  <providers|scores|recommendations|monitoring|overview>`, `dashboard
+  history --model N [--dimension D]`, `dashboard history --availability
+  [--provider P]`.
+- No schema changes (7 tables unchanged), no new dependencies, no new config
+  keys, no new event types, no network access.
+- Docs: `docs/release/PHASE4-RELEASE-MANIFEST.md` (release baseline, pending
+  approval), `handover/PHASE-4-CLOSURE.md`.
+- Tests: 54 new tests (engine 17, reports 14, history 12, CLI 11); 216 total.
+
 ### Added (Phase 4 - Dashboard / Reporting / History - documentation)
 
 - Owner approval granted (2026-08-17) for PHASE4-IMPLEMENTATION-PLAN.md
