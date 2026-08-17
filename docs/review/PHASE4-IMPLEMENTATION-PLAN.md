@@ -53,7 +53,7 @@ Constraints (Constitution Articles 1, 4, 5, 7, 8, 10, 11):
 * Phase 3 release baseline present: `d6dd3c9` (implementation),
   `ff4b8a7` (manifest), `c6327f4` (closure), `8370ba0` (approval),
   `dc295d3` (Phase 4 entry conditions).
-* `main` == `origin/main` (`dc295d3`), working tree clean. Confirmed.
+* `main` == `origin/main` (`ef70186`), working tree clean. Confirmed.
 * Tests: 162/162 passing (Phase 4 baseline).
 * Data available to Phase 4 (read-only):
   * `providers.status` lifecycle (NEW/EVALUATING/ACTIVE/LIMITED/DEGRADED/
