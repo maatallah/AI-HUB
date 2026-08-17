@@ -4,6 +4,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 4 - Dashboard / Reporting / History - documentation)
+
+- Owner approval granted (2026-08-17) for PHASE4-IMPLEMENTATION-PLAN.md
+  (baseline `f9316e4`); Phase 4 authorized.
+- New proposal spec `docs/review/PHASE4-DASHBOARD-SPEC.md` covering the
+  read-only dashboard aggregation layer (`dashboard/engine.py`),
+  deterministic plain-text reports (`dashboard/reports.py`), and
+  event-derived history (`dashboard/history.py`).
+- Spec v1.2 Section 18 - Dashboard / Reporting / History (Phase 4):
+  read-only views, exact counts/sums, explicit ordering (Article 7), no
+  fabricated values (Article 10), append-only history reconstruction
+  (Article 5), snapshots deferred pending ADR-0004.
+
 ### Added (Phase 3 - Scoring / Recommendation / Fallback)
 
 - Scoring engine package `scoring/`:

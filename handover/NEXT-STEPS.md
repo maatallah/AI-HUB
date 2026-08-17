@@ -4,8 +4,9 @@
 
 ## Immediate Goal
 
-Complete Phase 3 (Scoring / Recommendation / Fallback) release review, then
-begin Phase 4 (Dashboard).
+Execute Phase 4 (Dashboard / Reporting / History): finalize the documentation
+set (doc-before-code), then implement the read-only dashboard, reports and
+history engine, then release review.
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -15,11 +16,16 @@ Phase 2 is released - see `handover/PHASE-2-CLOSURE.md`, plus
 `docs/review/PHASE2-MONITORING-SPEC.md` and
 `docs/release/PHASE2-RELEASE-MANIFEST.md`.
 
-Phase 3 implementation is complete (162/162 tests) - see
+Phase 3 is released (162/162 tests) - see
 `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`,
 `docs/review/PHASE3-SCORING-SPEC.md`,
-`handover/PHASE-3-CLOSURE.md` (owner sign-off) and (pending owner review)
-`docs/release/PHASE3-RELEASE-MANIFEST.md`.
+`handover/PHASE-3-CLOSURE.md` and
+`docs/release/PHASE3-RELEASE-MANIFEST.md` (status APPROVED).
+
+Phase 4 is authorized (2026-08-17, owner approval, plan baseline `f9316e4`) -
+see `docs/review/PHASE4-IMPLEMENTATION-PLAN.md` and
+`docs/review/PHASE4-DASHBOARD-SPEC.md`. Documentation step in progress;
+implementation not yet begun.
 
 ---
 
@@ -29,6 +35,8 @@ Phase 3 implementation is complete (162/162 tests) - see
   `docs/release/PHASE3-RELEASE-MANIFEST.md` status = APPROVED)
 - [x] Sign off Phase 3 closure (handover/PHASE-3-CLOSURE.md, accepted
   2026-08-01)
+- [x] Approve finalized Phase 4 plan (approved 2026-08-17, baseline
+  `f9316e4`)
 
 ---
 
@@ -84,28 +92,39 @@ Entry conditions (all met as of 2026-08-01):
 - [x] Scoring config keys + docs (v1.2 Section 10)
 - [x] CLI `score`, `recommend`, `fallback`
 - [x] Tests: 162/162 passing (59 new)
-- [ ] Phase 3 release review + approval (owner)
+- [x] Phase 3 release review + approval (owner, 2026-08-01)
+
+# Phase 4 Completion Status
+
+- [ ] `docs/review/PHASE4-DASHBOARD-SPEC.md` + v1.2 Section 18 (in progress)
+- [ ] `dashboard/engine.py` aggregation views
+- [ ] `dashboard/reports.py` report builders
+- [ ] `dashboard/history.py` event-derived history
+- [ ] CLI `dashboard status/report/history`
+- [ ] Tests: dashboard engine, reports, history
+- [ ] Phase 4 release review + approval (owner)
 
 ---
 
-# Step 1 — Finish Owner Actions
+# Step 1 — Phase 4 Documentation (doc-before-code)
 
 ```
-# Phase 3 review
-python -m pytest -q
-python -m app.main monitor status
-python -m app.main recommend top --task "python"
-python -m app.main recommend chain --task "python"
+# Article 11: finalize spec + docs first (in progress)
+docs/review/PHASE4-DASHBOARD-SPEC.md
+v1.2 Section 18
+CHANGELOG.md
+PROJECT-STATUS.md
+handover/CURRENT-STATE.md
+handover/NEXT-STEPS.md
 ```
 
----
+# Step 2 — Phase 4 Implementation
 
-# Step 2 — Phase 4: Dashboard / Reporting / History
-
-Phase 3 (scoring, recommendation, fallback) is implemented. Phase 4 adds the
-dashboard, reporting and history/score snapshots. Fallback Step 2 filters on
+Phase 3 (scoring, recommendation, fallback) is released. Phase 4 adds the
+read-only dashboard, reporting and event-derived history (see
+`docs/review/PHASE4-DASHBOARD-SPEC.md`). Fallback Step 2 filters on
 availability (v1.2 Section 7), which Phase 2 maintains; scoring feeds the
-dashboard.
+dashboard. No schema changes unless ADR-0004 is approved.
 
 ---
 
@@ -118,8 +137,9 @@ Recommended input:
 * START-HERE.md
 * CONSTITUTION.md
 * AI-Hub Specification v1.2
-* docs/release/PHASE2-RELEASE-MANIFEST.md
+* docs/review/PHASE4-IMPLEMENTATION-PLAN.md
+* docs/review/PHASE4-DASHBOARD-SPEC.md
 * docs/review/PHASE3-SCORING-SPEC.md
 * handover/CURRENT-STATE.md
-* handover/PHASE-3-CLOSURE.md (pending)
+* handover/NEXT-STEPS.md
 * this document

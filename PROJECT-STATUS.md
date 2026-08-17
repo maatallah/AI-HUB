@@ -8,17 +8,17 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 3 — Scoring / Recommendation / Fallback (implementation
-complete, awaiting release review)
+**Current phase:** Phase 4 — Dashboard / Reporting / History (documentation
+step in progress; implementation authorized, spec secured)
 
-**Completion %:** ~50% (Phases 1-3 of 6)
+**Completion %:** ~60% (Phases 1-3 released; Phase 4 docs in progress)
 
-**Last update:** 2026-08-01
+**Last update:** 2026-08-17
 
 **Repository health:** Good (162/162 tests passing, no open defects)
 
-**Blocking issues:** None. Phase 3 implementation complete; release pending
-owner approval.
+**Blocking issues:** None. Phase 4 implementation authorized 2026-08-17;
+doc-before-code step in flight.
 
 ---
 
@@ -26,7 +26,9 @@ owner approval.
 
 Phase 1 released (baseline `7ceac80`). Phase 2 — Monitoring Engine released
 (commit `ae0a6c2`, manifest `2c6e3eb`, 99/99 tests). ADR-0001 accepted
-(commit `74d23b5`). Phase 3 — Scoring / Recommendation / Fallback implemented:
+(commit `74d23b5`). Phase 3 — Scoring / Recommendation / Fallback implemented
+and released (implementation `d6dd3c9`, manifest `ff4b8a7`, closure
+`c6327f4`, approval `8370ba0`; 162/162 tests):
 
 * Scoring engine (`scoring/`): normalized `scores` table (ADR-0001), aging,
   operational dimensions derived from monitoring, no fabricated values.
@@ -37,15 +39,25 @@ Phase 1 released (baseline `7ceac80`). Phase 2 — Monitoring Engine released
 * CLI: `score`, `recommend`, `fallback` subcommands.
 * Tests: 162/162 passing (59 new in Phase 3).
 
+Phase 4 — Dashboard / Reporting / History authorized 2026-08-17 (plan
+baseline `f9316e4`). Documentation step (Article 11 doc-before-code) in
+progress:
+
+* `docs/review/PHASE4-IMPLEMENTATION-PLAN.md` (approved)
+* `docs/review/PHASE4-DASHBOARD-SPEC.md` (proposal spec)
+* Spec v1.2 Section 18 - Dashboard / Reporting / History (Phase 4)
+
 Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
 Release documents:
 
 * `docs/release/PHASE1-RELEASE-MANIFEST.md` (immutable, git SHA `7ceac80`)
 * `docs/release/PHASE2-RELEASE-MANIFEST.md` (immutable, git SHA `ae0a6c2`)
+* `docs/release/PHASE3-RELEASE-MANIFEST.md` (immutable, git SHA `ff4b8a7`)
 * `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE3-SCORING-SPEC.md`
-* `docs/release/PHASE3-RELEASE-MANIFEST.md` (draft, pending approval)
+* `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
+* `docs/review/PHASE4-DASHBOARD-SPEC.md`
 
 ## Architecture Maturity
 
@@ -57,13 +69,13 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Review Phase 3 implementation + release
-* Sign off Phase 3 closure
-* Push approval if required
+* Approve the finalized Phase 4 documentation set (doc-before-code step)
+* Review Phase 4 implementation + release (at phase end)
 
 ## Next Milestone
 
-Phase 3 release review, then Phase 4 — Dashboard, Reporting, History.
+Phase 4 implementation: `dashboard/` engine + reports + history + CLI, then
+Phase 4 release review.
 
 ## Open Documentation Items
 

@@ -4,7 +4,7 @@
 
 Last Updated:
 
-2026-08-01 (Phase 3 implementation complete, awaiting review)
+2026-08-17 (Phase 4 authorized; documentation step in progress)
 
 ---
 
@@ -15,8 +15,13 @@ Phase 1 (Repository Foundation) released.
 Phase 2 (Monitoring Engine) released: health checks, availability/lifecycle
 tracking, quota architecture, seed validation. 99/99 tests passing.
 
-Phase 3 (Scoring / Recommendation / Fallback) implementation complete:
-162/162 tests passing. Awaiting owner release review.
+Phase 3 (Scoring / Recommendation / Fallback) released: scoring,
+recommendation with provenance and fallback chain. 162/162 tests passing.
+
+Phase 4 (Dashboard / Reporting / History) authorized 2026-08-17 (owner
+approval, plan baseline `f9316e4`). Documentation step (Article 11
+doc-before-code) in progress: `docs/review/PHASE4-DASHBOARD-SPEC.md` written,
+v1.2 Section 18 added. Implementation not yet begun.
 
 Architecture approved.
 
@@ -25,6 +30,22 @@ Git baseline committed and pushed (`main` == `origin/main`).
 ---
 
 # Completed
+
+## Phase 4 (in progress) - Dashboard / Reporting / History
+
+Authorized:
+
+* Owner approval 2026-08-17 of `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
+  (baseline `f9316e4`).
+* `docs/review/PHASE4-DASHBOARD-SPEC.md` - proposal spec.
+* Spec v1.2 Section 18 - Dashboard / Reporting / History (Phase 4).
+
+Pending:
+
+* Implementation of `dashboard/engine.py`, `dashboard/reports.py`,
+  `dashboard/history.py`, CLI wiring, tests.
+* Phase 4 release review + approval (owner).
+* Optional snapshots only if ADR-0004 is approved.
 
 ## Phase 3 - Scoring / Recommendation / Fallback
 
@@ -107,7 +128,7 @@ AI-Hub/
                   provenance.py (Phase 3)
   fallback/       __init__.py, engine.py (Phase 3)
   connectors/     vscode/, mcp/ (empty - Phase 5)
-  dashboard/      (empty - Phase 4)
+  dashboard/      (empty - Phase 4, in progress)
   tests/          conftest.py, test_database.py, test_schema.py,
                   test_config.py, test_providers.py, test_health.py,
                   test_availability.py, test_quota.py, test_validation.py,
@@ -188,11 +209,18 @@ from monitoring at read time; recommendations deterministic + explainable
 with provenance records; fallback chain consumes monitoring outputs only and
 never mutates providers.
 
+## Dashboard / Reporting / History (Phase 4)
+
+Authorized. Read-only aggregation views, deterministic plain-text reports
+and append-only event-derived history. No schema changes unless ADR-0004 is
+approved (snapshots). See `docs/review/PHASE4-DASHBOARD-SPEC.md` and v1.2
+Section 18.
+
 ---
 
 # Not Yet Implemented
 
-* Dashboard (Phase 4)
+* Dashboard (Phase 4) - in progress
 * Connectors (Phase 5)
 * Ecosystem intelligence (Phase 6)
 * Model seeding
@@ -244,6 +272,9 @@ Phase 1 implementation: High (49 tests passing, Phase 1 released)
 
 Phase 2 implementation: High (99 tests passing, Phase 2 released)
 
-Phase 3 implementation: High (162 tests passing, awaiting release review)
+Phase 3 implementation: High (162 tests passing, Phase 3 released)
+
+Phase 4 documentation: High (plan approved, spec written; implementation
+pending)
 
 Concept: Validated

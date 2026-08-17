@@ -823,3 +823,58 @@ AI-Hub v1.0 is complete when:
 * Historical information is preserved.
 * All architectural decisions are documented.
 * Another contributor can continue development using only the repository documentation.
+
+---
+
+# 18. Dashboard / Reporting / History (Phase 4)
+
+## 18.1 Dashboard
+
+The dashboard is a read-only aggregation layer.
+
+It provides visibility over:
+
+* providers (status)
+* models
+* scores
+* availability
+* recommendations
+* events
+
+It never mutates providers, models, scores, availability, preferences or
+events (Constitution Article 1).
+
+Views are deterministic and self-describing. Empty inputs produce empty (not
+fabricated) results (Constitution Article 10).
+
+### Implementation (Phase 4)
+
+`dashboard/engine.py` provides read-only views: overview, provider_view,
+score_view, recommendation_view and event_view. Counts/sums are exact; no
+hidden aggregation weights (Constitution Article 4). Ordering is explicit on
+every query (Constitution Article 7).
+
+## 18.2 Reporting
+
+Reports are deterministic, plain-text/tab-separated summaries for humans and
+future connectors. No GUI in Phase 4.
+
+### Implementation (Phase 4)
+
+`dashboard/reports.py` exposes one builder per report: report_providers,
+report_scores, report_recommendations, report_monitoring and report_overview.
+A generated-at timestamp is optional and injected by the caller so tests pass
+a fixed value, preserving deterministic output.
+
+## 18.3 History
+
+History is read-only reconstruction from the append-only events table
+(Constitution Article 5; Section 8). It never rewrites or deletes events and
+never fabricates missing data (Constitution Article 10).
+
+### Implementation (Phase 4)
+
+Score history is reconstructed from `SCORE_RECORDED` / `SCORE_UPDATED` events;
+availability history from `MONITOR_STATUS_CHANGED` and `HEALTH_CHECK_*`
+events (`dashboard/history.py`). Point-in-time snapshots are deferred and
+require ADR-0004 before any schema change.
