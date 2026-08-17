@@ -1,4 +1,4 @@
-"""AI-Hub command line interface (Phases 1-3).
+"""AI-Hub command line interface (Phases 1-4).
 
 Run from the repository root:
 
@@ -15,6 +15,10 @@ Run from the repository root:
     python -m app.main recommend --task "python" [--profile coding]
     python -m app.main recommend chain --task "python" [--max 5]
     python -m app.main fallback status
+    python -m app.main dashboard status
+    python -m app.main dashboard report <providers|scores|recommendations|monitoring|overview>
+    python -m app.main dashboard history --model N [--dimension D]
+    python -m app.main dashboard history --availability [--provider P]
 """
 
 from __future__ import annotations
@@ -25,6 +29,8 @@ from pathlib import Path
 
 from app.config import ConfigError, effective_config_text, load_config
 from core import providers
+from dashboard import history as dashboard_history
+from dashboard import reports as dashboard_reports
 from database import database as db_util
 from fallback import build_chain, check_recovery
 from monitoring import availability, health, validation
@@ -327,6 +333,63 @@ def cmd_fallback(args) -> None:
         conn.close()
 
 
+def cmd_dashboard(args) -> None:
+    conn = db_util.connect(_get_db(load_config()))
+    try:
+        if args.action == "status":
+            print(dashboard_reports.report_overview(conn), end="")
+        elif args.action == "report":
+            report = dashboard_reports.REPORT_BUILDERS.get(args.report)
+            if report is None:
+                print(
+                    f"Unknown report: {args.report!r}."
+                    f" Choose from: {sorted(dashboard_reports.REPORT_BUILDERS)}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            print(report(conn), end="")
+        elif args.action == "history":
+            if args.availability:
+                _print_availability_history(conn, args.provider)
+            else:
+                if args.model is None:
+                    print("--model is required for score history.", file=sys.stderr)
+                    sys.exit(1)
+                _print_score_history(conn, args.model, args.dimension)
+    finally:
+        conn.close()
+
+
+def _print_score_history(conn, model_id, dimension) -> None:
+    series = dashboard_history.score_history(conn, model_id, dimension=dimension)
+    if not series:
+        print("No score history.")
+        return
+    headers = ("occurred_at", "dimension", "value", "confidence", "source")
+    print("\t".join(headers))
+    for rec in series:
+        print(
+            "\t".join(
+                "" if rec[h] is None else str(rec[h]) for h in headers
+            )
+        )
+
+
+def _print_availability_history(conn, provider_id) -> None:
+    series = dashboard_history.availability_history(conn, provider_id=provider_id)
+    if not series:
+        print("No availability history.")
+        return
+    headers = ("occurred_at", "event_type", "entity_type", "entity_id")
+    print("\t".join(headers))
+    for rec in series:
+        print(
+            "\t".join(
+                "" if rec[h] is None else str(rec[h]) for h in headers
+            )
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-hub", description="AI-Hub Phase 1 CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -423,6 +486,29 @@ def build_parser() -> argparse.ArgumentParser:
     fb_sub = fb.add_subparsers(dest="action", required=True)
     fb_status = fb_sub.add_parser("status", help="Show current fallback chain")
     fb_status.set_defaults(func=cmd_fallback)
+
+    dash = sub.add_parser("dashboard", help="Dashboard (Phase 4)")
+    dash_sub = dash.add_subparsers(dest="action", required=True)
+
+    dash_status = dash_sub.add_parser("status", help="Headline dashboard overview")
+    dash_status.set_defaults(func=cmd_dashboard)
+
+    dash_report = dash_sub.add_parser("report", help="Generate a report")
+    dash_report.add_argument(
+        "report",
+        choices=sorted(dashboard_reports.REPORT_BUILDERS),
+        help="Report to generate",
+    )
+    dash_report.set_defaults(func=cmd_dashboard)
+
+    dash_history = dash_sub.add_parser("history", help="Reconstruct history from events")
+    dash_history.add_argument("--model", type=int, help="Model id for score history")
+    dash_history.add_argument("--dimension", help="Filter score history by dimension")
+    dash_history.add_argument(
+        "--availability", action="store_true", help="Show availability/health history"
+    )
+    dash_history.add_argument("--provider", type=int, help="Filter availability history by provider")
+    dash_history.set_defaults(func=cmd_dashboard)
 
     return parser
 
