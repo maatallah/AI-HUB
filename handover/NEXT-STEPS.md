@@ -4,12 +4,13 @@
 
 ## Immediate Goal
 
-Phase 4 (Dashboard / Reporting / History) released and closed (`c49ea9b`,
-216/216 tests, closure accepted 2026-08-17). Phase 5 (Connectors - VS Code /
-MCP) authorized 2026-08-17. Milestones 1-3 complete and closed (documentation,
-shared adapter + MCP server, VS Code extension; 262/262 Python tests). Milestone
-4 (full connector regression) is the current defined step; Milestone 5
-(release package + closure) follows - both gated on owner approval.
+Phase 5 (Connectors - VS Code / MCP) Milestones 1-4 are complete and closed
+(documentation, shared adapter + MCP server, VS Code extension; Milestone 4
+full regression VERIFIED 2026-08-18). Milestone 5 hardening/release-readiness
+is complete. The remaining Phase 5 step is the release package (PHASE5
+manifest + closure) - gated on owner approval. Phase 4 (Dashboard / Reporting
+/ History) is released and closed (`c49ea9b`, 216/216 tests, closure accepted
+2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -31,12 +32,13 @@ see `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`,
 `docs/release/PHASE4-RELEASE-MANIFEST.md` (baseline `c49ea9b`) and
 `handover/PHASE-4-CLOSURE.md`.
 
-Phase 5 is authorized (2026-08-17, revised planning proposal approved). Milestones
-1-3 complete and closed (documentation, adapter + MCP server, VS Code extension) -
-see `docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
-`connectors/adapter.py`, `connectors/mcp/` and `connectors/vscode/`. Owner
-verification for Milestone 3 passed 2026-08-18. Milestones 4-5 (full
-regression, release package) pending.
+Phase 5 is authorized (2026-08-17, revised planning proposal approved).
+Milestones 1-4 complete and closed (documentation, adapter + MCP server, VS
+Code extension; Milestone 4 full regression VERIFIED 2026-08-18); Milestone 5
+hardening/release-readiness complete - see
+`docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
+`connectors/adapter.py`, `connectors/mcp/` and `connectors/vscode/`. The
+Phase 5 release package (manifest + closure) awaits owner approval.
 
 ---
 
@@ -150,9 +152,11 @@ must NOT start until this documentation milestone is approved by the owner.
 - [x] `connectors/vscode/` VS Code extension (Milestone 3)
 - [x] Tests: connectors adapter / MCP / vscode (46 Python + 27 TS unit +
       2 integration)
-- [ ] Milestone 4: full connector regression - gated on owner approval
-- [ ] Milestone 5: Phase 5 release package (manifest + closure) + owner
-      approval
+- [x] Milestone 4: full connector regression VERIFIED (2026-08-18) -
+      262/262 Python, 46/46 MCP/adapter, 27/27 TS unit, 2/2 integration
+- [x] Milestone 5: hardening / release readiness (3 new tests + living-doc
+      refresh) - complete; release package (manifest + closure) pending
+      owner approval
 
 ---
 
@@ -163,7 +167,10 @@ Completed (2026-08-17): `AI-Hub Project Specification v1.2.md` Section 19,
 handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
 
 Milestone 2 (shared adapter + MCP server) and Milestone 3 (VS Code extension)
-implemented and closed (owner approval 2026-08-18). Milestones 4-5 pending.
+implemented and closed (owner approval 2026-08-18). Milestone 4 (full
+regression) VERIFIED 2026-08-18. Milestone 5 hardening/release-readiness
+complete; the Phase 5 release package (manifest + closure) awaits owner
+approval.
 
 # Step 2 — Phase 4 Documentation (doc-before-code)
 
@@ -185,10 +192,10 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 5 (Connectors - VS Code /
-MCP). Milestones 2-3 (shared adapter + MCP server, VS Code extension) are
-complete and closed. Milestone 4 (full connector regression) is the next
-approved milestone after the owner approves the Milestone 3 completion record,
-followed by Milestone 5 (Phase 5 release package + closure).
+MCP). Milestones 1-4 are complete and closed (Milestone 4 full regression
+VERIFIED 2026-08-18) and Milestone 5 hardening/release-readiness is complete.
+The remaining Phase 5 step is the release package (PHASE5 manifest + closure)
+- gated on owner approval.
 
 Recommended input:
 

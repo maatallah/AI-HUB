@@ -4,6 +4,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 5 - Connectors - Milestone 4 regression + Milestone 5 hardening)
+
+- Milestone 4 (full connector regression) VERIFIED (2026-08-18): complete
+  Python regression 262/262 passed (184s); Phase 5 MCP/adapter tests 46/46
+  passed (35s); VS Code offline unit tests 27/27 passed; VS Code real
+  integration tests 2/2 passed; `git diff --check` clean; M1-M3 baseline
+  `5cff03b` intact; no generated/unintended files tracked. No M4 files were
+  modified.
+- Milestone 5 (hardening / release readiness): 3 new tests where genuine
+  coverage gaps existed:
+  - MCP: non-`McpError` dispatch exceptions map to JSON-RPC `-32603`
+    (documented in the Phase 5 spec error codes, previously untested).
+  - MCP: an empty database returns empty results for every tool (never
+    fabricated; spec acceptance criterion 9.7 at the connector boundary).
+  - VS Code: `package.json` `contributes.commands` and `activationEvents`
+    match the `FEATURES` registry (documentation/implementation consistency).
+- Living docs refreshed for M4/M5: `PROJECT-STATUS.md`,
+  `handover/CURRENT-STATE.md`, `handover/NEXT-STEPS.md`.
+- Known limitations (recorded, unchanged from earlier milestones): transitive
+  npm vulnerabilities via `@vscode/test-cli` accepted (no unrelated upgrades);
+  MCP modern era `2026-07-28` out of scope; the Phase 5 spec and v1.2 Section
+  19 list the four base commands while seven are implemented and documented -
+  the additional three (`ai-hub.modelScores`, `ai-hub.recommendations`,
+  `ai-hub.fallbackChain`) are tested and recorded in the living docs
+  (non-blocking).
+- No Phase 1-4, adapter, MCP or extension implementation changes.
+
 ### Added (Phase 5 - Connectors - VS Code extension / Milestone 3)
 
 - `connectors/vscode/` VS Code extension implemented and verified under the

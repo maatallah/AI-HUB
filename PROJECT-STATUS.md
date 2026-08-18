@@ -9,18 +9,22 @@
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
 **Current phase:** Phase 5 — Connectors (VS Code / MCP) (Milestones 1-3
-complete and closed; Milestone 4 full regression next; Phase 4 released)
+complete and closed; Milestone 4 full regression VERIFIED; Milestone 5
+hardening/release-readiness complete; Phase 5 release package pending owner
+approval; Phase 4 released)
 
-**Completion %:** ~75% (Phases 1-4 released; Phase 5 Milestones 1-3 complete)
+**Completion %:** ~80% (Phases 1-4 released; Phase 5 Milestones 1-4 complete;
+Milestone 5 hardening done; release package pending approval)
 
 **Last update:** 2026-08-18
 
 **Repository health:** Good (262/262 Python tests passing, no open defects;
-connectors/vscode 27/27 TS unit tests + 2/2 integration tests passing)
+Phase 5 MCP/adapter 46/46; connectors/vscode 27/27 TS unit tests + 2/2
+integration tests passing)
 
-**Blocking issues:** None. Phase 5 Milestones 1-3 (documentation, adapter +
-MCP server, VS Code extension) complete; Milestones 4-5 (full regression,
-release package) gated on owner approval.
+**Blocking issues:** None. Phase 5 Milestones 1-4 complete (Milestone 4 full
+regression VERIFIED 2026-08-18); Milestone 5 hardening/release-readiness
+complete; Phase 5 release package (manifest + closure) awaiting owner approval.
 
 ---
 
@@ -72,11 +76,20 @@ proposal). Milestones 1-3 complete:
   tree view + webview panels, read-only CLI invocation, isolated npm graph
   (D-4). 27 offline TS unit tests + 2 real VS Code integration tests.
   Approved and closed by owner 2026-08-18.
+* Milestone 4 (full connector regression) VERIFIED (2026-08-18): complete
+  Python regression 262/262 (184s), Phase 5 MCP/adapter tests 46/46 (35s),
+  VS Code offline unit tests 27/27, real VS Code integration tests 2/2;
+  `git diff --check` clean; M1-M3 baseline `5cff03b` intact.
+* Milestone 5 (hardening / release readiness) complete (2026-08-18): 3 new
+  tests closing genuine coverage gaps (MCP `-32603` internal-error mapping;
+  MCP empty database returns empty for every tool, never fabricated; VS Code
+  `package.json` command/activationEvents consistency with `FEATURES`);
+  living docs refreshed.
 
-Milestones 4 (full connector regression) and 5 (Phase 5 release package +
-closure) pending owner approval. The documented transitive npm vulnerabilities
-(serialize-javascript / mocha via `@vscode/test-cli`) are accepted; no
-unrelated dependency upgrades are performed.
+Milestones 1-4 are complete and closed; the Phase 5 release package (manifest
++ closure) is pending owner approval. The documented transitive npm
+vulnerabilities (serialize-javascript / mocha via `@vscode/test-cli`) are
+accepted; no unrelated dependency upgrades are performed.
 
 Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
@@ -103,15 +116,14 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Approve Milestone 4 (full connector regression) - next step
-* Approve Milestone 5 (Phase 5 release package + closure) at the end
+* Approve Milestone 5 (Phase 5 release package + closure) - next step
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 5 Milestone 4 (full connector regression baseline), then Milestone 5
-(Phase 5 release package + closure).
+Phase 5 Milestone 5 (Phase 5 release package + closure), awaiting owner
+approval of the Phase 5 release.
 
 ## Open Documentation Items
 

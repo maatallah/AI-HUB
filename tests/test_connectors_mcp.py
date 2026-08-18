@@ -248,6 +248,19 @@ def test_internal_error_maps_to_minus_32603(conn):
     assert response["error"]["code"] == -32601
 
 
+def test_internal_exception_maps_to_minus_32603(conn):
+    """Spec 2.2/9.8: a non-McpError dispatch exception maps to -32603."""
+    mcp = server.McpServer(conn)
+
+    def boom(_method, _params):
+        raise RuntimeError("boom")
+
+    mcp._dispatch = boom
+    response = _call(mcp, _rpc("initialize", {"protocolVersion": "2025-11-25"}))
+    assert response["error"]["code"] == -32603
+    assert "boom" in response["error"]["message"]
+
+
 # --- determinism -------------------------------------------------------------
 
 
@@ -278,6 +291,42 @@ def test_tool_calls_do_not_write(conn):
         _call(mcp, _rpc("tools/call", {"name": name, "arguments": arguments}))
     after = conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]
     assert after == before
+
+
+# --- empty / no-data (spec criterion 9.7, Article 10) ------------------------
+
+
+def test_empty_database_returns_empty_not_fabricated(conn):
+    """On an empty database every tool returns empty (never fabricated)."""
+    mcp = server.McpServer(conn)
+    cases = [
+        ("provider_status", {}),
+        ("model_scores", {}),
+        ("recommend_top", {"task": "python"}),
+        ("fallback_chain", {"task": "python"}),
+        ("dashboard_report", {"name": "scores"}),
+        ("score_history", {"model_id": 1}),
+        ("availability_history", {}),
+    ]
+    for name, arguments in cases:
+        response = _call(mcp, _rpc("tools/call", {"name": name, "arguments": arguments}))
+        assert "error" not in response
+        result = response["result"]
+        assert result["isError"] is False
+        text = result["content"][0]["text"]
+        if name == "provider_status":
+            payload = json.loads(text)
+            assert payload["providers"] == []
+            assert payload["availability"] == []
+        elif name == "dashboard_report":
+            lines = [line for line in text.splitlines() if line.strip()]
+            assert len(lines) == 2 and lines[0].startswith("#")
+        elif name == "fallback_chain":
+            chain = json.loads(text)
+            assert chain["primary"] is None
+            assert chain["fallbacks"] == []
+        else:
+            assert json.loads(text) == []
 
 
 # --- stdio loop / EOF / stdout cleanliness -----------------------------------

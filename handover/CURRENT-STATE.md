@@ -4,8 +4,8 @@
 
 Last Updated:
 
-2026-08-18 (Phase 5 Milestones 1-3 complete and closed; Milestone 4 full
-regression next)
+2026-08-18 (Phase 5 Milestones 1-4 complete and closed; Milestone 4 full
+regression VERIFIED; Milestone 5 hardening/release-readiness complete)
 
 ---
 
@@ -25,10 +25,11 @@ event-derived history. 216/216 tests passing. Release approved and closure
 accepted 2026-08-17 (commit `3c47c61`).
 
 Phase 5 (Connectors - VS Code / MCP) authorized 2026-08-17 (revised planning
-proposal approved). Milestones 1-3 complete: documentation (doc-before-code),
-shared read-only adapter + MCP server, and VS Code extension. 262/262 Python
-tests passing; connectors/vscode 27/27 TS unit + 2/2 integration tests.
-Milestones 4 (full regression) and 5 (release package) pending.
+proposal approved). Milestones 1-3 complete and closed: documentation
+(doc-before-code), shared read-only adapter + MCP server, and VS Code
+extension. Milestone 4 (full regression) VERIFIED 2026-08-18. Milestone 5
+(hardening / release readiness) complete; the Phase 5 release package
+(manifest + closure) awaits owner approval.
 
 Architecture approved.
 
@@ -84,10 +85,29 @@ Completed (Milestone 3 - VS Code extension):
   27/27 unit, 2/2 integration, 262/262 Python regression, `git diff --check`
   clean. Approved and closed by owner.
 
+Completed (Milestone 4 - full connector regression):
+
+* Full Python regression: 262/262 passed (184s); Phase 5 MCP/adapter tests
+  46/46 passed (35s); VS Code offline unit tests 27/27; VS Code real
+  integration tests 2/2. `git diff --check` clean; M1-M3 baseline `5cff03b`
+  intact; no generated/unintended files tracked. No M4 files were modified.
+* VERIFIED 2026-08-18.
+
+Completed (Milestone 5 - hardening / release readiness):
+
+* 3 new tests closing genuine coverage gaps: MCP `-32603` internal-error
+  mapping (documented in the spec, previously untested); MCP empty database
+  returns empty results for every tool (never fabricated, spec criterion
+  9.7); VS Code `package.json` `contributes.commands` + `activationEvents`
+  consistency with the `FEATURES` registry.
+* Living docs refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS,
+  CHANGELOG). Full verification re-run green. No Phase 1-4 or connector
+  implementation changes.
+
 Pending:
 
-* Milestone 4: full connector regression - gated on owner approval.
-* Milestone 5: Phase 5 release package (manifest + closure) + owner approval.
+* Milestone 5: Phase 5 release package (manifest + closure) + owner approval
+  (the release package is the remaining Phase 5 deliverable).
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -307,15 +327,15 @@ complete and closed:
 Connectors contain no decision logic and perform no network/mutation/API-key/
 config/environment changes. The documented transitive npm vulnerabilities
 (via `@vscode/test-cli` dev toolchain) are accepted; no unrelated upgrades.
-Remaining: Milestone 4 (full regression) and Milestone 5 (Phase 5 release
-package + closure), both gated on owner approval.
+Milestone 4 (full regression) is VERIFIED (2026-08-18) and Milestone 5
+hardening/release-readiness is complete. Remaining: the Phase 5 release
+package (manifest + closure), gated on owner approval.
 
 ---
 
 # Not Yet Implemented
 
-* Phase 5 Milestones 4-5: full connector regression + release package
-  (manifest + closure) - gated on owner approval
+* Phase 5 release package (PHASE5 manifest + closure): awaiting owner approval
 * Ecosystem intelligence (Phase 6)
 * Model seeding
 
@@ -375,9 +395,10 @@ Phase 4 implementation: High (216 tests passing; released and closed
 2026-08-17)
 
 Phase 5 documentation: High (plan approved, spec written; Milestones 2-3
-implemented and closed)
+implemented and closed; M4/M5 status recorded)
 
-Phase 5 implementation: High (Milestones 2-3 approved and closed 2026-08-18;
-262 Python tests + 27/27 TS unit + 2/2 integration tests passing)
+Phase 5 implementation: High (Milestones 2-4 approved/verified; 262 Python
+tests + 46 MCP/adapter + 27/27 TS unit + 2/2 integration tests passing;
+Milestone 5 hardening complete)
 
 Concept: Validated

@@ -1,6 +1,8 @@
 // Tests for the feature registry (read-only CLI command mapping).
 
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
@@ -9,6 +11,28 @@ import {
   featureByCommand,
   isValidReportName,
 } from "../src/features";
+
+test("package.json commands and activation events match FEATURES", () => {
+  const manifest = JSON.parse(
+    readFileSync(join(__dirname, "../../package.json"), "utf-8")
+  ) as {
+    activationEvents: string[];
+    contributes: { commands: { command: string }[] };
+  };
+  const expected = FEATURES.map((f) => f.commandId).sort();
+  const declared = manifest.contributes.commands
+    .map((c) => c.command)
+    .sort();
+  assert.deepStrictEqual(declared, expected);
+  const events = manifest.activationEvents
+    .filter((e) => e.startsWith("onCommand:"))
+    .sort();
+  assert.deepStrictEqual(
+    events,
+    expected.map((id) => `onCommand:${id}`).sort()
+  );
+  assert.ok(manifest.activationEvents.includes("onView:ai-hub.reports"));
+});
 
 test("features exposes exactly the seven Phase 5 features", () => {
   assert.strictEqual(FEATURES.length, 7);
