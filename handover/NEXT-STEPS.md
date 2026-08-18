@@ -4,13 +4,12 @@
 
 ## Immediate Goal
 
-Phase 5 (Connectors - VS Code / MCP) Milestones 1-4 are complete and closed
-(documentation, shared adapter + MCP server, VS Code extension; Milestone 4
-full regression VERIFIED 2026-08-18). Milestone 5 hardening/release-readiness
-is complete. The remaining Phase 5 step is the release package (PHASE5
-manifest + closure) - gated on owner approval. Phase 4 (Dashboard / Reporting
-/ History) is released and closed (`c49ea9b`, 216/216 tests, closure accepted
-2026-08-17).
+Phase 5 (Connectors - VS Code / MCP) is RELEASED and CLOSED (baseline
+`8231dce`, closure accepted 2026-08-18): Milestones 1-4 complete and closed,
+Milestone 5 release package (manifest + closure) approved. The next defined
+step is Phase 6 (Ecosystem Intelligence) planning, gated on owner
+authorization. Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests,
+closure accepted 2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -32,13 +31,10 @@ see `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`,
 `docs/release/PHASE4-RELEASE-MANIFEST.md` (baseline `c49ea9b`) and
 `handover/PHASE-4-CLOSURE.md`.
 
-Phase 5 is authorized (2026-08-17, revised planning proposal approved).
-Milestones 1-4 complete and closed (documentation, adapter + MCP server, VS
-Code extension; Milestone 4 full regression VERIFIED 2026-08-18); Milestone 5
-hardening/release-readiness complete - see
-`docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
-`connectors/adapter.py`, `connectors/mcp/` and `connectors/vscode/`. The
-Phase 5 release package (manifest + closure) awaits owner approval.
+Phase 5 is RELEASED and CLOSED (2026-08-18, baseline `8231dce`, closure
+accepted) - see `docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
+`connectors/adapter.py`, `connectors/mcp/`, `connectors/vscode/`,
+`docs/release/PHASE5-RELEASE-MANIFEST.md` and `handover/PHASE-5-CLOSURE.md`.
 
 ---
 
@@ -155,8 +151,9 @@ must NOT start until this documentation milestone is approved by the owner.
 - [x] Milestone 4: full connector regression VERIFIED (2026-08-18) -
       262/262 Python, 46/46 MCP/adapter, 27/27 TS unit, 2/2 integration
 - [x] Milestone 5: hardening / release readiness (3 new tests + living-doc
-      refresh) - complete; release package (manifest + closure) pending
-      owner approval
+      refresh) - complete
+- [x] Milestone 5: release package (manifest + closure) + owner approval -
+      approved and closed 2026-08-18 (baseline `8231dce`)
 
 ---
 
@@ -168,9 +165,9 @@ handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
 
 Milestone 2 (shared adapter + MCP server) and Milestone 3 (VS Code extension)
 implemented and closed (owner approval 2026-08-18). Milestone 4 (full
-regression) VERIFIED 2026-08-18. Milestone 5 hardening/release-readiness
-complete; the Phase 5 release package (manifest + closure) awaits owner
-approval.
+regression) VERIFIED 2026-08-18. Milestone 5 hardening, documentation and
+release readiness complete; the Phase 5 release was approved and the phase
+CLOSED 2026-08-18 (baseline `8231dce`).
 
 # Step 2 — Phase 4 Documentation (doc-before-code)
 
@@ -192,10 +189,9 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 5 (Connectors - VS Code /
-MCP). Milestones 1-4 are complete and closed (Milestone 4 full regression
-VERIFIED 2026-08-18) and Milestone 5 hardening/release-readiness is complete.
-The remaining Phase 5 step is the release package (PHASE5 manifest + closure)
-- gated on owner approval.
+MCP). Phase 5 is RELEASED and CLOSED (baseline `8231dce`, closure accepted
+2026-08-18). The next defined phase is Phase 6 (Ecosystem Intelligence),
+gated on owner authorization.
 
 Recommended input:
 

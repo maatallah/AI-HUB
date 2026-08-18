@@ -4,8 +4,8 @@
 
 Last Updated:
 
-2026-08-18 (Phase 5 Milestones 1-4 complete and closed; Milestone 4 full
-regression VERIFIED; Milestone 5 hardening/release-readiness complete)
+2026-08-18 (Phase 5 RELEASED and CLOSED: Milestones 1-4 complete and closed,
+full regression VERIFIED, Milestone 5 release package accepted)
 
 ---
 
@@ -28,8 +28,9 @@ Phase 5 (Connectors - VS Code / MCP) authorized 2026-08-17 (revised planning
 proposal approved). Milestones 1-3 complete and closed: documentation
 (doc-before-code), shared read-only adapter + MCP server, and VS Code
 extension. Milestone 4 (full regression) VERIFIED 2026-08-18. Milestone 5
-(hardening / release readiness) complete; the Phase 5 release package
-(manifest + closure) awaits owner approval.
+hardening, documentation and release readiness complete; the Phase 5 release
+package (manifest + closure) approved and closed 2026-08-18 (baseline
+`8231dce`).
 
 Architecture approved.
 
@@ -104,10 +105,15 @@ Completed (Milestone 5 - hardening / release readiness):
   CHANGELOG). Full verification re-run green. No Phase 1-4 or connector
   implementation changes.
 
+Completed (Phase 5 - release):
+
+* `docs/release/PHASE5-RELEASE-MANIFEST.md` (baseline `8231dce`) and
+  `handover/PHASE-5-CLOSURE.md` created; closure accepted by owner
+  2026-08-18.
+
 Pending:
 
-* Milestone 5: Phase 5 release package (manifest + closure) + owner approval
-  (the release package is the remaining Phase 5 deliverable).
+* Phase 6 (Ecosystem Intelligence) planning - requires owner authorization.
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -327,16 +333,15 @@ complete and closed:
 Connectors contain no decision logic and perform no network/mutation/API-key/
 config/environment changes. The documented transitive npm vulnerabilities
 (via `@vscode/test-cli` dev toolchain) are accepted; no unrelated upgrades.
-Milestone 4 (full regression) is VERIFIED (2026-08-18) and Milestone 5
-hardening/release-readiness is complete. Remaining: the Phase 5 release
-package (manifest + closure), gated on owner approval.
+Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
+`docs/release/PHASE5-RELEASE-MANIFEST.md`, closure
+`handover/PHASE-5-CLOSURE.md`).
 
 ---
 
 # Not Yet Implemented
 
-* Phase 5 release package (PHASE5 manifest + closure): awaiting owner approval
-* Ecosystem intelligence (Phase 6)
+* Phase 6 (Ecosystem Intelligence) planning - requires owner authorization
 * Model seeding
 
 ---
@@ -395,10 +400,10 @@ Phase 4 implementation: High (216 tests passing; released and closed
 2026-08-17)
 
 Phase 5 documentation: High (plan approved, spec written; Milestones 2-3
-implemented and closed; M4/M5 status recorded)
+implemented and closed; M4/M5 status and release recorded)
 
-Phase 5 implementation: High (Milestones 2-4 approved/verified; 262 Python
-tests + 46 MCP/adapter + 27/27 TS unit + 2/2 integration tests passing;
-Milestone 5 hardening complete)
+Phase 5 implementation: High (RELEASED and CLOSED 2026-08-18; 264 Python
+tests + 48 MCP/adapter + 28/28 TS unit + 2/2 integration tests passing;
+Milestone 5 release package accepted)
 
 Concept: Validated

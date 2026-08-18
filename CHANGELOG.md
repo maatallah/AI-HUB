@@ -4,6 +4,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 5 - Connectors - release)
+
+- Phase 5 RELEASED and CLOSED (2026-08-18, baseline `8231dce`).
+- `docs/release/PHASE5-RELEASE-MANIFEST.md` (immutable reference baseline)
+  and `handover/PHASE-5-CLOSURE.md` (closure accepted by owner 2026-08-18).
+- Release records the Phase 5 test evidence: 264/264 Python, 48/48
+  adapter/MCP, 28/28 VS Code offline unit, 2/2 VS Code real integration;
+  `git diff --check` clean; boundaries (read-only, no network, no API keys,
+  no decision logic in connectors) verified and documented.
+
 ### Added (Phase 5 - Connectors - Milestone 4 regression + Milestone 5 hardening)
 
 - Milestone 4 (full connector regression) VERIFIED (2026-08-18): complete

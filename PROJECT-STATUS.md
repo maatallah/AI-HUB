@@ -8,23 +8,20 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 5 — Connectors (VS Code / MCP) (Milestones 1-3
-complete and closed; Milestone 4 full regression VERIFIED; Milestone 5
-hardening/release-readiness complete; Phase 5 release package pending owner
-approval; Phase 4 released)
+**Current phase:** Phase 5 — Connectors (VS Code / MCP) (RELEASED and CLOSED
+2026-08-18; baseline `8231dce`; Phase 4 released)
 
-**Completion %:** ~80% (Phases 1-4 released; Phase 5 Milestones 1-4 complete;
-Milestone 5 hardening done; release package pending approval)
+**Completion %:** ~85% (Phases 1-5 released; Phase 6 planning is the next
+phase)
 
 **Last update:** 2026-08-18
 
-**Repository health:** Good (262/262 Python tests passing, no open defects;
-Phase 5 MCP/adapter 46/46; connectors/vscode 27/27 TS unit tests + 2/2
+**Repository health:** Good (264/264 Python tests passing, no open defects;
+Phase 5 MCP/adapter 48/48; connectors/vscode 28/28 TS unit tests + 2/2
 integration tests passing)
 
-**Blocking issues:** None. Phase 5 Milestones 1-4 complete (Milestone 4 full
-regression VERIFIED 2026-08-18); Milestone 5 hardening/release-readiness
-complete; Phase 5 release package (manifest + closure) awaiting owner approval.
+**Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
+`8231dce`); Phase 6 entry conditions not yet authorized.
 
 ---
 
@@ -87,7 +84,9 @@ proposal). Milestones 1-3 complete:
   living docs refreshed.
 
 Milestones 1-4 are complete and closed; the Phase 5 release package (manifest
-+ closure) is pending owner approval. The documented transitive npm
++ closure) was approved and the phase CLOSED 2026-08-18 (baseline `8231dce`,
+manifest `docs/release/PHASE5-RELEASE-MANIFEST.md` status = closure accepted
+in `handover/PHASE-5-CLOSURE.md`). The documented transitive npm
 vulnerabilities (serialize-javascript / mocha via `@vscode/test-cli`) are
 accepted; no unrelated dependency upgrades are performed.
 
@@ -99,6 +98,8 @@ Release documents:
 * `docs/release/PHASE2-RELEASE-MANIFEST.md` (immutable, git SHA `ae0a6c2`)
 * `docs/release/PHASE3-RELEASE-MANIFEST.md` (immutable, git SHA `ff4b8a7`)
 * `docs/release/PHASE4-RELEASE-MANIFEST.md` (immutable, git SHA `c49ea9b`,
+  closure accepted)
+* `docs/release/PHASE5-RELEASE-MANIFEST.md` (immutable, git SHA `8231dce`,
   closure accepted)
 * `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE3-SCORING-SPEC.md`
@@ -116,14 +117,13 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Approve Milestone 5 (Phase 5 release package + closure) - next step
+* Authorize Phase 6 (Ecosystem Intelligence) planning when ready
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 5 Milestone 5 (Phase 5 release package + closure), awaiting owner
-approval of the Phase 5 release.
+Phase 6 (Ecosystem Intelligence) planning, once authorized by the owner.
 
 ## Open Documentation Items
 
