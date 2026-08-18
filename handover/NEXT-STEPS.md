@@ -5,11 +5,13 @@
 ## Immediate Goal
 
 Phase 5 (Connectors - VS Code / MCP) is RELEASED and CLOSED (baseline
-`8231dce`, closure accepted 2026-08-18): Milestones 1-4 complete and closed,
-Milestone 5 release package (manifest + closure) approved. The next defined
-step is Phase 6 (Ecosystem Intelligence) planning, gated on owner
-authorization. Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests,
-closure accepted 2026-08-17).
+`8231dce`, closure accepted 2026-08-18). Phase 6 (Ecosystem Intelligence) is
+authorized: planning baseline approved (D-P1..D-P9, commit `8f01b10`) and
+Milestone 1 (doc-before-code) complete (v1.2 Section 20, proposal spec,
+ADR-0005/0006). The next defined step is Phase 6 **Milestone 2 (discovery +
+candidate workflow)**, gated on a separate owner authorization (D-P9).
+Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure accepted
+2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -35,6 +37,13 @@ Phase 5 is RELEASED and CLOSED (2026-08-18, baseline `8231dce`, closure
 accepted) - see `docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
 `connectors/adapter.py`, `connectors/mcp/`, `connectors/vscode/`,
 `docs/release/PHASE5-RELEASE-MANIFEST.md` and `handover/PHASE-5-CLOSURE.md`.
+
+Phase 6 (Ecosystem Intelligence) is authorized (2026-08-18). Planning
+baseline `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` approved
+(D-P1..D-P9, commit `8f01b10`). Milestone 1 (doc-before-code) complete -
+`docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`, v1.2 Section 20,
+`decisions/0005-*` and `decisions/0006-*`. Implementation milestones 2-6
+require separate owner authorizations (D-P9).
 
 ---
 
@@ -126,20 +135,60 @@ proposal spec:
 
 ---
 
-# Phase 5 Entry Authorization
+# Phase 6 Entry Authorization
 
-Phase 5 authorized by owner 2026-08-17 (revised planning proposal approved).
-Plan and proposal spec:
+Phase 6 authorized by owner 2026-08-18 (planning baseline + M1). Planning and
+proposal documents:
 
-* `docs/review/PHASE5-CONNECTORS-SPEC.md` (proposal spec)
-* Spec v1.2 Section 19 - Connectors (Phase 5)
+* `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` (planning baseline,
+  approved D-P1..D-P9)
+* `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md` (proposal spec)
+* `AI-Hub Project Specification v1.2.md` Section 20 (Ecosystem Intelligence)
+* `decisions/0005-provider-model-discovery-candidates.md` (D-P1, ACCEPTED)
+* `decisions/0006-benchmark-result-storage.md` (D-P3, ACCEPTED)
 
-Milestone 1 (documentation / doc-before-code) is in progress. Implementation
-must NOT start until this documentation milestone is approved by the owner.
+Milestone 1 (documentation / doc-before-code) is complete. Milestone 2
+(discovery + candidate workflow) must NOT start until a separate owner
+authorization prompt is provided (D-P9 sequential gates).
 
 ---
 
-# Phase 5 Completion Status
+# Phase 6 Completion Status
+
+- [x] Planning baseline approved (D-P1..D-P9, commit `8f01b10`)
+- [x] Milestone 1: v1.2 Section 20 + `docs/review/PHASE6-ECOSYSTEM-
+      INTELLIGENCE-SPEC.md` + ADR-0005/0006 + living-doc refresh
+- [ ] Milestone 2: discovery + candidate workflow (requires owner
+      authorization)
+- [ ] Milestone 3: approval materialization + model registry
+- [ ] Milestone 4: benchmark integration
+- [ ] Milestone 5: trend analysis
+- [ ] Milestone 6: full regression + release package
+
+---
+
+# Pre-Phase 6 Actions (owner)
+
+- [x] Authorize Phase 6 planning (2026-08-18)
+- [x] Approve planning decisions D-P1..D-P9 (2026-08-18)
+- [x] Authorize Milestone 1 documentation (2026-08-18)
+
+---
+
+# Step 1 — Phase 6 Documentation (doc-before-code, Milestone 1)
+
+Completed (2026-08-18): `AI-Hub Project Specification v1.2.md` Section 20,
+`docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`, `decisions/0005-*`,
+`decisions/0006-*`, CHANGELOG.md, PROJECT-STATUS.md,
+handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
+
+Milestone 2 (discovery + candidate workflow) and every later implementation
+milestone must each be authorized separately by the owner before it starts
+(D-P9).
+
+---
+
+# Phase 5 Completion Status (historical)
 
 - [x] Spec v1.2 Section 19 (Connectors) (Milestone 1)
 - [x] `docs/review/PHASE5-CONNECTORS-SPEC.md` (Milestone 1)
@@ -154,20 +203,6 @@ must NOT start until this documentation milestone is approved by the owner.
       refresh) - complete
 - [x] Milestone 5: release package (manifest + closure) + owner approval -
       approved and closed 2026-08-18 (baseline `8231dce`)
-
----
-
-# Step 1 — Phase 5 Documentation (doc-before-code, Milestone 1)
-
-Completed (2026-08-17): `AI-Hub Project Specification v1.2.md` Section 19,
-`docs/review/PHASE5-CONNECTORS-SPEC.md`, CHANGELOG.md, PROJECT-STATUS.md,
-handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
-
-Milestone 2 (shared adapter + MCP server) and Milestone 3 (VS Code extension)
-implemented and closed (owner approval 2026-08-18). Milestone 4 (full
-regression) VERIFIED 2026-08-18. Milestone 5 hardening, documentation and
-release readiness complete; the Phase 5 release was approved and the phase
-CLOSED 2026-08-18 (baseline `8231dce`).
 
 # Step 2 — Phase 4 Documentation (doc-before-code)
 
@@ -188,19 +223,20 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 
 # Next Recommended Agent
 
-Backend-focused implementation agent for Phase 5 (Connectors - VS Code /
-MCP). Phase 5 is RELEASED and CLOSED (baseline `8231dce`, closure accepted
-2026-08-18). The next defined phase is Phase 6 (Ecosystem Intelligence),
-gated on owner authorization.
+Backend-focused implementation agent for Phase 6 (Ecosystem Intelligence),
+**Milestone 2 (discovery + candidate workflow)** - gated on separate owner
+authorization. Phase 6 planning baseline (D-P1..D-P9) and Milestone 1
+documentation are complete (commit `8f01b10`; v1.2 Section 20; proposal spec;
+ADR-0005/0006). Do not begin M2 without explicit authorization.
 
 Recommended input:
 
 * START-HERE.md
 * CONSTITUTION.md
-* AI-Hub Specification v1.2
-* docs/review/PHASE5-CONNECTORS-SPEC.md
-* docs/review/PHASE4-DASHBOARD-SPEC.md
-* docs/release/PHASE4-RELEASE-MANIFEST.md
+* AI-Hub Specification v1.2 (Sections 5, 9, 15, 19, 20)
+* docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md
+* docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md
+* decisions/0005-provider-model-discovery-candidates.md
+* decisions/0006-benchmark-result-storage.md
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md
-* this document

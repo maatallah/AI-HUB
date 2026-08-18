@@ -8,11 +8,12 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 5 — Connectors (VS Code / MCP) (RELEASED and CLOSED
-2026-08-18; baseline `8231dce`; Phase 4 released)
+**Current phase:** Phase 6 — Ecosystem Intelligence (planning baseline
+approved 2026-08-18; Milestone 1 documentation complete; Milestone 2 not
+authorized)
 
-**Completion %:** ~85% (Phases 1-5 released; Phase 6 planning is the next
-phase)
+**Completion %:** ~85% (Phases 1-5 released; Phase 6 planning + M1
+documentation complete; implementation milestones 2-6 pending authorization)
 
 **Last update:** 2026-08-18
 
@@ -21,7 +22,8 @@ Phase 5 MCP/adapter 48/48; connectors/vscode 28/28 TS unit tests + 2/2
 integration tests passing)
 
 **Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
-`8231dce`); Phase 6 entry conditions not yet authorized.
+`8231dce`). Phase 6 planning baseline approved (D-P1..D-P9) and M1
+doc-before-code complete; M2 implementation not yet authorized.
 
 ---
 
@@ -92,6 +94,26 @@ accepted; no unrelated dependency upgrades are performed.
 
 Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
+Phase 6 — Ecosystem Intelligence authorized 2026-08-18. Planning baseline
+approved (D-P1..D-P9) as commit `8f01b10`
+(`docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md`). Milestone 1
+(doc-before-code, Article 11) complete:
+
+* `AI-Hub Project Specification v1.2.md` Section 20 - Ecosystem Intelligence
+  (Phase 6): discovery candidates (D-P1), provenance-aware benchmark storage
+  (D-P3), deterministic read-only trend analysis, security/mutation
+  boundaries, config/events/dependencies.
+* `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md` - proposal spec
+  (discovery + benchmark + trend + model registry; CLI-only D-P6; milestones
+  and acceptance criteria).
+* ADR-0005 (D-P1 discovery candidate representation) and ADR-0006 (D-P3
+  benchmark result storage), both ACCEPTED. ADR-0004 remains reserved for the
+  deferred score-snapshots decision (D-P8).
+* Living docs refreshed. No implementation code changes.
+
+Milestone 2 (discovery + candidate workflow) requires a separate owner
+authorization (D-P9 sequential gates).
+
 Release documents:
 
 * `docs/release/PHASE1-RELEASE-MANIFEST.md` (immutable, git SHA `7ceac80`)
@@ -111,19 +133,22 @@ Release documents:
 
 * Specifications: v1.2 approved; agent-logging, project-registry, monitoring
   and scoring proposal specs documented.
-* ADRs: ADR-0001, ADR-0002, ADR-0003 ACCEPTED.
+* ADRs: ADR-0001, ADR-0002, ADR-0003, ADR-0005, ADR-0006 ACCEPTED (ADR-0004
+  reserved for the deferred score-snapshots decision, D-P8).
 * Reviews: R-01..R-08 amendments applied; final review PASS; Phase 2 and
   Phase 3 plans approved 2026-08-01; Phase 5 connectors spec in review.
 
 ## Pending Owner Decisions
 
-* Authorize Phase 6 (Ecosystem Intelligence) planning when ready
+* Authorize Phase 6 Milestone 2 (discovery + candidate workflow)
+  implementation when ready (D-P9 sequential gates)
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 6 (Ecosystem Intelligence) planning, once authorized by the owner.
+Phase 6 Milestone 2 (discovery + candidate workflow), once authorized by the
+owner.
 
 ## Open Documentation Items
 

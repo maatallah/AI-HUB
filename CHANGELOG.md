@@ -4,6 +4,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - Milestone 1 documentation)
+
+- Phase 6 planning baseline approved by owner 2026-08-18 (commit `8f01b10`,
+  `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md`):
+  planning decisions D-P1..D-P9 (D-P1 dedicated discovery-candidate table;
+  D-P2 controlled network for discovery/benchmark ingestion; D-P3 persistent
+  provenance-aware benchmark storage; D-P4 provider/model registry scope
+  only; D-P5 ADR-0003 workspace discovery deferred; D-P6 CLI-only; D-P7
+  on-demand only; D-P8 ADR-0004 snapshots deferred; D-P9 sequential milestone
+  gates).
+- Milestone 1 (doc-before-code, Article 11): `AI-Hub Project Specification
+  v1.2.md` Section 20 - Ecosystem Intelligence (Phase 6);
+  `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md` (proposal spec);
+  ADR-0005 (D-P1 discovery candidate representation) and ADR-0006 (D-P3
+  benchmark result storage), both ACCEPTED. ADR-0004 remains reserved for the
+  deferred point-in-time score snapshots decision (D-P8); Phase 6 decisions
+  therefore occupy numbers 0005 and 0006.
+- Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE,
+  NEXT-STEPS, decisions/README). No implementation code changed; no schema
+  changes; M1 is documentation only per the milestone gate (D-P9).
+
 ### Added (Phase 5 - Connectors - release)
 
 - Phase 5 RELEASED and CLOSED (2026-08-18, baseline `8231dce`).

@@ -1071,3 +1071,146 @@ The Phase 5 implementation lives in `connectors/mcp/` and `connectors/vscode/`
 with the shared adapter at `connectors/adapter.py`. All Phase 5 modules are
 read-only; connector behaviour is verified by `tests/test_connectors_*`.
 See `docs/review/PHASE5-CONNECTORS-SPEC.md` and the approved Phase 5 plan.
+
+---
+
+# 20. Ecosystem Intelligence (Phase 6)
+
+## 20.1 Philosophy
+
+Phase 6 - Ecosystem Intelligence implements the Phase 6 roadmap items of
+Section 15 (AI Ecosystem Intelligence / Automatic Discovery / Benchmark
+Integration / Trend Analysis). It is the final planned phase.
+
+Ecosystem knowledge is acquired through **review-gated discovery** (Section 9
+pattern), **provenance-backed benchmark ingestion** (ADR-0006), and
+**deterministic read-only trend analysis** over the append-only event history
+(Section 18.3). It never auto-activates providers or models, never fabricates
+data (Articles 2, 10), and never bypasses the provider lifecycle
+(Sections 5 and 6).
+
+## 20.2 Automatic Discovery
+
+### 20.2.1 Candidate model (ADR-0005, D-P1)
+
+Automatic discoveries are represented as **candidates** in a dedicated
+`discovery_candidates` table - never as `providers` rows. The provider
+lifecycle (Section 5) and its `providers.status` CHECK constraint are
+unchanged; no migration or lifecycle change is introduced for
+`PENDING_REVIEW`.
+
+Candidate states: `DISCOVERED` -> `PENDING_REVIEW` -> `APPROVED` | `REJECTED`.
+
+| State | Meaning |
+|-------|---------|
+| `DISCOVERED` | imported/fetched; not yet queued |
+| `PENDING_REVIEW` | queued for human review |
+| `APPROVED` | human-approved; provider (+ models) materialized |
+| `REJECTED` | human-dismissed; retained, never deleted (Article 5) |
+
+**Terminology note:** the candidate state `PENDING_REVIEW` shares its name
+with the project-registry state and with the terminology used in Section 9
+for automatic discoveries, but it is a *candidate* state on the
+`discovery_candidates` table - it is NOT a provider lifecycle state
+(Section 5). The provider lifecycle remains
+`NEW -> EVALUATING -> ACTIVE -> LIMITED/DEGRADED -> OFFLINE -> ARCHIVED`.
+
+### 20.2.2 Workflow
+
+Only explicit human action (`discovery approve`) moves a candidate to
+`APPROVED` and materializes provider/model rows through the existing governed
+registry operations (`core.providers`, `core.models`; state starts at `NEW`
+and proceeds per Section 5). Nothing auto-approves (Articles 1, 2).
+
+### 20.2.3 Sources (D-P2)
+
+* **Curated import (primary):** owner-provided structured files imported on
+  demand; deterministic, audit-able, offline.
+* **Network fetch (approved, controlled):** only allowlisted public metadata
+  endpoints, gated by an explicit flag and a non-empty
+  `discovery.allowlisted_urls` (empty by default = network disabled). Fetches
+  are user-gated (Article 2), time/rate-bounded, never store credentials or
+  API keys, never target private endpoints, and record an immutable snapshot
+  (URL, fetched_at, content hash) before analysis so determinism holds
+  (Article 7). Transports are injectable for offline tests.
+
+## 20.3 Benchmark Integration
+
+### 20.3.1 Storage (ADR-0006, D-P3)
+
+Published benchmark results are ingested into persistent, provenance-aware
+storage: `benchmark_runs` (name, version, origin, content hash, imported_at,
+submitter, mapping) and `benchmark_results` (run_id, model_id, metric,
+raw_value, norm_value). Source attribution and retrieval metadata are
+preserved; raw values are never fabricated and always remain queryable
+(Article 10).
+
+### 20.3.2 Score mapping
+
+Mapped, validated rows update the normalized `scores` table with
+`source = 'BENCHMARK'` (Section 1.3) via the existing `scoring.ingest`
+upsert semantics (`UNIQUE (model_id, dimension)`); normalization to 0-100 is
+deterministic and the metric->dimension mapping is recorded on the run.
+Ageing (Section 4) applies unchanged; `scored_at` = run date. Benchmark
+ingestion is auditable and reproducible within the documented limitations
+(Article 8).
+
+### 20.3.3 Ingestion rules
+
+Batch imports are atomic per file (any invalid row fails the whole import
+with the error recorded; no partial writes); a `--dry-run` mode validates
+without mutation; every successful import records a `BENCHMARK_IMPORTED`
+event.
+
+## 20.4 Trend Analysis
+
+Trend analysis is deterministic, read-only analysis over the series produced
+by `dashboard.history` (Section 18.3). For a request window it computes
+direction (`up` / `down` / `stable` / `insufficient_data`), magnitude
+(normalized delta, documented formula) and stability, with window and minimum-
+point thresholds. Insufficient history yields `insufficient_data` with the
+thresholds used - never a fabricated direction (Articles 7, 10). Trends
+produce no events and no writes. Point-in-time score snapshots remain
+deferred (ADR-0004, D-P8).
+
+## 20.5 Security and mutation boundaries
+
+Phase 6 guarantees (mirroring Phase 5 Section 19.5, enforced by tests):
+
+1. No writes outside the documented governed operations (candidate rows;
+   materialized providers/models; benchmark runs/results + mapped scores;
+   events).
+2. No auto-approval; no scheduler, daemon, cron integration or autonomous
+   recurring execution (D-P7); all operations are on-demand CLI.
+3. No storing of credentials, API keys, tokens or secret configuration;
+   payloads are scanned for secret-like keys; stored URLs are sanitized
+   (Article 6; R-01 discipline).
+4. No modification of config files, environment or VS Code settings.
+5. Network only per 20.2.3 (allowlist + snapshot + user gate).
+6. No package installation; `requirements.txt` and the npm graph unchanged.
+
+## 20.6 Configuration, events and dependencies
+
+* New configuration keys proposed (documented, validated in Milestone 2):
+  `[discovery] enabled`, `allowlisted_urls`, `timeout_seconds`,
+  `import_dir`; `[benchmark] import_dir`; `[trend] window_days`,
+  `min_points` (Section 10 conventions).
+* New event types (whitelist extension): `DISCOVERY_CANDIDATE_ADDED`,
+  `DISCOVERY_IMPORT_COMPLETE`, `DISCOVERY_IMPORT_ERROR`,
+  `DISCOVERY_CANDIDATE_APPROVED`, `DISCOVERY_CANDIDATE_REJECTED`,
+  `BENCHMARK_IMPORTED`; `MODEL_ADDED` / `MODEL_UPDATED` / `MODEL_ARCHIVED`
+  (defined in Phase 1, currently never emitted) become emitted by the model
+  registry operations.
+* No new Python dependencies (stdlib + sqlite3 + pytest only); optional
+  network fetch uses stdlib `urllib` (as `monitoring/health.py`).
+* CLI surfaces only (D-P6): no MCP/VS Code connector surface changes in
+  Phase 6; the Phase 5 connector boundary is preserved.
+
+### Implementation (Phase 6)
+
+Phase 6 is implemented in `discovery/`, `benchmark/`, `trend/` and
+`core/models.py` behind the sequential milestone gates of the Phase 6
+proposal spec (`docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`) and the
+planning baseline (`docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md`).
+Behaviour is verified by `tests/test_discovery.py`, `tests/test_benchmark.py`,
+`tests/test_trend.py` and `tests/test_models.py`.

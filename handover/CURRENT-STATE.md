@@ -4,8 +4,9 @@
 
 Last Updated:
 
-2026-08-18 (Phase 5 RELEASED and CLOSED: Milestones 1-4 complete and closed,
-full regression VERIFIED, Milestone 5 release package accepted)
+2026-08-18 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved
+and Milestone 1 documentation complete; Phase 6 implementation milestones
+2-6 not authorized)
 
 ---
 
@@ -31,6 +32,12 @@ extension. Milestone 4 (full regression) VERIFIED 2026-08-18. Milestone 5
 hardening, documentation and release readiness complete; the Phase 5 release
 package (manifest + closure) approved and closed 2026-08-18 (baseline
 `8231dce`).
+
+Phase 6 (Ecosystem Intelligence) authorized 2026-08-18. Planning baseline
+approved (D-P1..D-P9, commit `8f01b10`) and Milestone 1 (doc-before-code)
+complete: v1.2 Section 20, `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`,
+ADR-0005 (D-P1 discovery candidates) and ADR-0006 (D-P3 benchmark storage).
+Implementation milestones 2-6 require separate owner authorizations (D-P9).
 
 Architecture approved.
 
@@ -111,9 +118,31 @@ Completed (Phase 5 - release):
   `handover/PHASE-5-CLOSURE.md` created; closure accepted by owner
   2026-08-18.
 
+## Phase 6 (Milestone 1 - documentation) - Ecosystem Intelligence
+
+Authorized:
+
+* Owner approval 2026-08-18 of the Phase 6 planning baseline (D-P1..D-P9) and
+  Milestone 1 (doc-before-code, Article 11).
+
+Completed (Milestone 1):
+
+* `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` (planning baseline,
+  commit `8f01b10`) - approved planning decisions 2026-08-18.
+* `AI-Hub Project Specification v1.2.md` Section 20 - Ecosystem Intelligence
+  (Phase 6).
+* `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md` - proposal spec
+  (discovery candidates ADR-0005; provenance-aware benchmark storage
+  ADR-0006; read-only trend analysis; CLI-only D-P6; milestones + acceptance
+  criteria).
+* ADR-0005 (D-P1) and ADR-0006 (D-P3), ACCEPTED. ADR-0004 reserved for the
+  deferred score-snapshots decision (D-P8).
+* Living docs refreshed. No implementation code or schema changes.
+
 Pending:
 
-* Phase 6 (Ecosystem Intelligence) planning - requires owner authorization.
+* Phase 6 Milestone 2 (discovery + candidate workflow) - requires separate
+  owner authorization (D-P9).
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -341,7 +370,9 @@ Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
 
 # Not Yet Implemented
 
-* Phase 6 (Ecosystem Intelligence) planning - requires owner authorization
+* Phase 6 implementation Milestones 2-6 (planning baseline + M1 documentation
+  complete; each implementation milestone requires separate owner
+  authorization)
 * Model seeding
 
 ---
@@ -405,5 +436,11 @@ implemented and closed; M4/M5 status and release recorded)
 Phase 5 implementation: High (RELEASED and CLOSED 2026-08-18; 264 Python
 tests + 48 MCP/adapter + 28/28 TS unit + 2/2 integration tests passing;
 Milestone 5 release package accepted)
+
+Phase 6 documentation: High (planning baseline approved 2026-08-18; M1
+doc-before-code complete - v1.2 Section 20, proposal spec, ADR-0005/0006)
+
+Phase 6 implementation: Not started (Milestones 2-6 require separate owner
+authorization, D-P9)
 
 Concept: Validated
