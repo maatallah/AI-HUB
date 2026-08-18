@@ -4,9 +4,12 @@
 
 ## Immediate Goal
 
-Phase 4 (Dashboard / Reporting / History) implemented (`c49ea9b`, 216/216
-tests). Complete the Phase 4 release review + owner approval, then start
-Phase 5 (Connectors) planning.
+Phase 4 (Dashboard / Reporting / History) released and closed (`c49ea9b`,
+216/216 tests, closure accepted 2026-08-17). Phase 5 (Connectors - VS Code /
+MCP) authorized 2026-08-17. Milestones 1-3 complete and closed (documentation,
+shared adapter + MCP server, VS Code extension; 262/262 Python tests). Milestone
+4 (full connector regression) is the current defined step; Milestone 5
+(release package + closure) follows - both gated on owner approval.
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -22,19 +25,29 @@ Phase 3 is released (162/162 tests) - see
 `handover/PHASE-3-CLOSURE.md` and
 `docs/release/PHASE3-RELEASE-MANIFEST.md` (status APPROVED).
 
-Phase 4 is implemented (`c49ea9b`, 216/216 tests) - see
-`docs/review/PHASE4-IMPLEMENTATION-PLAN.md`,
+Phase 4 is released (`c49ea9b`, 216/216 tests, closure accepted 2026-08-17) -
+see `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`,
 `docs/review/PHASE4-DASHBOARD-SPEC.md`,
-`docs/release/PHASE4-RELEASE-MANIFEST.md` (pending owner approval) and
+`docs/release/PHASE4-RELEASE-MANIFEST.md` (baseline `c49ea9b`) and
 `handover/PHASE-4-CLOSURE.md`.
+
+Phase 5 is authorized (2026-08-17, revised planning proposal approved). Milestones
+1-3 complete and closed (documentation, adapter + MCP server, VS Code extension) -
+see `docs/review/PHASE5-CONNECTORS-SPEC.md`, v1.2 Section 19,
+`connectors/adapter.py`, `connectors/mcp/` and `connectors/vscode/`. Owner
+verification for Milestone 3 passed 2026-08-18. Milestones 4-5 (full
+regression, release package) pending.
 
 ---
 
 # Pre-Phase 5 Actions (owner)
 
-- [ ] Approve Phase 4 release (`docs/release/PHASE4-RELEASE-MANIFEST.md`)
-- [ ] Sign off Phase 4 closure (`handover/PHASE-4-CLOSURE.md`)
-- [ ] Authorize Phase 5 (Connectors - VS Code / MCP) planning
+- [x] Approve Phase 4 release (`docs/release/PHASE4-RELEASE-MANIFEST.md`,
+  approved 2026-08-17)
+- [x] Sign off Phase 4 closure (`handover/PHASE-4-CLOSURE.md`, accepted
+  2026-08-17)
+- [x] Authorize Phase 5 (Connectors - VS Code / MCP) planning (approved
+  2026-08-17)
 
 ---
 
@@ -110,41 +123,81 @@ proposal spec:
 - [x] `dashboard/history.py` event-derived history
 - [x] CLI `dashboard status/report/history`
 - [x] Tests: dashboard engine, reports, history (54 new; 216/216 total)
-- [ ] Phase 4 release review + approval (owner) - release review complete
-  (`c49ea9b`); owner approval pending
+- [x] Phase 4 release review + approval (owner, 2026-08-17) - released and
+  closed (baseline `c49ea9b`)
 
 ---
 
-# Step 1 — Phase 4 Documentation (doc-before-code)
+# Phase 5 Entry Authorization
+
+Phase 5 authorized by owner 2026-08-17 (revised planning proposal approved).
+Plan and proposal spec:
+
+* `docs/review/PHASE5-CONNECTORS-SPEC.md` (proposal spec)
+* Spec v1.2 Section 19 - Connectors (Phase 5)
+
+Milestone 1 (documentation / doc-before-code) is in progress. Implementation
+must NOT start until this documentation milestone is approved by the owner.
+
+---
+
+# Phase 5 Completion Status
+
+- [x] Spec v1.2 Section 19 (Connectors) (Milestone 1)
+- [x] `docs/review/PHASE5-CONNECTORS-SPEC.md` (Milestone 1)
+- [x] `connectors/adapter.py` shared read-only adapter (Milestone 2)
+- [x] `connectors/mcp/` MCP server (stdio, bounded subset) (Milestone 2)
+- [x] `connectors/vscode/` VS Code extension (Milestone 3)
+- [x] Tests: connectors adapter / MCP / vscode (46 Python + 27 TS unit +
+      2 integration)
+- [ ] Milestone 4: full connector regression - gated on owner approval
+- [ ] Milestone 5: Phase 5 release package (manifest + closure) + owner
+      approval
+
+---
+
+# Step 1 — Phase 5 Documentation (doc-before-code, Milestone 1)
+
+Completed (2026-08-17): `AI-Hub Project Specification v1.2.md` Section 19,
+`docs/review/PHASE5-CONNECTORS-SPEC.md`, CHANGELOG.md, PROJECT-STATUS.md,
+handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
+
+Milestone 2 (shared adapter + MCP server) and Milestone 3 (VS Code extension)
+implemented and closed (owner approval 2026-08-18). Milestones 4-5 pending.
+
+# Step 2 — Phase 4 Documentation (doc-before-code)
 
 Completed in `36d4aef`: `docs/review/PHASE4-DASHBOARD-SPEC.md`, v1.2 Section
 18, CHANGELOG.md, PROJECT-STATUS.md, handover/CURRENT-STATE.md,
 handover/NEXT-STEPS.md.
 
-# Step 2 — Phase 4 Implementation
+# Step 3 — Phase 4 Implementation
 
 Completed in `c49ea9b`: read-only dashboard engine, deterministic reports and
 append-only event-derived history (see `docs/review/PHASE4-DASHBOARD-SPEC.md`).
 No schema changes unless ADR-0004 is approved.
 
-Step 2 done - dashboard is implemented and 216/216 tests pass. Phase 4
-release review complete; awaiting owner approval.
+Step 3 done - dashboard is implemented, 216/216 tests pass, Phase 4 released
+and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 
 ---
 
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 5 (Connectors - VS Code /
-MCP).
+MCP). Milestones 2-3 (shared adapter + MCP server, VS Code extension) are
+complete and closed. Milestone 4 (full connector regression) is the next
+approved milestone after the owner approves the Milestone 3 completion record,
+followed by Milestone 5 (Phase 5 release package + closure).
 
 Recommended input:
 
 * START-HERE.md
 * CONSTITUTION.md
 * AI-Hub Specification v1.2
+* docs/review/PHASE5-CONNECTORS-SPEC.md
 * docs/review/PHASE4-DASHBOARD-SPEC.md
 * docs/release/PHASE4-RELEASE-MANIFEST.md
-* handover/PHASE-4-CLOSURE.md
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md
 * this document

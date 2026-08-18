@@ -1,0 +1,110 @@
+{
+  "name": "ai-hub",
+  "displayName": "AI-Hub",
+  "description": "Read-only AI-Hub intelligence connector for VS Code (Phase 5).",
+  "version": "1.0.0",
+  "publisher": "ai-hub",
+  "license": "SEE LICENSE IN repository root",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:ai-hub.status",
+    "onCommand:ai-hub.modelScores",
+    "onCommand:ai-hub.recommendations",
+    "onCommand:ai-hub.fallbackChain",
+    "onCommand:ai-hub.scoreHistory",
+    "onCommand:ai-hub.availabilityHistory",
+    "onCommand:ai-hub.dashboardReport",
+    "onView:ai-hub.reports"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-hub.status",
+        "title": "AI-Hub: Provider Status",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.modelScores",
+        "title": "AI-Hub: Model Scores",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.recommendations",
+        "title": "AI-Hub: Recommendations",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.fallbackChain",
+        "title": "AI-Hub: Fallback Chain",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.scoreHistory",
+        "title": "AI-Hub: Score History",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.availabilityHistory",
+        "title": "AI-Hub: Availability History",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.dashboardReport",
+        "title": "AI-Hub: Dashboard Report",
+        "category": "AI-Hub"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ai-hub",
+          "title": "AI-Hub",
+          "icon": "resources/ai-hub.svg"
+        }
+      ]
+    },
+    "views": {
+      "ai-hub": [
+        {
+          "id": "ai-hub.reports",
+          "name": "Reports"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI-Hub",
+      "properties": {
+        "ai-hub.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python executable used to invoke the AI-Hub CLI."
+        },
+        "ai-hub.workingDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "AI-Hub repository root used as the CLI working directory (defaults to the workspace folder)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "compile:offline": "tsc -p tsconfig.test.json",
+    "compile:integration": "tsc -p tsconfig.integration.json",
+    "test:unit": "npm run compile:offline && node --test \"out-test/test/*.test.js\"",
+    "test": "npm run compile && npm run compile:integration && vscode-test"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.11.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}

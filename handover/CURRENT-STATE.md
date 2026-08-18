@@ -4,8 +4,8 @@
 
 Last Updated:
 
-2026-08-17 (Phase 4 implemented; release review complete, awaiting owner
-approval)
+2026-08-18 (Phase 5 Milestones 1-3 complete and closed; Milestone 4 full
+regression next)
 
 ---
 
@@ -19,9 +19,16 @@ tracking, quota architecture, seed validation. 99/99 tests passing.
 Phase 3 (Scoring / Recommendation / Fallback) released: scoring,
 recommendation with provenance and fallback chain. 162/162 tests passing.
 
-Phase 4 (Dashboard / Reporting / History) implemented (`c49ea9b`): read-only
-dashboard engine, deterministic reports, append-only event-derived history.
-216/216 tests passing. Release review complete; owner approval pending.
+Phase 4 (Dashboard / Reporting / History) implemented (`c49ea9b`) and
+released: read-only dashboard engine, deterministic reports, append-only
+event-derived history. 216/216 tests passing. Release approved and closure
+accepted 2026-08-17 (commit `3c47c61`).
+
+Phase 5 (Connectors - VS Code / MCP) authorized 2026-08-17 (revised planning
+proposal approved). Milestones 1-3 complete: documentation (doc-before-code),
+shared read-only adapter + MCP server, and VS Code extension. 262/262 Python
+tests passing; connectors/vscode 27/27 TS unit + 2/2 integration tests.
+Milestones 4 (full regression) and 5 (release package) pending.
 
 Architecture approved.
 
@@ -31,12 +38,58 @@ Git baseline committed and pushed (`main` == `origin/main`).
 
 # Completed
 
-## Phase 4 (awaiting owner approval) - Dashboard / Reporting / History
+## Phase 5 (Milestones 1-3 complete) - Connectors (VS Code / MCP)
 
 Authorized:
 
-* Owner approval 2026-08-17 of `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
-  (baseline `f9316e4`).
+* Owner approval 2026-08-17 of the revised Phase 5 planning proposal.
+
+Completed (Milestone 1 - documentation):
+
+* Spec v1.2 Section 19 - Connectors (Phase 5): bounded MCP subset (legacy
+  handshake era, primary `2025-11-25`), stdio-only transport, Tools
+  capability only, no MCP Python dependency (D-1), isolated VS Code npm
+  graph (D-4), shared read-only adapter, no connector decision logic, no
+  network/mutation/API-key/config/environment changes.
+* `docs/review/PHASE5-CONNECTORS-SPEC.md` - proposal spec (MCP architecture,
+  dependencies, adapter delegation map, security boundaries, milestones,
+  test acceptance criteria, risks, owner actions).
+
+Completed (Milestone 2 - shared adapter + MCP server):
+
+* `connectors/adapter.py` - single read-only application interface
+  delegating to Phase 1-4 modules only (dashboard engine/reports/history,
+  recommendation.recommend, fallback.build_chain, core.providers).
+* `connectors/mcp/` - bounded MCP subset over stdio (legacy era
+  `2024-10-07`..`2025-11-25`, primary `2025-11-25`), stdlib only:
+  `server.py` (initialize handshake, ping, tools/list, tools/call) and
+  `tools.py` (7 fixed tools, deterministic ordering).
+* Tests: 46 new (adapter 19, MCP 27); approved and closed by owner.
+
+Completed (Milestone 3 - VS Code extension):
+
+* `connectors/vscode/` - 7 commands (`ai-hub.status`, `ai-hub.modelScores`,
+  `ai-hub.recommendations`, `ai-hub.fallbackChain`, `ai-hub.scoreHistory`,
+  `ai-hub.availabilityHistory`, `ai-hub.dashboardReport`), activity bar
+  view container + reports tree view, webview panels rendering escaped CLI
+  output deterministically.
+* Data access: no SQLite access; invokes the read-only AI-Hub CLI
+  (`python -m app.main ...`) via `execFile`. Never mutates, never contacts
+  the network, never handles API keys, contains no decision logic.
+* Isolated npm graph (D-4): self-contained Node/TypeScript workspace with
+  owner-run `npm install`; `package-lock.json` tracked, `node_modules/`,
+  `out/`, `out-test/`, `.vscode-test/` git-ignored.
+* Tests: 27 offline TS unit tests + 2 real VS Code integration tests.
+* Owner verification (2026-08-18): real-@types compile, offline compile,
+  27/27 unit, 2/2 integration, 262/262 Python regression, `git diff --check`
+  clean. Approved and closed by owner.
+
+Pending:
+
+* Milestone 4: full connector regression - gated on owner approval.
+* Milestone 5: Phase 5 release package (manifest + closure) + owner approval.
+
+## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
 Completed:
 
@@ -52,10 +105,10 @@ Completed:
 * Tests: 216/216 passing (54 new).
 * `docs/release/PHASE4-RELEASE-MANIFEST.md` (baseline `c49ea9b`) and
   `handover/PHASE-4-CLOSURE.md`.
+* Released and closed 2026-08-17 (commit `3c47c61`).
 
 Pending:
 
-* Phase 4 release approval + closure sign-off (owner).
 * Optional snapshots only if ADR-0004 is approved.
 
 ## Phase 3 - Scoring / Recommendation / Fallback
@@ -138,7 +191,8 @@ AI-Hub/
   recommendation/ __init__.py, engine.py, profiles.py, explain.py,
                   provenance.py (Phase 3)
   fallback/       __init__.py, engine.py (Phase 3)
-  connectors/     vscode/, mcp/ (empty - Phase 5)
+  connectors/     adapter.py, __init__.py, vscode/ (extension workspace),
+                  mcp/ (server.py, tools.py) (Phase 5)
   dashboard/      __init__.py, engine.py, reports.py, history.py (Phase 4)
   tests/          conftest.py, test_database.py, test_schema.py,
                   test_config.py, test_providers.py, test_health.py,
@@ -146,8 +200,9 @@ AI-Hub/
                   test_scoring_engine.py, test_recommendation.py,
                   test_fallback.py, test_provenance.py,
                   test_dashboard_engine.py, test_dashboard_reports.py,
-                  test_dashboard_history.py, test_dashboard_cli.py
-                  (216 tests total)
+                  test_dashboard_history.py, test_dashboard_cli.py,
+                  test_connectors_adapter.py, test_connectors_mcp.py
+                  (262 tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
@@ -229,14 +284,38 @@ plain-text reports and append-only event-derived history - all in
 conformance with v1.2 Section 18. No schema changes (7 tables unchanged);
 point-in-time snapshots deferred pending ADR-0004 approval. See
 `docs/review/PHASE4-DASHBOARD-SPEC.md`, `docs/release/PHASE4-RELEASE-MANIFEST.md`
-and `handover/PHASE-4-CLOSURE.md`.
+and `handover/PHASE-4-CLOSURE.md`. Released and closed 2026-08-17.
+
+## Connectors (Phase 5)
+
+Authorized 2026-08-17 (revised planning proposal approved). Milestones 1-3
+complete and closed:
+
+* Milestone 1: v1.2 Section 19 and `docs/review/PHASE5-CONNECTORS-SPEC.md`.
+* Milestone 2: `connectors/adapter.py` (single read-only application
+  interface delegating to existing Phase 1-4 modules) + `connectors/mcp/`
+  (bounded MCP subset: legacy protocol era, stdio-only, Tools capability
+  only, stdlib, no Python dependency D-1). 46 new tests.
+* Milestone 3: `connectors/vscode/` (VS Code extension). Own isolated npm
+  graph (D-4): self-contained Node/TypeScript workspace with owner-run
+  `npm install`; read-only CLI invocation (`python -m app.main ...` via
+  `execFile`), no SQLite access, no mutation, no network, no API-key
+  handling, no decision logic. 27 offline TS unit tests + 2 real VS Code
+  integration tests. Owner verification passed 2026-08-18; approved and
+  closed.
+
+Connectors contain no decision logic and perform no network/mutation/API-key/
+config/environment changes. The documented transitive npm vulnerabilities
+(via `@vscode/test-cli` dev toolchain) are accepted; no unrelated upgrades.
+Remaining: Milestone 4 (full regression) and Milestone 5 (Phase 5 release
+package + closure), both gated on owner approval.
 
 ---
 
 # Not Yet Implemented
 
-* Phase 5 Connectors (VS Code / MCP) - dashboard reports are plain-text and
-  connector-safe
+* Phase 5 Milestones 4-5: full connector regression + release package
+  (manifest + closure) - gated on owner approval
 * Ecosystem intelligence (Phase 6)
 * Model seeding
 
@@ -292,7 +371,13 @@ Phase 3 implementation: High (162 tests passing, Phase 3 released)
 Phase 4 documentation: High (plan approved, spec written; implementation
 complete)
 
-Phase 4 implementation: High (216 tests passing; release review complete,
-awaiting owner approval)
+Phase 4 implementation: High (216 tests passing; released and closed
+2026-08-17)
+
+Phase 5 documentation: High (plan approved, spec written; Milestones 2-3
+implemented and closed)
+
+Phase 5 implementation: High (Milestones 2-3 approved and closed 2026-08-18;
+262 Python tests + 27/27 TS unit + 2/2 integration tests passing)
 
 Concept: Validated

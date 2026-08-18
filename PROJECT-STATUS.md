@@ -8,17 +8,19 @@
 
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
-**Current phase:** Phase 4 — Dashboard / Reporting / History (implemented,
-216/216 tests passing; release review complete, awaiting owner approval)
+**Current phase:** Phase 5 — Connectors (VS Code / MCP) (Milestones 1-3
+complete and closed; Milestone 4 full regression next; Phase 4 released)
 
-**Completion %:** ~65% (Phases 1-3 released, Phase 4 implemented; Phase 4
-release approval pending)
+**Completion %:** ~75% (Phases 1-4 released; Phase 5 Milestones 1-3 complete)
 
-**Last update:** 2026-08-17
+**Last update:** 2026-08-18
 
-**Repository health:** Good (216/216 tests passing, no open defects)
+**Repository health:** Good (262/262 Python tests passing, no open defects;
+connectors/vscode 27/27 TS unit tests + 2/2 integration tests passing)
 
-**Blocking issues:** None. Phase 4 release pending owner approval.
+**Blocking issues:** None. Phase 5 Milestones 1-3 (documentation, adapter +
+MCP server, VS Code extension) complete; Milestones 4-5 (full regression,
+release package) gated on owner approval.
 
 ---
 
@@ -52,6 +54,29 @@ in `36d4aef`; implementation completed in `c49ea9b` (release commit):
 * CLI: `dashboard status`, `dashboard report <name>`, `dashboard history`.
 * No schema changes, no new dependencies, no new config keys/event types.
 * Tests: 216/216 passing (54 new in Phase 4).
+* Phase 4 release approved and closed (2026-08-17, commit `3c47c61`,
+  manifest `docs/release/PHASE4-RELEASE-MANIFEST.md` status = closure
+  accepted, baseline `c49ea9b`).
+
+Phase 5 — Connectors (VS Code / MCP) approved 2026-08-17 (revised planning
+proposal). Milestones 1-3 complete:
+
+* Milestone 1 (docs): `docs/review/PHASE5-CONNECTORS-SPEC.md`, spec v1.2
+  Section 19 - Connectors (Phase 5).
+* Milestone 2 (adapter + MCP server): `connectors/adapter.py` (single
+  read-only application interface delegating to Phase 1-4 modules,
+  stdlib MCP subset over stdio, Tools capability only, legacy protocol era
+  `2024-10-07`..`2025-11-25`), `connectors/mcp/` (`server.py`, `tools.py`).
+  46 new tests (adapter 19, MCP 27); 262 Python tests total.
+* Milestone 3 (VS Code extension): `connectors/vscode/` - 7 commands, reports
+  tree view + webview panels, read-only CLI invocation, isolated npm graph
+  (D-4). 27 offline TS unit tests + 2 real VS Code integration tests.
+  Approved and closed by owner 2026-08-18.
+
+Milestones 4 (full connector regression) and 5 (Phase 5 release package +
+closure) pending owner approval. The documented transitive npm vulnerabilities
+(serialize-javascript / mocha via `@vscode/test-cli`) are accepted; no
+unrelated dependency upgrades are performed.
 
 Configuration alignment is maintained (`config.toml` == `templates/config.toml`).
 
@@ -60,12 +85,13 @@ Release documents:
 * `docs/release/PHASE1-RELEASE-MANIFEST.md` (immutable, git SHA `7ceac80`)
 * `docs/release/PHASE2-RELEASE-MANIFEST.md` (immutable, git SHA `ae0a6c2`)
 * `docs/release/PHASE3-RELEASE-MANIFEST.md` (immutable, git SHA `ff4b8a7`)
-* `docs/release/PHASE4-RELEASE-MANIFEST.md` (release baseline `c49ea9b`,
-  pending owner approval)
+* `docs/release/PHASE4-RELEASE-MANIFEST.md` (immutable, git SHA `c49ea9b`,
+  closure accepted)
 * `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE3-SCORING-SPEC.md`
 * `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE4-DASHBOARD-SPEC.md`
+* `docs/review/PHASE5-CONNECTORS-SPEC.md`
 
 ## Architecture Maturity
 
@@ -73,17 +99,19 @@ Release documents:
   and scoring proposal specs documented.
 * ADRs: ADR-0001, ADR-0002, ADR-0003 ACCEPTED.
 * Reviews: R-01..R-08 amendments applied; final review PASS; Phase 2 and
-  Phase 3 plans approved 2026-08-01.
+  Phase 3 plans approved 2026-08-01; Phase 5 connectors spec in review.
 
 ## Pending Owner Decisions
 
-* Review + approve the Phase 4 release (`docs/release/PHASE4-RELEASE-MANIFEST.md`)
-* Sign off Phase 4 closure (`handover/PHASE-4-CLOSURE.md`)
+* Approve Milestone 4 (full connector regression) - next step
+* Approve Milestone 5 (Phase 5 release package + closure) at the end
+* Owner-run `npm install` inside `connectors/vscode/` for local builds
+  (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 4 release approval (owner), then Phase 5 planning (Connectors - VS Code
-/ MCP).
+Phase 5 Milestone 4 (full connector regression baseline), then Milestone 5
+(Phase 5 release package + closure).
 
 ## Open Documentation Items
 

@@ -4,6 +4,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 5 - Connectors - VS Code extension / Milestone 3)
+
+- `connectors/vscode/` VS Code extension implemented and verified under the
+  approved Phase 5 scope (presentation/integration only, no decision logic,
+  no mutation, no network access, no API-key handling).
+- Commands (7): `ai-hub.status`, `ai-hub.modelScores`,
+  `ai-hub.recommendations`, `ai-hub.fallbackChain`, `ai-hub.scoreHistory`,
+  `ai-hub.availabilityHistory`, `ai-hub.dashboardReport`; activity bar view
+  container `ai-hub` with reports tree view (`ai-hub.reports`).
+- Data access: the extension invokes the read-only AI-Hub CLI
+  (`python -m app.main ...`) via `execFile`; it never opens SQLite directly
+  and never issues a mutating command (recommendations use `recommend chain`,
+  never `recommend top`).
+- Isolated Node/TypeScript workspace (decision D-4): own `package.json`,
+  `tsconfig*.json`, `src/`, `test/`, local ambient type stubs for offline
+  verification. devDependencies: `typescript`, `@types/vscode`,
+  `@types/node`, `@vscode/test-cli`, `@vscode/test-electron`.
+  `connectors/vscode/node_modules/`, `out/`, `out-test/`, `.vscode-test/`
+  are git-ignored; `package-lock.json` is a tracked artifact; `npm install`
+  is owner-run (documented in `connectors/vscode/README.md`).
+- Tests: 27 offline unit tests (`node:test`, fake vscode) + 2 real VS Code
+  integration tests (`@vscode/test-cli`); all passing.
+- Owner verification (2026-08-18): real-@types compile clean, offline
+  compile clean, 27/27 unit tests, 2/2 integration tests, full Python
+  regression 262/262, `git diff --check` clean. Milestone 3 approved and
+  closed by owner.
+- No Python, MCP, Phase 1-4, requirements.txt or architecture changes.
+
+### Added (Phase 5 - Connectors - documentation / doc-before-code)
+
+- Phase 5 revised planning proposal approved (2026-08-17 by owner).
+- Spec v1.2 Section 19 - Connectors (Phase 5): bounded MCP subset (legacy
+  handshake era, `2024-10-07`..`2025-11-25`; primary target `2025-11-25`),
+  stdio-only transport, Tools capability only, no MCP Python dependency
+  (D-1), isolated VS Code npm graph (D-4), shared read-only adapter,
+  connectors contain no decision logic, no network/mutation/API-key/config/
+  environment changes.
+- New proposal spec `docs/review/PHASE5-CONNECTORS-SPEC.md` covering MCP
+  architecture (protocol versions, transport, primitives, tool discovery,
+  error semantics, bounded-subset statement), dependency decisions (D-1/D-4),
+  shared adapter delegation map (existing Phase 1-4 modules only: dashboard
+  engine/reports/history, recommendation.recommend, fallback.build_chain,
+  core.providers.list_providers), decision-logic boundary, security/mutation
+  boundaries, VS Code scope, milestones, test acceptance criteria, risks and
+  owner actions.
+- Milestone 1 only (doc-before-code). No implementation: no `connectors/mcp/`,
+  no `connectors/vscode/`, no `connectors/adapter.py` created.
+
 ### Added (Phase 4 - Dashboard / Reporting / History - implementation)
 
 - Dashboard engine package `dashboard/`:

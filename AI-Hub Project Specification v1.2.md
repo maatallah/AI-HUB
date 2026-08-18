@@ -878,3 +878,196 @@ Score history is reconstructed from `SCORE_RECORDED` / `SCORE_UPDATED` events;
 availability history from `MONITOR_STATUS_CHANGED` and `HEALTH_CHECK_*`
 events (`dashboard/history.py`). Point-in-time snapshots are deferred and
 require ADR-0004 before any schema change.
+
+---
+
+# 19. Connectors (Phase 5)
+
+## 19.1 Philosophy
+
+Connectors are external-facing, read-only access points to AI-Hub
+intelligence. They consume AI-Hub data and decision output through the CLI or
+the shared adapter; they NEVER contain decision logic (Constitution Articles
+1, 2, 4). No scoring, recommendation, fallback, ranking or policy logic is
+implemented inside any connector.
+
+Phase 5 delivers two connectors:
+
+* `connectors/mcp/` - a Model Context Protocol (MCP) server.
+* `connectors/vscode/` - a VS Code extension (presentation/integration only).
+
+## 19.2 MCP Connector
+
+### 19.2.1 Bounded MCP compatibility
+
+The MCP connector implements a **deliberately bounded subset** of the Model
+Context Protocol. It targets the **legacy protocol era** (handshake-based
+`initialize`, revisions `2024-10-07` through `2025-11-25`). It is NOT a full
+implementation of the modern-era revision `2026-07-28` (see 19.2.5).
+
+Supported protocol versions (negotiated at initialization):
+
+* `2025-11-25` (primary target)
+* `2025-06-18`
+* `2025-03-26`
+* `2024-11-05`
+
+Version negotiation follows the standard `initialize` handshake: the server
+echoes a requested version it supports, otherwise it responds with the
+highest version it supports. The server identifies itself with `serverInfo`
+(`name = "ai-hub", version = "<release>"`) and declares `capabilities =
+{"tools": {}}`. MCP clients in legacy mode or `auto` probe mode connect
+without error: over stdio a server that does not answer `server/discover`
+is treated as a legacy server and the client falls back to `initialize`.
+
+### 19.2.2 Transport
+
+stdio only. JSON-RPC 2.0 messages on stdin/stdout (newline-delimited),
+one message per line, UTF-8. No HTTP, no SSE, no streamable transport, no
+`Mcp-Session-Id`, no TLS. The server is offline-capable by design.
+
+### 19.2.3 Supported primitives
+
+Tools capability only:
+
+* `initialize` / `notifications/initialized` (handshake)
+* `ping`
+* `tools/list` - static tool discovery (no `listChanged` notifications)
+* `tools/call` - single tool invocation
+
+NOT supported: resources, prompts, sampling, roots, logging notification
+opt-in, `server/discover`, JSON-RPC batches, progress notifications.
+
+### 19.2.4 Tool discovery and semantics
+
+* Tool discovery: `tools/list` returns the full fixed tool set with
+  `name`, `description` and `inputSchema` (JSON Schema `type: "object"`).
+  Ordering is deterministic (alphabetical by tool name).
+* Tools (read-only, delegating to existing engines):
+
+| Tool | Delegates to | Returns |
+|------|--------------|---------|
+| `provider_status` | `dashboard.engine.provider_view` + `monitoring.availability.list_availability` | Per-provider status, availability, failures |
+| `model_scores` | `dashboard.engine.score_view` (i.e. `scoring.list_scores`) | Current per-dimension scores |
+| `recommend_top` | `recommendation.recommend` | Ranked recommendations (ranking, confidence, flags); does NOT record provenance |
+| `fallback_chain` | `fallback.build_chain` | Deterministic fallback chain |
+| `dashboard_report` | `dashboard.reports.REPORT_BUILDERS` | Selected plain-text report |
+| `score_history` | `dashboard.history.score_history` | Event-derived score series |
+| `availability_history` | `dashboard.history.availability_history` | Event-derived availability series |
+| `provider_list` | `core.providers.list_providers` | Provider registry rows |
+
+* Request/response: valid request to a known tool returns `result` with
+  `content` as a single `{type: "text", text: ...}` item. `isError` on the
+  result is used for tool-level failures (missing data, engine errors).
+* Errors use JSON-RPC codes: `-32700` parse error, `-32600` invalid request,
+  `-32601` method not found, `-32602` invalid params / unknown tool,
+  `-32603` internal error.
+
+### 19.2.5 Explicit non-goal
+
+The MCP connector targets the handshake-based legacy generation
+(`2025-11-25` and earlier), which is fully expressible on stdio with the
+standard library. The stateless modern-era revision `2026-07-28` (which
+retires the `initialize`/`initialized` handshake in favour of per-request
+`_meta` versioning and `server/discover`) is explicitly out of scope. If a
+client requires `2026-07-28` with handshake disabled, the connector responds
+as a legacy server (clients in `auto` mode fall back to `initialize`); a
+client pinned exclusively to `2026-07-28` receives the equivalent of
+`UnsupportedProtocolVersionError`. This bounded subset is the approved D-1
+decision: stdlib-only implementation, no MCP SDK dependency.
+
+## 19.3 VS Code Connector
+
+### 19.3.1 Scope
+
+A VS Code extension providing read-only views of AI-Hub dashboard reports.
+It is strictly presentation/integration logic: it contains no AI-Hub decision
+logic and performs no writes to AI-Hub data or to the VS Code configuration.
+
+### 19.3.2 Data source
+
+The extension invokes the AI-Hub CLI (`python -m app.main ...`) with the
+user-configured AI-Hub workspace/DB path, and renders the resulting plain-text
+reports. It does not read SQL, does not open the database, and does not run
+engine queries itself.
+
+### 19.3.3 Commands and views
+
+* Commands (`ai-hub.status`, `ai-hub.dashboardReport`, `ai-hub.scoreHistory`,
+  `ai-hub.availabilityHistory`), registered via `package.json`
+  `contributes.commands`.
+* Views: a Tree Data Provider for the report list and a `WebviewPanel` for a
+  selected report (monospace, tab-separated as produced by the CLI).
+* Error handling: CLI failures and non-zero exit codes are surfaced as error
+  notifications; empty reports are shown with a "no data" notice (never
+  fabricated).
+
+### 19.3.4 Isolation from core dependency policy
+
+The extension lives under `connectors/vscode/` as an isolated Node.js /
+TypeScript workspace with its OWN `package.json` (devDependencies:
+`typescript`, `@types/vscode`, `@vscode/test-cli`), `tsconfig.json` and
+`src/`. It is:
+
+* NOT part of the Python runtime: `requirements.txt` is unchanged; no Python
+  module imports it; the Python project does not depend on any npm package.
+* Isolated from the core AI-Hub dependency policy: the "no new dependencies"
+  rule governs the Python runtime (`requirements.txt`); the extension's npm
+  graph is fully contained within `connectors/vscode/`.
+* Never executed or activated by AI-Hub core code.
+
+The extension is built locally by the owner (or a future CI) with `npm
+install` inside `connectors/vscode/`; the built artifact is not committed, and
+`connectors/vscode/node_modules/` is git-ignored.
+
+## 19.4 Shared read-only adapter
+
+A single adapter module (`connectors/adapter.py` - planned, Phase 5
+implementation) is the ONLY channel through which both connectors read AI-Hub
+data. It is a stable application interface that delegates to existing engines
+and NEVER issues its own SQL or reaches into database internals.
+
+Delegation map (all read-only):
+
+| Adapter function | Delegates to |
+|------------------|--------------|
+| `provider_status(conn)` | `dashboard.engine.provider_view` |
+| `model_scores(conn, model_id=None)` | `dashboard.engine.score_view` |
+| `recommend_top(conn, task, profile=..., limit=...)` | `recommendation.recommend` |
+| `fallback_chain(conn, task, profile=..., max_chain_length=...)` | `fallback.build_chain` |
+| `dashboard_report(conn, name, ...)` | `dashboard.reports.REPORT_BUILDERS` |
+| `score_history(conn, model_id, dimension=None)` | `dashboard.history.score_history` |
+| `availability_history(conn, provider_id=None)` | `dashboard.history.availability_history` |
+| `provider_list(conn, status=None)` | `core.providers.list_providers` |
+
+The adapter receives an already-open read-only SQLite connection and returns
+plain dict/list structures. It performs no writes (Constitution Article 1),
+no events, no provenance recording, no config reads and no network access.
+
+## 19.5 Security and mutation boundaries
+
+Phase 5 guarantees (mirroring Phase 4 D-5, enforced by tests):
+
+* No writes to AI-Hub data (no INSERT/UPDATE/DELETE anywhere in connectors).
+* No modification of VS Code settings or config files.
+* No creation or storage of API keys or credentials (Constitution Article 6).
+* No modification of environment variables.
+* No real network calls (stdio transport, local CLI invocation).
+* No automatic installation of extensions or packages.
+
+## 19.6 Configuration, events and dependencies
+
+* No new configuration keys. The MCP server and VS Code extension reuse the
+  existing AI-Hub DB path resolution (`app.config.load_config` + CLI) and do
+  not introduce TOML keys.
+* No new event types; connectors never record events.
+* No new Python dependencies (stdlib + sqlite3 + pytest only). The VS Code
+  extension's npm devDependencies are isolated to `connectors/vscode/`
+  (19.3.4).
+
+### Implementation (Phase 5)
+
+The Phase 5 implementation lives in `connectors/mcp/` and `connectors/vscode/`
+with the shared adapter at `connectors/adapter.py`. All Phase 5 modules are
+read-only; connector behaviour is verified by `tests/test_connectors_*`.
+See `docs/review/PHASE5-CONNECTORS-SPEC.md` and the approved Phase 5 plan.
