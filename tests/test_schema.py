@@ -26,6 +26,7 @@ def test_expected_tables_present(conn):
         "events",
         "preferences",
         "recommendations",
+        "discovery_candidates",
     }
     assert db_util.EXPECTED_TABLES <= db_util.table_names(conn)
 
@@ -188,5 +189,50 @@ def test_models_unique_per_provider_identifier(conn):
             "INSERT INTO models (provider_id, model_name, model_identifier)"
             " VALUES (?, 'M2', 'm-1')",
             (provider_id,),
+        )
+        conn.commit()
+
+
+def test_discovery_candidates_columns(conn):
+    assert {
+        "id", "provider_name", "source_type", "source_ref", "payload", "state",
+        "content_hash", "imported_at", "reviewed_at", "reason", "submitter",
+        "created_at",
+    } <= _columns(conn, "discovery_candidates")
+
+
+def test_discovery_candidate_state_constraint(conn):
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO discovery_candidates"
+            " (provider_name, source_type, payload, state, content_hash, submitter)"
+            " VALUES ('Bad', 'curated', '{}', 'BOGUS', 'h', 'test')"
+        )
+        conn.commit()
+
+
+def test_discovery_candidate_state_allowlist(conn):
+    for state in ("DISCOVERED", "PENDING_REVIEW", "APPROVED", "REJECTED"):
+        conn.execute(
+            "INSERT INTO discovery_candidates"
+            " (provider_name, source_type, payload, state, content_hash, submitter)"
+            " VALUES (?, 'curated', '{}', ?, 'h', 'test')",
+            (f"Candidate-{state}", state),
+        )
+    conn.commit()
+
+
+def test_discovery_candidate_provider_name_unique(conn):
+    conn.execute(
+        "INSERT INTO discovery_candidates"
+        " (provider_name, source_type, payload, state, content_hash, submitter)"
+        " VALUES ('Acme', 'curated', '{}', 'DISCOVERED', 'h', 'test')"
+    )
+    conn.commit()
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO discovery_candidates"
+            " (provider_name, source_type, payload, state, content_hash, submitter)"
+            " VALUES ('Acme', 'curated', '{}', 'DISCOVERED', 'h', 'test')"
         )
         conn.commit()

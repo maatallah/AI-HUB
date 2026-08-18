@@ -6,12 +6,13 @@
 
 Phase 5 (Connectors - VS Code / MCP) is RELEASED and CLOSED (baseline
 `8231dce`, closure accepted 2026-08-18). Phase 6 (Ecosystem Intelligence) is
-authorized: planning baseline approved (D-P1..D-P9, commit `8f01b10`) and
+authorized: planning baseline approved (D-P1..D-P9, commit `8f01b10`),
 Milestone 1 (doc-before-code) complete (v1.2 Section 20, proposal spec,
-ADR-0005/0006). The next defined step is Phase 6 **Milestone 2 (discovery +
-candidate workflow)**, gated on a separate owner authorization (D-P9).
-Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure accepted
-2026-08-17).
+ADR-0005/0006), and Milestone 2 (discovery + candidate workflow) implemented
+and committed (2026-08-18). The next defined step is Phase 6 **Milestone 3
+(approval materialization + model registry)**, gated on a separate owner
+authorization (D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216
+tests, closure accepted 2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -42,8 +43,11 @@ Phase 6 (Ecosystem Intelligence) is authorized (2026-08-18). Planning
 baseline `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` approved
 (D-P1..D-P9, commit `8f01b10`). Milestone 1 (doc-before-code) complete -
 `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`, v1.2 Section 20,
-`decisions/0005-*` and `decisions/0006-*`. Implementation milestones 2-6
-require separate owner authorizations (D-P9).
+`decisions/0005-*` and `decisions/0006-*`. Milestone 2 (discovery +
+candidate workflow) implemented and committed 2026-08-18 - `discovery/`
+module, additive `discovery_candidates` table, `[discovery]` config,
+5 discovery event types, review CLI. Implementation milestones 3-6 require
+separate owner authorizations (D-P9).
 
 ---
 
@@ -137,7 +141,7 @@ proposal spec:
 
 # Phase 6 Entry Authorization
 
-Phase 6 authorized by owner 2026-08-18 (planning baseline + M1). Planning and
+Phase 6 authorized by owner 2026-08-18 (planning baseline + M1 + M2). Planning and
 proposal documents:
 
 * `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` (planning baseline,
@@ -147,9 +151,10 @@ proposal documents:
 * `decisions/0005-provider-model-discovery-candidates.md` (D-P1, ACCEPTED)
 * `decisions/0006-benchmark-result-storage.md` (D-P3, ACCEPTED)
 
-Milestone 1 (documentation / doc-before-code) is complete. Milestone 2
-(discovery + candidate workflow) must NOT start until a separate owner
-authorization prompt is provided (D-P9 sequential gates).
+Milestone 1 (documentation / doc-before-code) and Milestone 2 (discovery +
+candidate workflow) are complete. Milestone 3 (approval materialization +
+model registry) must NOT start until a separate owner authorization prompt is
+provided (D-P9 sequential gates).
 
 ---
 
@@ -158,9 +163,11 @@ authorization prompt is provided (D-P9 sequential gates).
 - [x] Planning baseline approved (D-P1..D-P9, commit `8f01b10`)
 - [x] Milestone 1: v1.2 Section 20 + `docs/review/PHASE6-ECOSYSTEM-
       INTELLIGENCE-SPEC.md` + ADR-0005/0006 + living-doc refresh
-- [ ] Milestone 2: discovery + candidate workflow (requires owner
+- [x] Milestone 2: discovery + candidate workflow (2026-08-18; `discovery/`
+      module, `discovery_candidates` table, `[discovery]` config, 5 event
+      types, review CLI; 337/337 Python)
+- [ ] Milestone 3: approval materialization + model registry (requires owner
       authorization)
-- [ ] Milestone 3: approval materialization + model registry
 - [ ] Milestone 4: benchmark integration
 - [ ] Milestone 5: trend analysis
 - [ ] Milestone 6: full regression + release package
@@ -172,6 +179,7 @@ authorization prompt is provided (D-P9 sequential gates).
 - [x] Authorize Phase 6 planning (2026-08-18)
 - [x] Approve planning decisions D-P1..D-P9 (2026-08-18)
 - [x] Authorize Milestone 1 documentation (2026-08-18)
+- [x] Authorize Milestone 2 implementation (2026-08-18)
 
 ---
 
@@ -182,9 +190,31 @@ Completed (2026-08-18): `AI-Hub Project Specification v1.2.md` Section 20,
 `decisions/0006-*`, CHANGELOG.md, PROJECT-STATUS.md,
 handover/CURRENT-STATE.md, handover/NEXT-STEPS.md.
 
-Milestone 2 (discovery + candidate workflow) and every later implementation
-milestone must each be authorized separately by the owner before it starts
-(D-P9).
+---
+
+# Step 2 — Phase 6 Milestone 2 (discovery + candidate workflow)
+
+Completed (2026-08-18, owner authorization against M1 baseline `d32324a`):
+
+* `discovery/sources.py` - curated JSON import, candidate record validation,
+  secret-key scanning (app.config pattern), URL sanitization, injectable
+  urllib transport.
+* `discovery/engine.py` - candidate lifecycle (add/list/queue/approve/reject)
+  with deterministic state transitions; per-dataset atomic validation; duplicate
+  reporting; controlled network `run` (D-P2) with snapshot-before-analysis.
+* Additive `discovery_candidates` table (ADR-0005) + `EXPECTED_TABLES`.
+* New whitelisted events: `DISCOVERY_CANDIDATE_ADDED`,
+  `DISCOVERY_IMPORT_COMPLETE`, `DISCOVERY_IMPORT_ERROR`,
+  `DISCOVERY_CANDIDATE_APPROVED`, `DISCOVERY_CANDIDATE_REJECTED`.
+* `[discovery]` config keys (validated; mirrored in `config.toml` +
+  `templates/config.toml`); CLI subcommands `discovery import|run|list|
+  approve|reject`.
+* Tests: 337/337 Python (264 base + 73 new), adapter/MCP 48/48, VS Code
+  28/28 + 2/2, `git diff --check` clean. No M3-M5 code; connectors untouched
+  (D-P6).
+
+Milestone 3 and every later implementation milestone must each be authorized
+separately by the owner before it starts (D-P9).
 
 ---
 
@@ -224,10 +254,12 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 6 (Ecosystem Intelligence),
-**Milestone 2 (discovery + candidate workflow)** - gated on separate owner
-authorization. Phase 6 planning baseline (D-P1..D-P9) and Milestone 1
-documentation are complete (commit `8f01b10`; v1.2 Section 20; proposal spec;
-ADR-0005/0006). Do not begin M2 without explicit authorization.
+**Milestone 3 (approval materialization + model registry)** - gated on
+separate owner authorization. Phase 6 planning baseline (D-P1..D-P9,
+commit `8f01b10`), Milestone 1 documentation, and Milestone 2 (discovery +
+candidate workflow, committed `d32324a` predecessor) are complete (v1.2
+Section 20; proposal spec; ADR-0005/0006; `discovery/` module; 337/337 Python
+green). Do not begin M3 without explicit authorization.
 
 Recommended input:
 
@@ -238,5 +270,6 @@ Recommended input:
 * docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md
 * decisions/0005-provider-model-discovery-candidates.md
 * decisions/0006-benchmark-result-storage.md
+* discovery/engine.py, discovery/sources.py, app/main.py, database/schema.sql
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md

@@ -12,6 +12,7 @@ credential (key, token, secret, password, credential, apikey) is rejected.
 
 from __future__ import annotations
 
+import json
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -63,6 +64,12 @@ DEFAULT_CONFIG: dict = {
     "dashboard": {
         "refresh_seconds": 60,
     },
+    "discovery": {
+        "enabled": False,
+        "allowlisted_urls": [],
+        "timeout_seconds": 10,
+        "import_dir": "data/discovery",
+    },
     "logging": {
         "level": "INFO",
     },
@@ -87,6 +94,10 @@ class Config:
     recommendation_default_profile: str
     recommendation_decision_version: str
     dashboard_refresh_seconds: int
+    discovery_enabled: bool
+    discovery_allowlisted_urls: list
+    discovery_timeout_seconds: int
+    discovery_import_dir: str
     logging_level: str
 
 
@@ -122,6 +133,30 @@ def _require(d: dict, section: str, key: str) -> object:
     if key not in d[section]:
         raise ConfigError(f"Missing configuration value '{section}.{key}'.")
     return d[section][key]
+
+
+def _validate_url_safety(url: str) -> None:
+    """Accept only http(s) URLs without credentials or secret-like query keys."""
+    from urllib.parse import parse_qs, urlparse
+
+    parsed = urlparse(url)
+    if parsed.scheme.lower() not in ("http", "https"):
+        raise ConfigError(
+            f"discovery.allowlisted_urls entry {url!r} must be an http(s) URL."
+        )
+    if not parsed.hostname:
+        raise ConfigError(f"discovery.allowlisted_urls entry {url!r} has no host.")
+    if parsed.username is not None or parsed.password is not None:
+        raise ConfigError(
+            f"discovery.allowlisted_urls entry {url!r} embeds credentials; "
+            "URLs must never contain credentials (Constitution Article 6)."
+        )
+    for key in parse_qs(parsed.query):
+        if any(word in key.lower() for word in SECRET_KEYWORDS):
+            raise ConfigError(
+                f"discovery.allowlisted_urls entry {url!r} carries a "
+                "secret-like query key."
+            )
 
 
 def validate(data: dict) -> Config:
@@ -182,6 +217,22 @@ def validate(data: dict) -> Config:
     if not isinstance(dashboard.get("refresh_seconds"), int) or dashboard["refresh_seconds"] <= 0:
         raise ConfigError("dashboard.refresh_seconds must be a positive integer.")
 
+    discovery_ = data["discovery"]
+    if not isinstance(discovery_.get("enabled"), bool):
+        raise ConfigError("discovery.enabled must be a boolean.")
+    urls = discovery_.get("allowlisted_urls")
+    if not isinstance(urls, list) or not all(isinstance(u, str) for u in urls):
+        raise ConfigError("discovery.allowlisted_urls must be a list of URL strings.")
+    for url in urls:
+        _validate_url_safety(url)
+    if (
+        not isinstance(discovery_.get("timeout_seconds"), int)
+        or discovery_["timeout_seconds"] <= 0
+    ):
+        raise ConfigError("discovery.timeout_seconds must be a positive integer.")
+    if not isinstance(discovery_.get("import_dir"), str) or not discovery_["import_dir"].strip():
+        raise ConfigError("discovery.import_dir must be a non-empty string.")
+
     logging_ = data["logging"]
     level = logging_.get("level")
     if level not in VALID_LOG_LEVELS:
@@ -204,6 +255,10 @@ def validate(data: dict) -> Config:
         recommendation_default_profile=profile,
         recommendation_decision_version=decision_version,
         dashboard_refresh_seconds=dashboard["refresh_seconds"],
+        discovery_enabled=discovery_["enabled"],
+        discovery_allowlisted_urls=urls,
+        discovery_timeout_seconds=discovery_["timeout_seconds"],
+        discovery_import_dir=discovery_["import_dir"],
         logging_level=level,
     )
 
@@ -253,6 +308,16 @@ def effective_config_text(config: Config) -> str:
         f'decision_version = "{config.recommendation_decision_version}"\n'
         "\n[dashboard]\n"
         f"refresh_seconds = {config.dashboard_refresh_seconds}\n"
-        "\n[logging]\n"
-        f'level = "{config.logging_level}"\n'
+        "\n[discovery]\n"
+        f"enabled = {str(config.discovery_enabled).lower()}\n"
+        "allowlisted_urls = "
+        + (
+            f"[{', '.join(json.dumps(u) for u in config.discovery_allowlisted_urls)}]\n"
+            if config.discovery_allowlisted_urls
+            else "[]\n"
+        )
+        + f"timeout_seconds = {config.discovery_timeout_seconds}\n"
+        + f'import_dir = "{config.discovery_import_dir}"\n'
+        + "\n[logging]\n"
+        + f'level = "{config.logging_level}"\n'
     )

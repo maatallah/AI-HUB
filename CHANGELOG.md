@@ -4,6 +4,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - Milestone 2 implementation)
+
+- Milestone 2 (discovery + candidate workflow, D-P1/ADR-0005, D-P2) - owner
+  authorized 2026-08-18 against the M1 baseline `d32324a`.
+- Additive `discovery_candidates` table (ADR-0005 DDL) in
+  `database/schema.sql`; added to `EXPECTED_TABLES`; state CHECK
+  `DISCOVERED/PENDING_REVIEW/APPROVED/REJECTED`; `provider_name` UNIQUE;
+  retained, never deleted (Article 5).
+- `discovery/` module: `sources.py` (curated JSON import reader, candidate
+  record validation, secret-key scanning reusing the `app.config` pattern,
+  URL sanitization, injectable `urllib` transport) and `engine.py` (candidate
+  lifecycle: add/list/queue/approve/reject, per-dataset atomic validation,
+  duplicate reporting, network `run` with snapshot-before-analysis).
+- `discovery approve/reject` are deterministic candidate-state transitions
+  ONLY in M2; provider/model materialization belongs to Milestone 3.
+- Controlled network fetch (D-P2): non-empty allowlist required, explicit
+  `--allow-network` CLI flag, immutable snapshot (URL, fetched_at, content
+  hash, size) recorded before analysis, best-effort per-URL with
+  `DISCOVERY_IMPORT_ERROR` events, offline-tested via injected transports.
+- New whitelisted event types: `DISCOVERY_CANDIDATE_ADDED`,
+  `DISCOVERY_IMPORT_COMPLETE`, `DISCOVERY_IMPORT_ERROR`,
+  `DISCOVERY_CANDIDATE_APPROVED`, `DISCOVERY_CANDIDATE_REJECTED`.
+- `[discovery]` configuration keys (validated): `enabled` (master switch,
+  default false, gates acquisition), `allowlisted_urls` (default empty =
+  network disabled; credentials/secret query keys rejected), `timeout_seconds`
+  (default 10), `import_dir` (default `data/discovery`). Mirrored in
+  `config.toml` and `templates/config.toml`.
+- CLI (additive, existing commands unchanged): `discovery import [path]`,
+  `discovery run [--allow-network] [--timeout N]`,
+  `discovery list [--state ...]`, `discovery approve <id> [--reason]`,
+  `discovery reject <id> --reason`.
+- Tests: `tests/test_discovery.py` (lifecycle, review discipline, curated
+  import, network fetch with fake transports, security) and
+  `tests/test_discovery_cli.py`; schema/config/CLI fixtures updated for the
+  additive table and `[discovery]` config. Full Python suite 337/337 (264
+  base + 73 new); adapter/MCP 48/48; VS Code 28/28 unit + 2/2 integration;
+  `git diff --check` clean. No benchmark/trend/model-registry code (M3-M5),
+  no connectors changes (D-P6), `requirements.txt` and npm graph unchanged.
+- Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
 ### Added (Phase 6 - Ecosystem Intelligence - Milestone 1 documentation)
 
 - Phase 6 planning baseline approved by owner 2026-08-18 (commit `8f01b10`,

@@ -36,6 +36,20 @@ decision_version = "3.0.0"
 [dashboard]
 refresh_seconds = 60
 
+[discovery]
+# Phase 6 ecosystem discovery (ADR-0005 / D-P1). Master switch for candidate
+# acquisition (curated import and network fetch). Review (list/approve/reject)
+# stays available regardless.
+enabled = false
+# Explicit allowlist for controlled network metadata fetch (D-P2). Empty =
+# network disabled. Never add credentials/private endpoints here.
+allowlisted_urls = []
+# Per-fetch HTTP timeout in seconds for `discovery run`.
+timeout_seconds = 10
+# Default curated import location (JSON patch files) used when `discovery
+# import` is given no explicit path.
+import_dir = "data/discovery"
+
 [logging]
 level = "INFO"
 log_root = "logs"

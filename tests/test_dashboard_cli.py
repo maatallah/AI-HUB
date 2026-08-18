@@ -43,6 +43,12 @@ def cli_conn(tmp_path, monkeypatch):
                     "decision_version": "3.0.0",
                 },
                 "dashboard": {"refresh_seconds": 60},
+                "discovery": {
+                    "enabled": False,
+                    "allowlisted_urls": [],
+                    "timeout_seconds": 10,
+                    "import_dir": "data/discovery",
+                },
                 "logging": {"level": "INFO"},
             }
         )

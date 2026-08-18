@@ -4,9 +4,10 @@
 
 Last Updated:
 
-2026-08-18 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved
-and Milestone 1 documentation complete; Phase 6 implementation milestones
-2-6 not authorized)
+2026-08-18 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved,
+Milestone 1 documentation and Milestone 2 discovery + candidate workflow
+implemented and committed; Phase 6 implementation milestones 3-6 not
+authorized)
 
 ---
 
@@ -118,14 +119,15 @@ Completed (Phase 5 - release):
   `handover/PHASE-5-CLOSURE.md` created; closure accepted by owner
   2026-08-18.
 
-## Phase 6 (Milestone 1 - documentation) - Ecosystem Intelligence
+## Phase 6 (Milestones 1-2) - Ecosystem Intelligence
 
 Authorized:
 
-* Owner approval 2026-08-18 of the Phase 6 planning baseline (D-P1..D-P9) and
-  Milestone 1 (doc-before-code, Article 11).
+* Owner approval 2026-08-18 of the Phase 6 planning baseline (D-P1..D-P9),
+  Milestone 1 (doc-before-code, Article 11), and Milestone 2 (discovery +
+  candidate workflow, against M1 baseline `d32324a`).
 
-Completed (Milestone 1):
+Completed (Milestone 1 - documentation):
 
 * `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` (planning baseline,
   commit `8f01b10`) - approved planning decisions 2026-08-18.
@@ -137,12 +139,35 @@ Completed (Milestone 1):
   criteria).
 * ADR-0005 (D-P1) and ADR-0006 (D-P3), ACCEPTED. ADR-0004 reserved for the
   deferred score-snapshots decision (D-P8).
-* Living docs refreshed. No implementation code or schema changes.
+
+Completed (Milestone 2 - discovery + candidate workflow, 2026-08-18):
+
+* Additive `discovery_candidates` table (ADR-0005 DDL; state CHECK; UNIQUE
+  provider_name) + `EXPECTED_TABLES` update.
+* `discovery/` module: `sources.py` (curated import, record validation,
+  secret scan, URL sanitization, injectable urllib transport) and `engine.py`
+  (add/list/queue/approve/reject lifecycle, per-dataset atomic validation,
+  duplicate reporting, controlled network `run` with snapshot-before-analysis
+  D-P2).
+* `discovery approve/reject` = deterministic candidate-state transitions only;
+  provider/model materialization is Milestone 3.
+* New whitelisted events: `DISCOVERY_CANDIDATE_ADDED`,
+  `DISCOVERY_IMPORT_COMPLETE`, `DISCOVERY_IMPORT_ERROR`,
+  `DISCOVERY_CANDIDATE_APPROVED`, `DISCOVERY_CANDIDATE_REJECTED`.
+* `[discovery]` config (`enabled` master switch default false,
+  `allowlisted_urls` default empty, `timeout_seconds`, `import_dir`),
+  mirrored in `config.toml` + `templates/config.toml`.
+* CLI (additive): `discovery import`, `discovery run --allow-network`,
+  `discovery list [--state]`, `discovery approve <id> [--reason]`,
+  `discovery reject <id> --reason`.
+* Tests: `tests/test_discovery.py`, `tests/test_discovery_cli.py`; full Python
+  suite 337/337; adapter/MCP 48/48; VS Code 28/28 + 2/2; `git diff --check`
+  clean. No M3-M5 code, no connectors changes (D-P6).
 
 Pending:
 
-* Phase 6 Milestone 2 (discovery + candidate workflow) - requires separate
-  owner authorization (D-P9).
+* Phase 6 Milestone 3 (approval materialization + model registry) - requires
+  separate owner authorization (D-P9).
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 

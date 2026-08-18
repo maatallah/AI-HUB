@@ -31,6 +31,12 @@ default_profile = "reasoning"
 [dashboard]
 refresh_seconds = 15
 
+[discovery]
+enabled = true
+allowlisted_urls = ["https://api.example.com/v1"]
+timeout_seconds = 5
+import_dir = "data/custom"
+
 [logging]
 level = "DEBUG"
 """
@@ -49,6 +55,10 @@ def test_defaults_used_when_file_missing(tmp_path):
     assert config.recommendation_default_profile == "coding"
     assert config.recommendation_decision_version == "3.0.0"
     assert config.dashboard_refresh_seconds == 60
+    assert config.discovery_enabled is False
+    assert config.discovery_allowlisted_urls == []
+    assert config.discovery_timeout_seconds == 10
+    assert config.discovery_import_dir == "data/discovery"
     assert config.logging_level == "INFO"
 
 
@@ -63,6 +73,10 @@ def test_file_overrides_defaults(tmp_path):
     assert config.fallback_max_chain_length == 3
     assert config.recommendation_default_profile == "reasoning"
     assert config.dashboard_refresh_seconds == 15
+    assert config.discovery_enabled is True
+    assert config.discovery_allowlisted_urls == ["https://api.example.com/v1"]
+    assert config.discovery_timeout_seconds == 5
+    assert config.discovery_import_dir == "data/custom"
     assert config.logging_level == "DEBUG"
 
 
@@ -187,6 +201,12 @@ def test_validate_returns_config():
             "fallback": {"max_chain_length": 1},
             "recommendation": {"default_profile": "free", "decision_version": "9.9.9"},
             "dashboard": {"refresh_seconds": 1},
+            "discovery": {
+                "enabled": True,
+                "allowlisted_urls": ["https://ok.example.com/models"],
+                "timeout_seconds": 7,
+                "import_dir": "data/disc",
+            },
             "logging": {"level": "CRITICAL"},
         }
     )
@@ -199,3 +219,82 @@ def test_validate_returns_config():
     assert config.scoring_aging_old_days == 60
     assert config.scoring_derive_operational is False
     assert config.recommendation_decision_version == "9.9.9"
+    assert config.discovery_enabled is True
+    assert config.discovery_allowlisted_urls == ["https://ok.example.com/models"]
+    assert config.discovery_timeout_seconds == 7
+    assert config.discovery_import_dir == "data/disc"
+
+
+def test_invalid_discovery_enabled_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[discovery]\nenabled = \"yes\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "discovery.enabled" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for non-boolean discovery.enabled.")
+
+
+def test_invalid_discovery_urls_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        "[discovery]\nallowlisted_urls = [\"https://ok.example.com\", \"not-a-url\"]\n",
+        encoding="utf-8",
+    )
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "allowlisted_urls" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for a non-http allowlisted URL.")
+
+
+def test_discovery_url_with_credentials_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        "[discovery]\nallowlisted_urls = [\"https://user:pass@api.example.com/v1\"]\n",
+        encoding="utf-8",
+    )
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "credentials" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for an allowlisted URL with credentials.")
+
+
+def test_discovery_url_with_secret_query_key_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        "[discovery]\nallowlisted_urls = [\"https://api.example.com/v1?api_key=abc\"]\n",
+        encoding="utf-8",
+    )
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "secret" in str(exc).lower()
+    else:
+        raise AssertionError("Expected ConfigError for a secret-like query key.")
+
+
+def test_invalid_discovery_timeout_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[discovery]\ntimeout_seconds = 0\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "timeout_seconds" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for a non-positive discovery timeout.")
+
+
+def test_invalid_discovery_import_dir_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[discovery]\nimport_dir = \"\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "import_dir" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for an empty discovery.import_dir.")

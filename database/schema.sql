@@ -158,6 +158,30 @@ CREATE TABLE IF NOT EXISTS recommendations (
 );
 
 -- -----------------------------------------------------------------------------
+-- discovery_candidates
+-- Review-gated automatic/discovered provider candidates (Phase 6, ADR-0005,
+-- decision D-P1). Candidates are NEVER `providers` rows; the provider
+-- lifecycle and its status CHECK stay unchanged. Only explicit human approval
+-- (`discovery approve`) materializes a candidate as a registered provider
+-- (and its models). Rows are retained, never deleted (Article 5).
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS discovery_candidates (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider_name TEXT    NOT NULL UNIQUE,
+    source_type   TEXT    NOT NULL,
+    source_ref    TEXT,
+    payload       TEXT    NOT NULL,
+    state         TEXT    NOT NULL DEFAULT 'DISCOVERED'
+        CHECK (state IN ('DISCOVERED', 'PENDING_REVIEW', 'APPROVED', 'REJECTED')),
+    content_hash  TEXT    NOT NULL,
+    imported_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+    reviewed_at   TEXT,
+    reason        TEXT,
+    submitter     TEXT    NOT NULL,
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- -----------------------------------------------------------------------------
 -- Indexes
 -- -----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_models_provider            ON models (provider_id);

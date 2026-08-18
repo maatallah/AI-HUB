@@ -9,21 +9,24 @@
 **Current version:** v1.2 (Architecture v1.1 + Implementation Spec v1.2)
 
 **Current phase:** Phase 6 — Ecosystem Intelligence (planning baseline
-approved 2026-08-18; Milestone 1 documentation complete; Milestone 2 not
-authorized)
+approved 2026-08-18; Milestone 1 documentation complete; Milestone 2
+(discovery + candidate workflow) implemented and committed 2026-08-18;
+Milestones 3-6 not authorized)
 
-**Completion %:** ~85% (Phases 1-5 released; Phase 6 planning + M1
-documentation complete; implementation milestones 2-6 pending authorization)
+**Completion %:** ~88% (Phases 1-5 released; Phase 6 planning + M1
+documentation + M2 discovery/candidate workflow complete; implementation
+milestones 3-6 pending authorization)
 
 **Last update:** 2026-08-18
 
-**Repository health:** Good (264/264 Python tests passing, no open defects;
-Phase 5 MCP/adapter 48/48; connectors/vscode 28/28 TS unit tests + 2/2
-integration tests passing)
+**Repository health:** Good (337/337 Python tests passing, no open defects;
+adapter/MCP 48/48; connectors/vscode 28/28 TS unit tests + 2/2 integration
+tests passing)
 
 **Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
-`8231dce`). Phase 6 planning baseline approved (D-P1..D-P9) and M1
-doc-before-code complete; M2 implementation not yet authorized.
+`8231dce`). Phase 6 planning baseline approved (D-P1..D-P9), M1 doc-before-code
+complete, and M2 (discovery + candidate workflow) implemented; M3-M6 not yet
+authorized.
 
 ---
 
@@ -111,8 +114,35 @@ approved (D-P1..D-P9) as commit `8f01b10`
   deferred score-snapshots decision (D-P8).
 * Living docs refreshed. No implementation code changes.
 
-Milestone 2 (discovery + candidate workflow) requires a separate owner
-authorization (D-P9 sequential gates).
+Milestone 2 (discovery + candidate workflow) authorized and implemented
+(2026-08-18, owner authorization against M1 baseline `d32324a`):
+
+* Additive `discovery_candidates` table (ADR-0005 DDL; state CHECK
+  `DISCOVERED/PENDING_REVIEW/APPROVED/REJECTED`; `provider_name` UNIQUE) in
+  `database/schema.sql`, added to `EXPECTED_TABLES`.
+* `discovery/` module - `sources.py` (curated JSON import, record validation,
+  secret scanning, URL sanitization, injectable urllib transport) and
+  `engine.py` (candidate lifecycle add/list/queue/approve/reject; per-dataset
+  atomic validation; duplicate reporting; controlled network run with
+  snapshot-before-analysis, D-P2).
+* `discovery approve/reject` are deterministic candidate-state transitions
+  only in M2; provider/model materialization belongs to Milestone 3.
+* New whitelisted events: `DISCOVERY_CANDIDATE_ADDED`,
+  `DISCOVERY_IMPORT_COMPLETE`, `DISCOVERY_IMPORT_ERROR`,
+  `DISCOVERY_CANDIDATE_APPROVED`, `DISCOVERY_CANDIDATE_REJECTED`.
+* `[discovery]` config keys validated and mirrored in `config.toml` /
+  `templates/config.toml` (`enabled` master switch default false;
+  `allowlisted_urls` default empty; `timeout_seconds`; `import_dir`).
+* CLI (additive): `discovery import`, `discovery run --allow-network`,
+  `discovery list [--state]`, `discovery approve`, `discovery reject`.
+* Tests: `tests/test_discovery.py` + `tests/test_discovery_cli.py`; full
+  Python suite 337/337 (264 base + 73 new); adapter/MCP 48/48; VS Code 28/28
+  unit + 2/2 integration; `git diff --check` clean. No benchmark/trend/model
+  registry code (M3-M5), no connectors changes (D-P6), `requirements.txt` and
+  npm graph unchanged.
+
+Milestone 3 (approval materialization + model registry) requires a separate
+owner authorization (D-P9 sequential gates).
 
 Release documents:
 
@@ -140,15 +170,16 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Authorize Phase 6 Milestone 2 (discovery + candidate workflow)
+* Authorize Phase 6 Milestone 3 (approval materialization + model registry)
   implementation when ready (D-P9 sequential gates)
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 6 Milestone 2 (discovery + candidate workflow), once authorized by the
-owner.
+Phase 6 Milestone 3 (approval materialization + model registry: approve ->
+provider (+models) via governed ops; `core/models.py`; `MODEL_*` events;
+`model list`), once authorized by the owner.
 
 ## Open Documentation Items
 

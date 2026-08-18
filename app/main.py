@@ -19,6 +19,11 @@ Run from the repository root:
     python -m app.main dashboard report <providers|scores|recommendations|monitoring|overview>
     python -m app.main dashboard history --model N [--dimension D]
     python -m app.main dashboard history --availability [--provider P]
+    python -m app.main discovery import [path]
+    python -m app.main discovery run [--allow-network] [--timeout N]
+    python -m app.main discovery list [--state PENDING_REVIEW]
+    python -m app.main discovery approve <id> [--reason]
+    python -m app.main discovery reject <id> --reason
 """
 
 from __future__ import annotations
@@ -32,6 +37,7 @@ from core import providers
 from dashboard import history as dashboard_history
 from dashboard import reports as dashboard_reports
 from database import database as db_util
+from discovery import engine as discovery
 from fallback import build_chain, check_recovery
 from monitoring import availability, health, validation
 from recommendation import RecommendationError, list_recommendations, recommend, record_recommendation
@@ -360,6 +366,111 @@ def cmd_dashboard(args) -> None:
         conn.close()
 
 
+def cmd_discovery(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "run":
+            _discovery_run(config, conn, args)
+        elif args.action == "import":
+            _discovery_import(config, conn, args)
+        elif args.action == "list":
+            _discovery_list(conn, args.state)
+        elif args.action == "approve":
+            candidate = discovery.approve_candidate(conn, args.candidate_id, reason=args.reason)
+            print(
+                f"Candidate #{candidate['id']} {candidate['provider_name']} APPROVED."
+                " Materialization as a provider belongs to Phase 6 Milestone 3."
+            )
+        elif args.action == "reject":
+            candidate = discovery.reject_candidate(conn, args.candidate_id, reason=args.reason)
+            print(
+                f"Candidate #{candidate['id']} {candidate['provider_name']} REJECTED"
+                f" (reason={args.reason!r}). Record retained in history."
+            )
+    except discovery.DiscoveryError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def _discovery_run(config, conn, args) -> None:
+    if not args.allow_network:
+        raise discovery.DiscoveryError(
+            "Network discovery requires the explicit --allow-network flag"
+            " (user gate, Constitution Article 2)."
+        )
+    if not config.discovery_enabled:
+        raise discovery.DiscoveryError(
+            "Discovery is disabled (discovery.enabled = false). Set it to true"
+            " to acquire candidates."
+        )
+    timeout = args.timeout or config.discovery_timeout_seconds
+    summary = discovery.run_network(
+        conn, config.discovery_allowlisted_urls, timeout, submitter="cli:discovery run"
+    )
+    print(
+        f"Network discovery complete: fetched={len(summary['fetched'])}"
+        f" added={len(summary['added'])} skipped={len(summary['skipped'])}"
+        f" failed={len(summary['failed'])}"
+    )
+    for url in summary["fetched"]:
+        print(f"  fetched {url}")
+    for url in summary["failed"]:
+        print(f"  failed {url}")
+
+
+def _discovery_import(config, conn, args) -> None:
+    if not config.discovery_enabled:
+        raise discovery.DiscoveryError(
+            "Discovery is disabled (discovery.enabled = false). Set it to true"
+            " to acquire candidates."
+        )
+    path = Path(args.path or config.discovery_import_dir)
+    if not path.exists():
+        raise discovery.DiscoveryError(f"Import path not found: {path}")
+    files = sorted(p for p in (path.glob("*.json") if path.is_dir() else [path]))
+    if path.is_dir() and not files:
+        print(f"No .json files found in {path}.")
+        return
+    added_total: list[int] = []
+    skipped_total: list[str] = []
+    failed = 0
+    for file_path in files:
+        try:
+            result = discovery.import_file(conn, file_path, submitter="cli:discovery import")
+            added_total.extend(result["added"])
+            skipped_total.extend(result["skipped"])
+            print(
+                f"{file_path}: added={len(result['added'])} skipped={len(result['skipped'])}"
+            )
+        except discovery.DiscoveryError as exc:
+            discovery.record_import_error(
+                conn, str(file_path), "cli:discovery import", str(exc)
+            )
+            failed += 1
+            print(f"Error importing {file_path}: {exc}", file=sys.stderr)
+    print(
+        f"Import complete: added={len(added_total)} skipped={len(skipped_total)}"
+        f" failed={failed}"
+    )
+
+
+def _discovery_list(conn, state) -> None:
+    rows = discovery.list_candidates(conn, state=state)
+    if not rows:
+        print("No discovery candidates.")
+        return
+    for row in rows:
+        reason = f" reason={row['reason']!r}" if row["reason"] else ""
+        print(
+            f"#{row['id']} {row['provider_name']} state={row['state']}"
+            f" source={row['source_type']} ref={row['source_ref'] or '-'}"
+            f" imported_at={row['imported_at']}{reason}"
+        )
+
+
 def _print_score_history(conn, model_id, dimension) -> None:
     series = dashboard_history.score_history(conn, model_id, dimension=dimension)
     if not series:
@@ -509,6 +620,37 @@ def build_parser() -> argparse.ArgumentParser:
     )
     dash_history.add_argument("--provider", type=int, help="Filter availability history by provider")
     dash_history.set_defaults(func=cmd_dashboard)
+
+    disc = sub.add_parser("discovery", help="Ecosystem discovery (Phase 6)")
+    disc_sub = disc.add_subparsers(dest="action", required=True)
+
+    d_import = disc_sub.add_parser("import", help="Import curated candidate metadata (JSON file or directory)")
+    d_import.add_argument(
+        "path", nargs="?", help="JSON file or directory of *.json files (default: discovery.import_dir)"
+    )
+    d_import.set_defaults(func=cmd_discovery)
+
+    d_run = disc_sub.add_parser("run", help="Fetch allowlisted public metadata endpoints into candidates")
+    d_run.add_argument(
+        "--allow-network", action="store_true",
+        help="Explicit user gate: permit controlled network fetch (Article 2)",
+    )
+    d_run.add_argument("--timeout", type=int, help="Per-fetch timeout in seconds (default: discovery.timeout_seconds)")
+    d_run.set_defaults(func=cmd_discovery)
+
+    d_list = disc_sub.add_parser("list", help="List discovery candidates")
+    d_list.add_argument("--state", choices=discovery.CANDIDATE_STATES, help="Filter by candidate state")
+    d_list.set_defaults(func=cmd_discovery)
+
+    d_approve = disc_sub.add_parser("approve", help="Approve a PENDING_REVIEW candidate")
+    d_approve.add_argument("candidate_id", type=int, help="Candidate id to approve")
+    d_approve.add_argument("--reason", help="Optional approval note")
+    d_approve.set_defaults(func=cmd_discovery)
+
+    d_reject = disc_sub.add_parser("reject", help="Reject a PENDING_REVIEW candidate (retained, never deleted)")
+    d_reject.add_argument("candidate_id", type=int, help="Candidate id to reject")
+    d_reject.add_argument("--reason", required=True, help="Rejection reason (required)")
+    d_reject.set_defaults(func=cmd_discovery)
 
     return parser
 
