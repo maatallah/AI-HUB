@@ -26,6 +26,7 @@ Run from the repository root:
     python -m app.main discovery reject <id> --reason
     python -m app.main benchmark import --file <path> [--name <benchmark>] [--dry-run]
     python -m app.main benchmark list [--run <id>]
+    python -m app.main model list [--provider P]
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ from pathlib import Path
 
 from app.config import ConfigError, effective_config_text, load_config
 from benchmark import ingest as benchmark
+from core import models as model_registry
 from core import providers
 from dashboard import history as dashboard_history
 from dashboard import reports as dashboard_reports
@@ -382,8 +384,8 @@ def cmd_discovery(args) -> None:
         elif args.action == "approve":
             candidate = discovery.approve_candidate(conn, args.candidate_id, reason=args.reason)
             print(
-                f"Candidate #{candidate['id']} {candidate['provider_name']} APPROVED."
-                " Materialization as a provider belongs to Phase 6 Milestone 3."
+                f"Candidate #{candidate['id']} {candidate['provider_name']} APPROVED"
+                f" and materialized (provider #{candidate['materialized_provider_id']})."
             )
         elif args.action == "reject":
             candidate = discovery.reject_candidate(conn, args.candidate_id, reason=args.reason)
@@ -526,6 +528,26 @@ def _benchmark_import(config, conn, args) -> None:
             print(f"Error importing {file_path}: {exc}", file=sys.stderr)
     mode = "Dry-run" if args.dry_run else "Import"
     print(f"{mode} complete: ok={imported} failed={errors}")
+
+
+def cmd_model(args) -> None:
+    conn = db_util.connect(_get_db(load_config()))
+    try:
+        if args.action == "list":
+            rows = model_registry.list_models(conn, provider_id=args.provider)
+            if not rows:
+                print("No models found.")
+                return
+            for row in rows:
+                print(
+                    f"#{row['id']} {row['model_identifier']} provider={row['provider_name']}"
+                    f" name={row['model_name']}"
+                )
+    except model_registry.ModelRegistryError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
 
 
 def _benchmark_list(conn, run) -> None:
@@ -753,6 +775,12 @@ def build_parser() -> argparse.ArgumentParser:
     b_list = bench_sub.add_parser("list", help="List benchmark runs (or the results of one run)")
     b_list.add_argument("--run", type=int, help="Show the results of a specific run id")
     b_list.set_defaults(func=cmd_benchmark)
+
+    mod = sub.add_parser("model", help="Governed model registry (Phase 6 M3)")
+    mod_sub = mod.add_subparsers(dest="action", required=True)
+    m_list = mod_sub.add_parser("list", help="List models")
+    m_list.add_argument("--provider", type=int, help="Filter by provider id")
+    m_list.set_defaults(func=cmd_model)
 
     return parser
 

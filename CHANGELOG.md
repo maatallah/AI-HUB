@@ -4,6 +4,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - canonical Milestone 3 - approval materialization + model registry)
+
+- Milestone 3 (approval materialization + model registry, canonical Phase 6
+  M3 per the approved planning baseline Section 12 / proposal spec Section 9)
+  - owner re-authorized 2026-08-19 against the baseline `eca910f` after the
+  read-only milestone reconciliation. `archive_model` semantics resolved by
+  the owner (Option A): event-only archival - the `MODEL_ARCHIVED` event
+  carries the required, non-empty reason and the `models` row is retained
+  unchanged (Article 5); no schema column, no lifecycle state, no
+  monitoring-availability coupling.
+- `core/models.py` - governed model registry operations (add_model,
+  get_model, list_models, update_model, archive_model), emitting the
+  previously-reserved `MODEL_ADDED` / `MODEL_UPDATED` / `MODEL_ARCHIVED`
+  events. `list_models` joins the owning provider and always returns retained
+  rows (no hidden filtering).
+- `discovery/engine.py` - `approve_candidate` materializes the approved
+  candidate through governed registry operations only (`core.providers.
+  add_provider` starting at `NEW` with candidate provenance in notes, then
+  `core.models.add_model` per candidate model). The candidate transition, the
+  materialization and every audit event commit together atomically (the
+  `_NoCommit` proxy defers the inner modules' auto-commits to the single outer
+  commit); any failure rolls back everything and the candidate stays
+  `PENDING_REVIEW`; a provider name already registered fails deterministically
+  before anything is written. No raw SQL write path in the new module.
+- CLI (additive, existing commands unchanged): `model list [--provider <id>]`.
+- Tests: `tests/test_models.py` and `tests/test_models_cli.py` (new);
+  `tests/test_discovery.py` M2 no-materialization pins superseded with M3
+  materialization/event/atomicity/provenance tests; `tests/test_discovery_cli.py`
+  approve flow updated. Full Python suite 420/420 (384 base + 36 new);
+  adapter/MCP 48/48; VS Code 28/28 unit + 2/2 integration; `git diff --check`
+  clean. No trend code (not authorized), no connectors changes (D-P6), no
+  schema/config changes, `requirements.txt` and npm graph unchanged.
+- Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
 ### Added (Phase 6 - Ecosystem Intelligence - Milestone 3 implementation)
 
 - Milestone 3 (benchmark ingestion + persistent benchmark-result storage,

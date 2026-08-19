@@ -9,10 +9,11 @@ Phase 5 (Connectors - VS Code / MCP) is RELEASED and CLOSED (baseline
 authorized: planning baseline approved (D-P1..D-P9, commit `8f01b10`),
 Milestone 1 (doc-before-code) complete (v1.2 Section 20, proposal spec,
 ADR-0005/0006), Milestone 2 (discovery + candidate workflow) implemented and
-committed (2026-08-18), and Milestone 3 (benchmark ingestion + persistent
-storage) implemented and committed (2026-08-19, owner-authorized against M2
-baseline `a037dfd`). The next defined step is Phase 6 **approval
-materialization + model registry**, gated on a separate owner authorization
+committed (2026-08-18), benchmark ingestion + persistent storage implemented
+and committed (2026-08-19, owner-authorized against M2 baseline `a037dfd`),
+and approval materialization + model registry (canonical Milestone 3)
+implemented and committed (2026-08-19, owner-authorized). The next defined
+step is Phase 6 **trend analysis**, gated on a separate owner authorization
 (D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure
 accepted 2026-08-17).
 
@@ -52,6 +53,9 @@ module, additive `discovery_candidates` table, `[discovery]` config,
 persistent storage) implemented and committed 2026-08-19 - `benchmark/`
 module, additive `benchmark_runs`/`benchmark_results` tables (ADR-0006),
 `[benchmark]` config, `BENCHMARK_IMPORTED` event, `benchmark import|list`
+CLI. Approval materialization + model registry (canonical Milestone 3)
+implemented and committed 2026-08-19 - `core/models.py`, governed
+materialization in `discovery/engine.py`, `MODEL_*` events, `model list`
 CLI. The remaining implementation milestones require separate owner
 authorizations (D-P9).
 
@@ -158,10 +162,10 @@ proposal documents:
 * `decisions/0006-benchmark-result-storage.md` (D-P3, ACCEPTED)
 
 Milestone 1 (documentation / doc-before-code), Milestone 2 (discovery +
-candidate workflow) and Milestone 3 (benchmark ingestion + persistent
-storage) are complete. The next milestone (approval materialization + model
-registry) must NOT start until a separate owner authorization prompt is
-provided (D-P9 sequential gates).
+candidate workflow), Milestone 3 (benchmark ingestion + persistent storage)
+and approval materialization + model registry (canonical Milestone 3) are
+complete. The next milestone (trend analysis) must NOT start until a separate
+owner authorization prompt is provided (D-P9 sequential gates).
 
 Milestone-numbering note: the owner authorized benchmark integration as "M3";
 the approved planning baseline (Section 12) and proposal spec (Section 9)
@@ -182,8 +186,10 @@ checklist below follows the owner's milestone content labels.
       storage (2026-08-19; `benchmark/` module, `benchmark_runs` /
       `benchmark_results` tables, `[benchmark]` config, `BENCHMARK_IMPORTED`
       event, `benchmark import|list` CLI; 384/384 Python)
-- [ ] Milestone (approval materialization + model registry, owner M3 / spec
-      M4-a) - requires owner authorization
+- [x] Milestone 3 (canonical): approval materialization + model registry
+      (2026-08-19; `core/models.py`, governed materialization in
+      `discovery/engine.py`, `MODEL_*` events, `model list` CLI; 420/420
+      Python)
 - [ ] Milestone: trend analysis (requires owner authorization)
 - [ ] Milestone: full regression + release package (requires owner
       authorization)
@@ -198,6 +204,8 @@ checklist below follows the owner's milestone content labels.
 - [x] Authorize Milestone 2 implementation (2026-08-18)
 - [x] Authorize Milestone 3 implementation (benchmark ingestion + persistent
       storage, 2026-08-19)
+- [x] Authorize approval materialization + model registry (canonical Phase 6
+      M3, 2026-08-19)
 
 ---
 
@@ -264,9 +272,42 @@ never silent):
   authorized), no trend code (not authorized), connectors untouched (D-P6),
   `requirements.txt` and npm graph unchanged.
 
-The next milestone (approval materialization + model registry) and every later
-implementation milestone must each be authorized separately by the owner
-before it starts (D-P9).
+The next milestone (trend analysis) and every later implementation milestone
+must each be authorized separately by the owner before it starts (D-P9).
+
+---
+
+# Step 4 — Phase 6 Milestone 3 (canonical): approval materialization + model registry
+
+Completed (2026-08-19, owner re-authorization after the read-only milestone
+reconciliation; baseline `eca910f`):
+
+* `core/models.py` - governed model registry operations (add/get/list/update/
+  archive_model), emitting the previously-reserved `MODEL_ADDED` /
+  `MODEL_UPDATED` / `MODEL_ARCHIVED` events. `archive_model` implements the
+  owner's Option A decision: event-only archival with a required non-empty
+  reason; the `models` row is retained unchanged and `list_models` continues
+  to return it (Article 5). No schema column, no model lifecycle state, no
+  monitoring-availability coupling.
+* `discovery/engine.py` - `approve_candidate` materializes the approved
+  candidate through governed registry operations only (`core.providers.
+  add_provider` starting at `NEW` with candidate provenance in notes, then
+  `core.models.add_model` per candidate model). Candidate transition +
+  materialization + every audit event commit atomically (the `_NoCommit`
+  proxy defers the inner modules' auto-commits to the single outer commit);
+  any failure rolls back everything and the candidate stays `PENDING_REVIEW`;
+  a provider name already registered fails deterministically before anything
+  is written. No raw SQL write path in the new module.
+* CLI (additive): `model list [--provider <id>]`.
+* Tests: `tests/test_models.py`, `tests/test_models_cli.py`, M3
+  materialization/event/atomicity/provenance tests in `tests/test_discovery.py`
+  (M2 no-materialization pins superseded); 420/420 Python (384 + 36 new),
+  adapter/MCP 48/48, VS Code 28/28 + 2/2, `git diff --check` clean. No trend
+  code (not authorized), connectors untouched (D-P6), no schema/config
+  changes, `requirements.txt` and npm graph unchanged.
+
+The next milestone (trend analysis) and every later implementation milestone
+must each be authorized separately by the owner before it starts (D-P9).
 
 ---
 
@@ -306,12 +347,13 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 6 (Ecosystem Intelligence),
-**approval materialization + model registry** - gated on a separate owner
-authorization. Phase 6 planning baseline (D-P1..D-P9, commit `8f01b10`),
-Milestone 1 documentation, Milestone 2 (discovery + candidate workflow) and
-Milestone 3 (benchmark ingestion + persistent storage, committed 2026-08-19)
-are complete (v1.2 Section 20; proposal spec; ADR-0005/0006; `discovery/`
-module; `benchmark/` module; 384/384 Python green). Do not begin the next
+**trend analysis** - gated on a separate owner authorization. Phase 6 planning
+baseline (D-P1..D-P9, commit `8f01b10`), Milestone 1 documentation, Milestone
+2 (discovery + candidate workflow), Milestone 3 (benchmark ingestion +
+persistent storage, committed 2026-08-19) and approval materialization +
+model registry (canonical M3, committed 2026-08-19) are complete (v1.2
+Section 20; proposal spec; ADR-0005/0006; `discovery/` module; `benchmark/`
+module; `core/models.py`; 420/420 Python green). Do not begin the next
 milestone without explicit authorization.
 
 Recommended input:
@@ -324,6 +366,6 @@ Recommended input:
 * decisions/0005-provider-model-discovery-candidates.md
 * decisions/0006-benchmark-result-storage.md
 * discovery/engine.py, discovery/sources.py, benchmark/ingest.py,
-  app/main.py, database/schema.sql
+  core/models.py, app/main.py, database/schema.sql
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md

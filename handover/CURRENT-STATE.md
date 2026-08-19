@@ -5,9 +5,10 @@
 Last Updated:
 
 2026-08-19 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved,
-Milestone 1 documentation, Milestone 2 discovery + candidate workflow, and
-Milestone 3 benchmark ingestion + persistent storage implemented and
-committed; remaining Phase 6 implementation milestones not authorized)
+Milestone 1 documentation, Milestone 2 discovery + candidate workflow,
+benchmark ingestion + persistent storage, and approval materialization +
+model registry (canonical Milestone 3) implemented and committed; remaining
+Phase 6 implementation milestones not authorized)
 
 ---
 
@@ -38,13 +39,15 @@ Phase 6 (Ecosystem Intelligence) authorized 2026-08-18. Planning baseline
 approved (D-P1..D-P9, commit `8f01b10`) and Milestone 1 (doc-before-code)
 complete: v1.2 Section 20, `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`,
 ADR-0005 (D-P1 discovery candidates) and ADR-0006 (D-P3 benchmark storage).
-Milestone 2 (discovery + candidate workflow) and Milestone 3 (benchmark
-ingestion + persistent storage) implemented and committed. The remaining
-implementation milestones require separate owner authorizations (D-P9).
+Milestone 2 (discovery + candidate workflow), benchmark ingestion +
+persistent storage, and approval materialization + model registry (canonical
+Milestone 3) implemented and committed. The remaining implementation
+milestones require separate owner authorizations (D-P9).
 
 Architecture approved.
 
-Git baseline committed and pushed (`main` == `origin/main`).
+Git baseline committed locally (`main` is ahead of `origin/main`; work is not
+pushed until a release).
 
 ---
 
@@ -135,6 +138,10 @@ Authorized:
   (Section 9) number benchmark as M4 and approval materialization as M3.
   Implementation follows the owner's explicit content authorization
   (benchmark).
+* Owner approval 2026-08-19 of approval materialization + model registry
+  (the canonical Phase 6 M3 per the approved planning baseline Section 12 /
+  proposal spec Section 9), re-authorized after the read-only milestone
+  reconciliation; implemented against the `eca910f` baseline.
 
 Completed (Milestone 1 - documentation):
 
@@ -197,12 +204,38 @@ Completed (Milestone 3 - benchmark ingestion + persistent storage, 2026-08-19):
   `git diff --check` clean. No approval materialization / model registry (not
   authorized), no trend code (not authorized), no connectors changes (D-P6).
 
+Completed (Milestone 3 (canonical) - approval materialization + model registry,
+2026-08-19):
+
+* `core/models.py` - governed model registry operations (add/get/list/update/
+  archive_model), emitting the previously-reserved `MODEL_ADDED` /
+  `MODEL_UPDATED` / `MODEL_ARCHIVED` events. `archive_model` implements the
+  owner's Option A decision: event-only archival with a required non-empty
+  reason; the `models` row is retained unchanged and `list_models` continues
+  to return it (Article 5). No schema column, no model lifecycle state, no
+  monitoring-availability coupling.
+* `discovery/engine.py` - `approve_candidate` materializes the approved
+  candidate through governed registry operations only (`core.providers.
+  add_provider` starting at `NEW` with candidate provenance in notes, then
+  `core.models.add_model` per candidate model). Candidate transition +
+  materialization + every audit event commit atomically (the `_NoCommit`
+  proxy defers the inner modules' auto-commits to the single outer commit);
+  any failure rolls back everything and the candidate stays `PENDING_REVIEW`;
+  a provider name already registered fails deterministically before anything
+  is written (no partial writes, no silent state rewrite).
+* CLI (additive): `model list [--provider <id>]`.
+* Tests: `tests/test_models.py`, `tests/test_models_cli.py`, M3
+  materialization/event/atomicity/provenance tests in `tests/test_discovery.py`
+  (M2 no-materialization pins superseded); full Python suite 420/420;
+  adapter/MCP 48/48; VS Code 28/28 + 2/2; `git diff --check` clean. No trend
+  code (not authorized), no connectors changes (D-P6), no schema/config
+  changes, `requirements.txt` and npm graph unchanged.
+
 Pending:
 
-* Phase 6 approval materialization + model registry (spec Section 9 content;
-  "M3" in the approved spec numbering) - requires a separate owner
-  authorization (D-P9). Trend analysis and the release package follow as
-  later, separately-authorized milestones.
+* Phase 6 trend analysis (spec Section 9 content) - requires a separate owner
+  authorization (D-P9). The release package follows as a later,
+  separately-authorized milestone.
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -298,7 +331,8 @@ Completed:
 ```
 AI-Hub/
   app/            __init__.py, config.py, main.py
-  core/           __init__.py, providers.py, events.py
+  core/           __init__.py, providers.py, events.py, models.py
+                  (models.py - Phase 6 canonical M3)
   database/       __init__.py, database.py, schema.sql
   monitoring/     __init__.py, health.py, availability.py, quota.py,
                   validation.py (Phase 2)
@@ -306,7 +340,8 @@ AI-Hub/
   recommendation/ __init__.py, engine.py, profiles.py, explain.py,
                   provenance.py (Phase 3)
   fallback/       __init__.py, engine.py (Phase 3)
-  discovery/      __init__.py, sources.py, engine.py (Phase 6 M2)
+  discovery/      __init__.py, sources.py, engine.py (Phase 6 M2 +
+                  canonical M3 materialization)
   benchmark/      __init__.py, ingest.py (Phase 6 M3)
   connectors/     adapter.py, __init__.py, vscode/ (extension workspace),
                   mcp/ (server.py, tools.py) (Phase 5)
@@ -320,8 +355,9 @@ AI-Hub/
                   test_dashboard_history.py, test_dashboard_cli.py,
                   test_connectors_adapter.py, test_connectors_mcp.py,
                   test_discovery.py, test_discovery_cli.py,
-                  test_benchmark.py, test_benchmark_cli.py
-                  (384 Python tests total)
+                  test_benchmark.py, test_benchmark_cli.py,
+                  test_models.py, test_models_cli.py
+                  (420 Python tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
@@ -436,8 +472,8 @@ Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
 # Not Yet Implemented
 
 * Phase 6 remaining milestones (planning baseline + M1 documentation + M2
-  discovery + M3 benchmark ingestion complete; each further milestone requires
-  separate owner authorization): approval materialization / model registry,
+  discovery + benchmark ingestion + approval materialization / model registry
+  complete; each further milestone requires separate owner authorization):
   trend analysis, release package
 * Model seeding
 
@@ -506,9 +542,10 @@ Milestone 5 release package accepted)
 Phase 6 documentation: High (planning baseline approved 2026-08-18; M1
 doc-before-code complete - v1.2 Section 20, proposal spec, ADR-0005/0006)
 
-Phase 6 implementation: Milestone 2 (discovery + candidate workflow) and
-Milestone 3 (benchmark ingestion + persistent storage) implemented, tested
-(384/384 Python, adapter/MCP 48/48, VS Code 28/28 + 2/2) and committed;
-remaining milestones require separate owner authorization (D-P9)
+Phase 6 implementation: Milestone 2 (discovery + candidate workflow), benchmark
+ingestion + persistent storage, and approval materialization + model registry
+(canonical M3) implemented, tested (420/420 Python, adapter/MCP 48/48, VS Code
+28/28 + 2/2) and committed; remaining milestones require separate owner
+authorization (D-P9)
 
 Concept: Validated

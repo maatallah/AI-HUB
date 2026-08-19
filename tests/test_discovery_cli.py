@@ -157,8 +157,15 @@ def test_import_and_approve_flow(cli_conn, monkeypatch, tmp_path, capsys):
     _run(["discovery", "approve", "1", "--reason", "ok"])
     out = capsys.readouterr().out
     assert "APPROVED" in out
+    assert "materialized (provider #1)" in out
     count = cli_conn.execute("SELECT COUNT(*) FROM providers").fetchone()[0]
-    assert count == 0  # M2 does not materialize providers
+    assert count == 1  # M3 materializes the approved candidate
+    model_count = cli_conn.execute("SELECT COUNT(*) FROM models").fetchone()[0]
+    assert model_count == 1
+    status = cli_conn.execute(
+        "SELECT status FROM providers WHERE id = 1"
+    ).fetchone()["status"]
+    assert status == "NEW"
 
 
 def _run_ok(capsys):

@@ -260,14 +260,139 @@ def test_rejected_cannot_be_approved(conn):
         discovery.approve_candidate(conn, cid)
 
 
-def test_approve_does_not_materialize_provider_or_models_m2_gate(conn):
-    """M2 scope pin: approve is a candidate-state transition only."""
+def test_approve_materializes_provider_and_models_m3_gate(conn):
+    """M3 gate: approval materializes provider + models via governed ops."""
     cid = _add_queued(conn, name="Acme")
-    discovery.approve_candidate(conn, cid, reason="ok")
+    result = discovery.approve_candidate(conn, cid, reason="ok")
     rows = providers.list_providers(conn)
-    assert len(rows) == 0
-    model_count = conn.execute("SELECT COUNT(*) FROM models").fetchone()[0]
-    assert model_count == 0
+    assert len(rows) == 1
+    assert rows[0]["name"] == "Acme"
+    assert rows[0]["status"] == "NEW"  # lifecycle starts at NEW (v1.2 Section 5)
+    assert rows[0]["id"] == result["materialized_provider_id"]
+    model_rows = conn.execute("SELECT * FROM models").fetchall()
+    assert len(model_rows) == 1
+    assert model_rows[0]["provider_id"] == rows[0]["id"]
+    assert model_rows[0]["model_identifier"] == "acme-turbo"
+
+
+# ---------------------------------------------------------------------------
+# M3 materialization (approval -> governed provider/model materialization)
+# ---------------------------------------------------------------------------
+
+def _queued_with_models(conn, name="Acme", models=None):
+    payload = _payload(models=models)
+    cid = discovery.add_candidate(
+        conn, name, payload, "curated", "tests/import.json", "test"
+    )
+    discovery.queue_candidate(conn, cid)
+    return cid
+
+
+def test_approve_materializes_model_metadata(conn):
+    models = [
+        {
+            "model_name": "Acme Turbo",
+            "model_identifier": "acme-turbo",
+            "context_window": 128000,
+            "supports_tools": True,
+            "supports_streaming": True,
+            "supports_json": True,
+            "supports_vision": False,
+        },
+        {"model_name": "Acme Nano", "model_identifier": "acme-nano"},
+    ]
+    cid = _queued_with_models(conn, "Acme", models)
+    result = discovery.approve_candidate(conn, cid, reason="ok")
+    assert result["materialized_provider_id"] == 1
+    assert result["materialized_model_ids"] == [1, 2]
+    turbo = conn.execute(
+        "SELECT * FROM models WHERE model_identifier = 'acme-turbo'"
+    ).fetchone()
+    assert turbo["context_window"] == 128000
+    assert turbo["supports_tools"] == 1
+    assert turbo["supports_streaming"] == 1
+    assert turbo["supports_json"] == 1
+    assert turbo["supports_vision"] == 0
+    nano = conn.execute(
+        "SELECT * FROM models WHERE model_identifier = 'acme-nano'"
+    ).fetchone()
+    assert nano["context_window"] is None
+
+
+def test_approve_with_no_models_creates_provider_only(conn):
+    cid = _queued_with_models(conn, "Acme", models=[])
+    result = discovery.approve_candidate(conn, cid, reason="ok")
+    assert result["materialized_model_ids"] == []
+    assert len(providers.list_providers(conn)) == 1
+    assert conn.execute("SELECT COUNT(*) FROM models").fetchone()[0] == 0
+
+
+def test_approve_emits_provider_and_model_events(conn):
+    cid = _queued_with_models(conn, "Acme")
+    discovery.approve_candidate(conn, cid, reason="ok")
+    types = _event_types(conn)
+    assert "PROVIDER_ADDED" in types
+    assert "MODEL_ADDED" in types
+    assert "DISCOVERY_CANDIDATE_APPROVED" in types
+    provider_event = _event_payloads(conn, "PROVIDER_ADDED")[0]
+    assert provider_event["name"] == "Acme"
+    assert provider_event["status"] == "NEW"
+    provider_row = conn.execute(
+        "SELECT * FROM events WHERE event_type = 'PROVIDER_ADDED' ORDER BY id"
+    ).fetchone()
+    model_event = _event_payloads(conn, "MODEL_ADDED")[0]
+    assert model_event["provider_id"] == provider_row["entity_id"]
+    assert model_event["model_identifier"] == "acme-turbo"
+    approved = _event_payloads(conn, "DISCOVERY_CANDIDATE_APPROVED")[-1]
+    assert approved["materialized_provider_id"] == provider_row["entity_id"]
+    model_row = conn.execute(
+        "SELECT * FROM events WHERE event_type = 'MODEL_ADDED' ORDER BY id"
+    ).fetchone()
+    assert approved["materialized_model_ids"] == [model_row["entity_id"]]
+
+
+def test_approve_provider_provenance_links_candidate(conn):
+    cid = _queued_with_models(conn, "Acme")
+    discovery.approve_candidate(conn, cid, reason="ok")
+    provider = providers.list_providers(conn)[0]
+    assert "discovery candidate #1" in provider["notes"]
+
+
+def test_approve_when_provider_name_already_registered_fails_atomically(conn):
+    providers.add_provider(conn, "Acme", status="ACTIVE")
+    cid = _queued_with_models(conn, "Acme")
+    with pytest.raises(discovery.DiscoveryError) as exc_info:
+        discovery.approve_candidate(conn, cid, reason="ok")
+    assert "already" in str(exc_info.value)
+    # nothing was materialized and the candidate stays PENDING_REVIEW
+    assert len(providers.list_providers(conn)) == 1
+    assert conn.execute("SELECT COUNT(*) FROM models").fetchone()[0] == 0
+    assert discovery.get_candidate(conn, cid)["state"] == "PENDING_REVIEW"
+    assert not _event_payloads(conn, "DISCOVERY_CANDIDATE_APPROVED")
+    assert not _event_payloads(conn, "MODEL_ADDED")
+
+
+def test_approve_after_manual_provider_creation_fails_without_partial_writes(conn):
+    """A provider created after import collides at approval time; atomic."""
+    cid = _queued_with_models(conn, "Acme")
+    providers.add_provider(conn, "Acme", status="NEW")
+    with pytest.raises(discovery.DiscoveryError):
+        discovery.approve_candidate(conn, cid, reason="ok")
+    assert conn.execute("SELECT COUNT(*) FROM models").fetchone()[0] == 0
+    assert discovery.get_candidate(conn, cid)["state"] == "PENDING_REVIEW"
+
+
+def test_approve_candidate_separation_preserved(conn):
+    """Approved candidates remain candidates; providers are separate rows."""
+    cid = _queued_with_models(conn, "Acme")
+    result = discovery.approve_candidate(conn, cid, reason="ok")
+    assert result["state"] == "APPROVED"
+    candidate = discovery.get_candidate(conn, cid)
+    assert candidate is not None  # candidate row retained
+    assert candidate["provider_name"] == "Acme"
+    provider = providers.get_provider(conn, result["materialized_provider_id"])
+    assert provider["name"] == "Acme"
+    assert provider["status"] == "NEW"
 
 
 # ---------------------------------------------------------------------------

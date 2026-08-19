@@ -6,10 +6,12 @@ Implements the review-gated candidate workflow approved as decision D-P1
 Candidates are never ``providers`` rows; the provider lifecycle and its
 ``providers.status`` CHECK constraint are preserved untouched.
 
-M2 scope note: ``discovery approve`` performs the deterministic candidate state
-transition and records the audit event ONLY. Materializing provider/model rows
-through ``core.providers``/``core.models`` belongs to Phase 6 Milestone 3 and
-is deliberately not implemented here. Nothing auto-approves (Articles 1, 2).
+M3: ``discovery approve`` performs the deterministic candidate state transition
+AND materializes the approved candidate through the governed registry
+operations (``core.providers`` beginning at ``NEW``, ``core.models``) - no raw
+SQL write path exists in this module. The transition, the materialization and
+every audit event commit together atomically; any failure rolls back everything
+and the candidate stays ``PENDING_REVIEW``. Nothing auto-approves (Articles 1, 2).
 
 Guarantees:
 
@@ -29,7 +31,8 @@ import json
 import sqlite3
 from typing import Optional, Sequence
 
-from core import events
+from core import events, providers
+from core import models as model_registry
 from discovery import sources
 
 #: The four legal candidate states (ADR-0005, D-P1).
@@ -215,11 +218,134 @@ def _complete_review(
     return dict(get_candidate(conn, candidate_id))
 
 
-def approve_candidate(conn, candidate_id: int, reason: Optional[str] = None) -> dict:
-    """Approve a ``PENDING_REVIEW`` candidate (state transition only in M2)."""
-    return _complete_review(
-        conn, candidate_id, "APPROVED", reason, "DISCOVERY_CANDIDATE_APPROVED"
+class _NoCommit:
+    """Proxy that suppresses the inner modules' auto-commits during approval.
+
+    ``core.providers``/``core.models``/``core.events`` commit each operation
+    internally. Approving a candidate must commit the candidate transition,
+    the provider/model materialization and every audit event TOGETHER (or roll
+    back all of them). This proxy delegates every call to the real connection
+    but turns :meth:`commit`/:meth:`rollback` into no-ops for the duration of
+    the approval; the caller commits/rolls back the real connection exactly
+    once. The inner modules' contracts are unchanged.
+    """
+
+    def __init__(self, conn):
+        object.__setattr__(self, "_conn", conn)
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+    def commit(self) -> None:  # no-op: deferred to the outer transaction
+        pass
+
+    def rollback(self) -> None:  # no-op: deferred to the outer transaction
+        pass
+
+
+def _materialize(conn, row) -> dict:
+    """Governed materialization of an APPROVED candidate (Phase 6 M3).
+
+    Creates the provider through ``core.providers`` starting at ``NEW`` and the
+    candidate's models through ``core.models``, preserving provenance (the
+    candidate id is recorded on the provider's notes and in every event).
+    No raw SQL write path exists here - all writes go through the governed
+    registry operations. Returns ``{"provider_id": ..., "model_ids": [...]}``.
+    """
+    payload = json.loads(row["payload"])
+    models = payload.get("models") or []
+
+    proxy = _NoCommit(conn)
+    provider_id = providers.add_provider(
+        proxy,
+        name=row["provider_name"],
+        company=payload.get("company"),
+        api_type=payload.get("api_type"),
+        base_url=payload.get("base_url"),
+        documentation_url=payload.get("documentation_url"),
+        status="NEW",
+        notes=f"Materialized from discovery candidate #{row['id']}",
     )
+    model_ids: list[int] = []
+    for model in models:
+        model_ids.append(
+            model_registry.add_model(
+                proxy,
+                provider_id,
+                model_name=model["model_name"],
+                model_identifier=model["model_identifier"],
+                context_window=model.get("context_window"),
+                supports_tools=model.get("supports_tools", False),
+                supports_streaming=model.get("supports_streaming", False),
+                supports_json=model.get("supports_json", False),
+                supports_vision=model.get("supports_vision", False),
+            )
+        )
+    return {"provider_id": provider_id, "model_ids": model_ids}
+
+
+def approve_candidate(conn, candidate_id: int, reason: Optional[str] = None) -> dict:
+    """Approve a ``PENDING_REVIEW`` candidate and materialize it (M3).
+
+    The state transition, the governed provider/model materialization and every
+    audit event are committed together atomically; any failure rolls back
+    everything and the candidate stays ``PENDING_REVIEW`` (no silent state
+    rewrite, no partial materialization). A candidate whose provider name is
+    already registered fails deterministically before anything is written.
+    """
+    row = get_candidate(conn, candidate_id)
+    if row is None:
+        raise DiscoveryError(f"Candidate {candidate_id} not found.")
+    if row["state"] != REVIEW_STATE:
+        raise DiscoveryError(
+            f"Candidate {candidate_id} is in state {row['state']!r}; only "
+            f"{REVIEW_STATE!r} candidates can be approved or rejected. "
+            "No silent state rewrite."
+        )
+    reason_value = reason.strip() if reason else None
+
+    existing_provider = conn.execute(
+        "SELECT id FROM providers WHERE name = ?", (row["provider_name"],)
+    ).fetchone()
+    if existing_provider is not None:
+        raise DiscoveryError(
+            f"Candidate {candidate_id} provider {row['provider_name']!r} is already "
+            f"registered as provider #{existing_provider['id']}; nothing materialized."
+        )
+
+    try:
+        materialized = _materialize(conn, row)
+        conn.execute(
+            "UPDATE discovery_candidates SET state = ?, reviewed_at = datetime('now'),"
+            " reason = ? WHERE id = ? AND state = ?",
+            ("APPROVED", reason_value, candidate_id, REVIEW_STATE),
+        )
+        proxy = _NoCommit(conn)
+        events.record_event(
+            proxy,
+            "DISCOVERY_CANDIDATE_APPROVED",
+            entity_type="candidate",
+            entity_id=candidate_id,
+            payload={
+                "provider_name": row["provider_name"],
+                "from": REVIEW_STATE,
+                "to": "APPROVED",
+                "reason": reason_value,
+                "materialized_provider_id": materialized["provider_id"],
+                "materialized_model_ids": materialized["model_ids"],
+            },
+        )
+        conn.commit()
+    except Exception as exc:
+        conn.rollback()
+        raise DiscoveryError(
+            f"Could not approve and materialize candidate {candidate_id}: {exc}"
+        ) from exc
+
+    result = dict(get_candidate(conn, candidate_id))
+    result["materialized_provider_id"] = materialized["provider_id"]
+    result["materialized_model_ids"] = materialized["model_ids"]
+    return result
 
 
 def reject_candidate(conn, candidate_id: int, reason: str) -> dict:
