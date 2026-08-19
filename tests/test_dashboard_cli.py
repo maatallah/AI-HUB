@@ -49,6 +49,7 @@ def cli_conn(tmp_path, monkeypatch):
                     "timeout_seconds": 10,
                     "import_dir": "data/discovery",
                 },
+                "benchmark": {"import_dir": "data/benchmarks"},
                 "logging": {"level": "INFO"},
             }
         )

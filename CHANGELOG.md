@@ -4,6 +4,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - Milestone 3 implementation)
+
+- Milestone 3 (benchmark ingestion + persistent benchmark-result storage,
+  D-P3/ADR-0006) - owner authorized 2026-08-19 against the M2 baseline
+  `a037dfd`. Replay semantics resolved by the owner: importing an identical
+  file again appends a NEW run and reports the prior run id (`duplicate_of`)
+  - never silent. Milestone-numbering note: the owner authorized benchmark
+  integration as "M3"; the approved planning baseline (Section 12) and
+  proposal spec (Section 9) number benchmark as M4 and approval
+  materialization as M3 - implementation follows the owner's explicit content
+  authorization.
+- Additive `benchmark_runs` table (name, version, origin, fetched_at,
+  content_hash, imported_at, submitter, mapping) and `benchmark_results`
+  table (run_id -> benchmark_runs, model_id -> models, metric, raw_value,
+  norm_value 0-100 CHECK, UNIQUE (run_id, model_id, metric)) in
+  `database/schema.sql` (ADR-0006 DDL); added to `EXPECTED_TABLES`.
+- `benchmark/` module: `ingest.py` (curated JSON benchmark file parsing,
+  full validation, secret-key scanning reusing the `app.config` pattern,
+  origin URL sanitization, documented deterministic formulas `identity` /
+  `fraction_to_percent`, model resolution against the existing registry,
+  atomic batch ingestion per file with rollback on any invalid row,
+  `--dry-run` without mutation, replay appends a NEW run + reports
+  `duplicate_of`, scores via `scoring.ingest.set_score` with source
+  `BENCHMARK` and `scored_at` = run date, `BENCHMARK_IMPORTED` event).
+- New whitelisted event type: `BENCHMARK_IMPORTED`.
+- `[benchmark] import_dir` configuration key (validated, default
+  `data/benchmarks`); mirrored in `config.toml` and `templates/config.toml`.
+- CLI (additive, existing commands unchanged): `benchmark import --file
+  <path> [--name <benchmark>] [--dry-run]`, `benchmark list [--run <id>]`.
+- Tests: `tests/test_benchmark.py` and `tests/test_benchmark_cli.py`; schema/
+  config/CLI fixtures updated for the additive tables and `[benchmark]`
+  config. Full Python suite 384/384 (337 base + 47 new); adapter/MCP 48/48;
+  VS Code 28/28 unit + 2/2 integration; `git diff --check` clean. No approval
+  materialization / model registry code (not authorized), no trend/trend
+  storage (not authorized), no connectors changes (D-P6), `requirements.txt`
+  and npm graph unchanged.
+- Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
 ### Added (Phase 6 - Ecosystem Intelligence - Milestone 2 implementation)
 
 - Milestone 2 (discovery + candidate workflow, D-P1/ADR-0005, D-P2) - owner

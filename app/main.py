@@ -24,6 +24,8 @@ Run from the repository root:
     python -m app.main discovery list [--state PENDING_REVIEW]
     python -m app.main discovery approve <id> [--reason]
     python -m app.main discovery reject <id> --reason
+    python -m app.main benchmark import --file <path> [--name <benchmark>] [--dry-run]
+    python -m app.main benchmark list [--run <id>]
 """
 
 from __future__ import annotations
@@ -33,6 +35,7 @@ import sys
 from pathlib import Path
 
 from app.config import ConfigError, effective_config_text, load_config
+from benchmark import ingest as benchmark
 from core import providers
 from dashboard import history as dashboard_history
 from dashboard import reports as dashboard_reports
@@ -471,6 +474,88 @@ def _discovery_list(conn, state) -> None:
         )
 
 
+def cmd_benchmark(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "import":
+            _benchmark_import(config, conn, args)
+        elif args.action == "list":
+            _benchmark_list(conn, args.run)
+    except benchmark.BenchmarkError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def _benchmark_import(config, conn, args) -> None:
+    path = Path(args.file or config.benchmark_import_dir)
+    if not path.exists():
+        raise benchmark.BenchmarkError(f"Import path not found: {path}")
+    files = sorted(p for p in (path.glob("*.json") if path.is_dir() else [path]))
+    if path.is_dir() and not files:
+        print(f"No .json files found in {path}.")
+        return
+    imported = 0
+    errors = 0
+    for file_path in files:
+        try:
+            summary = benchmark.import_file(
+                conn,
+                file_path,
+                submitter="cli:benchmark import",
+                dry_run=args.dry_run,
+                name=args.name,
+            )
+            mode = "DRY-RUN" if summary["dry_run"] else "IMPORTED"
+            dup = (
+                f" duplicate_of=#{summary['duplicate_of']}"
+                if summary["duplicate_of"]
+                else ""
+            )
+            print(
+                f"{file_path}: {mode} run_id={summary['run_id']}"
+                f" name={summary['name']} version={summary['version']}"
+                f" results={summary['results']}"
+                f" scored_dimensions={summary['scored_dimensions']}{dup}"
+            )
+            imported += 1
+        except benchmark.BenchmarkError as exc:
+            errors += 1
+            print(f"Error importing {file_path}: {exc}", file=sys.stderr)
+    mode = "Dry-run" if args.dry_run else "Import"
+    print(f"{mode} complete: ok={imported} failed={errors}")
+
+
+def _benchmark_list(conn, run) -> None:
+    if run is not None:
+        results = benchmark.list_run_results(conn, run)
+        if not results:
+            print("No benchmark results.")
+            return
+        headers = ("provider", "model_identifier", "metric", "raw_value", "norm_value")
+        print("\t".join(headers))
+        for rec in results:
+            print(
+                "\t".join(
+                    str(rec[h])
+                    for h in ("provider_name", "model_identifier", "metric", "raw_value", "norm_value")
+                )
+            )
+        return
+    rows = benchmark.list_runs(conn)
+    if not rows:
+        print("No benchmark runs.")
+        return
+    for row in rows:
+        print(
+            f"#{row['id']} {row['name']} v{row['version']}"
+            f" origin={row['origin']} results={row['result_count']}"
+            f" imported_at={row['imported_at']}"
+        )
+
+
 def _print_score_history(conn, model_id, dimension) -> None:
     series = dashboard_history.score_history(conn, model_id, dimension=dimension)
     if not series:
@@ -651,6 +736,23 @@ def build_parser() -> argparse.ArgumentParser:
     d_reject.add_argument("candidate_id", type=int, help="Candidate id to reject")
     d_reject.add_argument("--reason", required=True, help="Rejection reason (required)")
     d_reject.set_defaults(func=cmd_discovery)
+
+    bench = sub.add_parser("benchmark", help="Ecosystem benchmark ingestion (Phase 6)")
+    bench_sub = bench.add_subparsers(dest="action", required=True)
+
+    b_import = bench_sub.add_parser("import", help="Import curated benchmark results (JSON file or directory)")
+    b_import.add_argument(
+        "--file", help="JSON file or directory of *.json files (default: benchmark.import_dir)"
+    )
+    b_import.add_argument("--name", help="Benchmark name override (unused if file provides one)")
+    b_import.add_argument(
+        "--dry-run", action="store_true", help="Validate without mutation (no writes, no event)"
+    )
+    b_import.set_defaults(func=cmd_benchmark)
+
+    b_list = bench_sub.add_parser("list", help="List benchmark runs (or the results of one run)")
+    b_list.add_argument("--run", type=int, help="Show the results of a specific run id")
+    b_list.set_defaults(func=cmd_benchmark)
 
     return parser
 

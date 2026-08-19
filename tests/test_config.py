@@ -37,6 +37,9 @@ allowlisted_urls = ["https://api.example.com/v1"]
 timeout_seconds = 5
 import_dir = "data/custom"
 
+[benchmark]
+import_dir = "data/benchmarks-custom"
+
 [logging]
 level = "DEBUG"
 """
@@ -59,6 +62,7 @@ def test_defaults_used_when_file_missing(tmp_path):
     assert config.discovery_allowlisted_urls == []
     assert config.discovery_timeout_seconds == 10
     assert config.discovery_import_dir == "data/discovery"
+    assert config.benchmark_import_dir == "data/benchmarks"
     assert config.logging_level == "INFO"
 
 
@@ -77,6 +81,7 @@ def test_file_overrides_defaults(tmp_path):
     assert config.discovery_allowlisted_urls == ["https://api.example.com/v1"]
     assert config.discovery_timeout_seconds == 5
     assert config.discovery_import_dir == "data/custom"
+    assert config.benchmark_import_dir == "data/benchmarks-custom"
     assert config.logging_level == "DEBUG"
 
 
@@ -207,6 +212,7 @@ def test_validate_returns_config():
                 "timeout_seconds": 7,
                 "import_dir": "data/disc",
             },
+            "benchmark": {"import_dir": "data/bench-custom"},
             "logging": {"level": "CRITICAL"},
         }
     )
@@ -223,6 +229,7 @@ def test_validate_returns_config():
     assert config.discovery_allowlisted_urls == ["https://ok.example.com/models"]
     assert config.discovery_timeout_seconds == 7
     assert config.discovery_import_dir == "data/disc"
+    assert config.benchmark_import_dir == "data/bench-custom"
 
 
 def test_invalid_discovery_enabled_rejected(tmp_path):
@@ -298,3 +305,26 @@ def test_invalid_discovery_import_dir_rejected(tmp_path):
         assert "import_dir" in str(exc)
     else:
         raise AssertionError("Expected ConfigError for an empty discovery.import_dir.")
+
+
+def test_invalid_benchmark_import_dir_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[benchmark]\nimport_dir = \"\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "benchmark.import_dir" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for an empty benchmark.import_dir.")
+
+
+def test_benchmark_secret_key_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[benchmark]\nimport_dir = \"data/benchmarks\"\napi_token = \"x\"\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "api_token" in str(exc)
+        assert "secret" in str(exc).lower()
+    else:
+        raise AssertionError("Expected ConfigError for a secret-like benchmark key.")

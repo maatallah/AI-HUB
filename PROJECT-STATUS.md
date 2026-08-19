@@ -10,23 +10,24 @@
 
 **Current phase:** Phase 6 — Ecosystem Intelligence (planning baseline
 approved 2026-08-18; Milestone 1 documentation complete; Milestone 2
-(discovery + candidate workflow) implemented and committed 2026-08-18;
-Milestones 3-6 not authorized)
+(discovery + candidate workflow) and Milestone 3 (benchmark ingestion +
+persistent storage) implemented and committed 2026-08-19; remaining Phase 6
+milestones not authorized)
 
-**Completion %:** ~88% (Phases 1-5 released; Phase 6 planning + M1
-documentation + M2 discovery/candidate workflow complete; implementation
-milestones 3-6 pending authorization)
+**Completion %:** ~90% (Phases 1-5 released; Phase 6 planning + M1
+documentation + M2 discovery/candidate workflow + M3 benchmark ingestion
+complete; remaining milestones pending authorization)
 
-**Last update:** 2026-08-18
+**Last update:** 2026-08-19
 
-**Repository health:** Good (337/337 Python tests passing, no open defects;
+**Repository health:** Good (384/384 Python tests passing, no open defects;
 adapter/MCP 48/48; connectors/vscode 28/28 TS unit tests + 2/2 integration
 tests passing)
 
 **Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
 `8231dce`). Phase 6 planning baseline approved (D-P1..D-P9), M1 doc-before-code
-complete, and M2 (discovery + candidate workflow) implemented; M3-M6 not yet
-authorized.
+complete, M2 (discovery + candidate workflow) and M3 (benchmark ingestion +
+persistent storage) implemented; remaining milestones not yet authorized.
 
 ---
 
@@ -138,11 +139,49 @@ Milestone 2 (discovery + candidate workflow) authorized and implemented
 * Tests: `tests/test_discovery.py` + `tests/test_discovery_cli.py`; full
   Python suite 337/337 (264 base + 73 new); adapter/MCP 48/48; VS Code 28/28
   unit + 2/2 integration; `git diff --check` clean. No benchmark/trend/model
-  registry code (M3-M5), no connectors changes (D-P6), `requirements.txt` and
+  registry code, no connectors changes (D-P6), `requirements.txt` and
   npm graph unchanged.
 
-Milestone 3 (approval materialization + model registry) requires a separate
-owner authorization (D-P9 sequential gates).
+Milestone 3 (benchmark ingestion + persistent storage, D-P3/ADR-0006)
+authorized and implemented (2026-08-19, owner authorization against the M2
+baseline `a037dfd`):
+
+* Additive `benchmark_runs` (name, version, origin, fetched_at, content_hash,
+  imported_at, submitter, mapping) and `benchmark_results` (run_id, model_id,
+  metric, raw_value, norm_value; UNIQUE (run_id, model_id, metric)) tables in
+  `database/schema.sql`; added to `EXPECTED_TABLES` (ADR-0006 DDL).
+* `benchmark/` module - `ingest.py`: curated JSON parsing + full validation
+  (top-level/result/mapping keys, secret-key scanning, origin URL
+  sanitization, documented deterministic formulas `identity` /
+  `fraction_to_percent`), model resolution against the existing registry
+  (D-P4; unknown models fail atomically), batch ingestion atomic per file
+  (invalid row -> nothing written), `--dry-run` without mutation, replay
+  appends a NEW run and reports `duplicate_of` (never silent, Article 5),
+  scores mapped via `scoring.ingest.set_score` (source `BENCHMARK`,
+  `scored_at` = run date), every import records `BENCHMARK_IMPORTED`.
+* New whitelisted event: `BENCHMARK_IMPORTED`.
+* `[benchmark] import_dir` config key (validated, default
+  `data/benchmarks`) mirrored in `config.toml` / `templates/config.toml`.
+* CLI (additive): `benchmark import --file <path> [--name <benchmark>]
+  [--dry-run]`, `benchmark list [--run <id>]`.
+* Tests: `tests/test_benchmark.py` (39) + `tests/test_benchmark_cli.py` (10);
+  full Python suite 384/384 (337 + 47 new M3); adapter/MCP 48/48; VS Code
+  28/28 unit + 2/2 integration; `git diff --check` clean. No approval
+  materialization / model registry (not authorized), no connectors changes
+  (D-P6), `requirements.txt` and npm graph unchanged.
+* Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
+**Milestone-numbering note:** the owner authorized this work as Phase 6 "M3"
+(benchmark ingestion + persistent storage). The approved planning baseline
+(Section 12) and proposal spec (Section 9) number benchmark integration as
+"M4" and approval materialization + model registry as "M3". This M3
+implementation follows the owner's explicit content authorization
+(benchmark); approval materialization remains NOT authorized and is a
+separate future gate.
+
+Remaining Phase 6 milestones (approval materialization / model registry,
+trend analysis, release package) each require a separate owner authorization
+(D-P9 sequential gates).
 
 Release documents:
 
@@ -170,16 +209,19 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Authorize Phase 6 Milestone 3 (approval materialization + model registry)
-  implementation when ready (D-P9 sequential gates)
+* Authorize Phase 6 approval materialization + model registry (spec Section 9
+  milestone content; owner may authorize as the next milestone when ready,
+  D-P9 sequential gates) and the subsequent trend + release milestones
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 6 Milestone 3 (approval materialization + model registry: approve ->
+Phase 6 approval materialization + model registry (approve ->
 provider (+models) via governed ops; `core/models.py`; `MODEL_*` events;
-`model list`), once authorized by the owner.
+`model list`), per the approved planning baseline (Section 12, "M4" in spec
+numbering) — once authorized by the owner. Trend analysis and the release
+package follow as later, separately-authorized milestones.
 
 ## Open Documentation Items
 

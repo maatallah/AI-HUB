@@ -70,6 +70,9 @@ DEFAULT_CONFIG: dict = {
         "timeout_seconds": 10,
         "import_dir": "data/discovery",
     },
+    "benchmark": {
+        "import_dir": "data/benchmarks",
+    },
     "logging": {
         "level": "INFO",
     },
@@ -98,6 +101,7 @@ class Config:
     discovery_allowlisted_urls: list
     discovery_timeout_seconds: int
     discovery_import_dir: str
+    benchmark_import_dir: str
     logging_level: str
 
 
@@ -233,6 +237,10 @@ def validate(data: dict) -> Config:
     if not isinstance(discovery_.get("import_dir"), str) or not discovery_["import_dir"].strip():
         raise ConfigError("discovery.import_dir must be a non-empty string.")
 
+    benchmark_ = data["benchmark"]
+    if not isinstance(benchmark_.get("import_dir"), str) or not benchmark_["import_dir"].strip():
+        raise ConfigError("benchmark.import_dir must be a non-empty string.")
+
     logging_ = data["logging"]
     level = logging_.get("level")
     if level not in VALID_LOG_LEVELS:
@@ -259,6 +267,7 @@ def validate(data: dict) -> Config:
         discovery_allowlisted_urls=urls,
         discovery_timeout_seconds=discovery_["timeout_seconds"],
         discovery_import_dir=discovery_["import_dir"],
+        benchmark_import_dir=benchmark_["import_dir"].strip(),
         logging_level=level,
     )
 
@@ -318,6 +327,8 @@ def effective_config_text(config: Config) -> str:
         )
         + f"timeout_seconds = {config.discovery_timeout_seconds}\n"
         + f'import_dir = "{config.discovery_import_dir}"\n'
+        + "\n[benchmark]\n"
+        + f'import_dir = "{config.benchmark_import_dir}"\n'
         + "\n[logging]\n"
         + f'level = "{config.logging_level}"\n'
     )

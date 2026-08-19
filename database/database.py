@@ -16,8 +16,8 @@ DEFAULT_DB_PATH = Path("database") / "ai_hub.db"
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 #: Tables defined by the specification (v1.1 Section 8 / v1.2 Section 8)
-#: plus the normalized scores table (ADR-0001) and the Phase 6 discovery
-#: candidate table (ADR-0005).
+#: plus the normalized scores table (ADR-0001), the Phase 6 discovery
+#: candidate table (ADR-0005) and the Phase 6 benchmark tables (ADR-0006).
 EXPECTED_TABLES = {
     "providers",
     "models",
@@ -27,6 +27,8 @@ EXPECTED_TABLES = {
     "preferences",
     "recommendations",
     "discovery_candidates",
+    "benchmark_runs",
+    "benchmark_results",
 }
 
 

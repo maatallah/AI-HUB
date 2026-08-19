@@ -58,6 +58,11 @@ timeout_seconds = 10
 # import` is given no explicit path.
 import_dir = "data/discovery"
 
+[benchmark]
+# Phase 6 benchmark ingestion (ADR-0006 / D-P3). Default curated import
+# location used when `benchmark import` is given no explicit path.
+import_dir = "data/benchmarks"
+
 [logging]
 # One of: DEBUG, INFO, WARNING, ERROR, CRITICAL
 level = "INFO"

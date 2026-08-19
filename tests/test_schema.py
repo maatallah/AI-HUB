@@ -27,6 +27,8 @@ def test_expected_tables_present(conn):
         "preferences",
         "recommendations",
         "discovery_candidates",
+        "benchmark_runs",
+        "benchmark_results",
     }
     assert db_util.EXPECTED_TABLES <= db_util.table_names(conn)
 
@@ -234,5 +236,97 @@ def test_discovery_candidate_provider_name_unique(conn):
             "INSERT INTO discovery_candidates"
             " (provider_name, source_type, payload, state, content_hash, submitter)"
             " VALUES ('Acme', 'curated', '{}', 'DISCOVERED', 'h', 'test')"
+        )
+        conn.commit()
+
+
+def test_benchmark_runs_columns(conn):
+    assert {
+        "id", "name", "version", "origin", "fetched_at", "content_hash",
+        "imported_at", "submitter", "mapping",
+    } <= _columns(conn, "benchmark_runs")
+
+
+def test_benchmark_results_columns(conn):
+    assert {
+        "id", "run_id", "model_id", "metric", "raw_value", "norm_value",
+    } <= _columns(conn, "benchmark_results")
+
+
+def test_benchmark_results_references_runs_and_models(conn):
+    fks = _foreign_keys(conn, "benchmark_results")
+    tables = {fk["table"] for fk in fks}
+    assert "benchmark_runs" in tables
+    assert "models" in tables
+
+
+def test_benchmark_results_unique_per_run_model_metric(conn):
+    conn.execute("INSERT INTO providers (name) VALUES ('P')")
+    conn.commit()
+    provider_id = conn.execute("SELECT id FROM providers WHERE name='P'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO models (provider_id, model_name, model_identifier)"
+        " VALUES (?, 'M', 'm-1')",
+        (provider_id,),
+    )
+    model_id = conn.execute("SELECT id FROM models WHERE model_identifier='m-1'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO benchmark_runs (name, version, origin, content_hash, submitter, mapping)"
+        " VALUES ('mmlu', '5-shot', 'file.json', 'h', 'test', '{}')"
+    )
+    run_id = conn.execute("SELECT id FROM benchmark_runs WHERE name='mmlu'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO benchmark_results (run_id, model_id, metric, raw_value, norm_value)"
+        " VALUES (?, ?, 'accuracy', 80.0, 80.0)",
+        (run_id, model_id),
+    )
+    conn.commit()
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO benchmark_results (run_id, model_id, metric, raw_value, norm_value)"
+            " VALUES (?, ?, 'accuracy', 81.0, 81.0)",
+            (run_id, model_id),
+        )
+        conn.commit()
+
+
+def test_benchmark_results_requires_existing_model(conn):
+    conn.execute("INSERT INTO providers (name) VALUES ('P')")
+    conn.commit()
+    provider_id = conn.execute("SELECT id FROM providers WHERE name='P'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO models (provider_id, model_name, model_identifier)"
+        " VALUES (?, 'M', 'm-1')",
+        (provider_id,),
+    )
+    conn.execute(
+        "INSERT INTO benchmark_runs (name, version, origin, content_hash, submitter, mapping)"
+        " VALUES ('mmlu', '5-shot', 'file.json', 'h', 'test', '{}')"
+    )
+    run_id = conn.execute("SELECT id FROM benchmark_runs WHERE name='mmlu'").fetchone()["id"]
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO benchmark_results (run_id, model_id, metric, raw_value, norm_value)"
+            " VALUES (?, 9999, 'accuracy', 80.0, 80.0)",
+            (run_id,),
+        )
+        conn.commit()
+
+
+def test_benchmark_results_requires_run(conn):
+    conn.execute("INSERT INTO providers (name) VALUES ('P')")
+    conn.commit()
+    provider_id = conn.execute("SELECT id FROM providers WHERE name='P'").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO models (provider_id, model_name, model_identifier)"
+        " VALUES (?, 'M', 'm-1')",
+        (provider_id,),
+    )
+    model_id = conn.execute("SELECT id FROM models WHERE model_identifier='m-1'").fetchone()["id"]
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO benchmark_results (run_id, model_id, metric, raw_value, norm_value)"
+            " VALUES (9999, ?, 'accuracy', 80.0, 80.0)",
+            (model_id,),
         )
         conn.commit()

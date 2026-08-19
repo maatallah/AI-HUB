@@ -182,6 +182,46 @@ CREATE TABLE IF NOT EXISTS discovery_candidates (
 );
 
 -- -----------------------------------------------------------------------------
+-- benchmark_runs
+-- Persistent, provenance-aware benchmark ingestion (Phase 6, ADR-0006,
+-- decision D-P3). One row per imported benchmark file/run: identity, version,
+-- source attribution (origin), retrieval metadata (fetched_at), integrity
+-- stamp (content_hash), who imported it and when, and the documented
+-- metric -> (dimension, formula) mapping used for normalization. Rows are
+-- retained, never deleted (Article 5). Raw values live in benchmark_results.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS benchmark_runs (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT    NOT NULL,
+    version      TEXT    NOT NULL,
+    origin       TEXT    NOT NULL,
+    fetched_at   TEXT,
+    content_hash TEXT    NOT NULL,
+    imported_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    submitter    TEXT    NOT NULL,
+    mapping      TEXT    NOT NULL
+);
+
+-- -----------------------------------------------------------------------------
+-- benchmark_results
+-- Raw benchmark metric values plus the deterministic normalized value
+-- (0-100) per (run, model, metric). Every raw value is preserved and remains
+-- queryable - benchmark data is never fabricated (Article 10). Scores derived
+-- from these rows are mapped into `scores` with source = 'BENCHMARK'.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS benchmark_results (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id     INTEGER NOT NULL REFERENCES benchmark_runs (id),
+    model_id   INTEGER NOT NULL REFERENCES models (id),
+    metric     TEXT    NOT NULL,
+    raw_value  REAL    NOT NULL,
+    norm_value REAL    NOT NULL CHECK (norm_value >= 0),
+    UNIQUE (run_id, model_id, metric),
+    FOREIGN KEY (run_id) REFERENCES benchmark_runs (id),
+    FOREIGN KEY (model_id) REFERENCES models (id)
+);
+
+-- -----------------------------------------------------------------------------
 -- Indexes
 -- -----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_models_provider            ON models (provider_id);
@@ -190,3 +230,6 @@ CREATE INDEX IF NOT EXISTS idx_availability_provider      ON availability (provi
 CREATE INDEX IF NOT EXISTS idx_events_occurred            ON events (occurred_at);
 CREATE INDEX IF NOT EXISTS idx_events_type                ON events (event_type);
 CREATE INDEX IF NOT EXISTS idx_recommendations_requested  ON recommendations (requested_at);
+CREATE INDEX IF NOT EXISTS idx_benchmark_runs_name        ON benchmark_runs (name);
+CREATE INDEX IF NOT EXISTS idx_benchmark_results_run      ON benchmark_results (run_id);
+CREATE INDEX IF NOT EXISTS idx_benchmark_results_model    ON benchmark_results (model_id);

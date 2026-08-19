@@ -8,11 +8,13 @@ Phase 5 (Connectors - VS Code / MCP) is RELEASED and CLOSED (baseline
 `8231dce`, closure accepted 2026-08-18). Phase 6 (Ecosystem Intelligence) is
 authorized: planning baseline approved (D-P1..D-P9, commit `8f01b10`),
 Milestone 1 (doc-before-code) complete (v1.2 Section 20, proposal spec,
-ADR-0005/0006), and Milestone 2 (discovery + candidate workflow) implemented
-and committed (2026-08-18). The next defined step is Phase 6 **Milestone 3
-(approval materialization + model registry)**, gated on a separate owner
-authorization (D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216
-tests, closure accepted 2026-08-17).
+ADR-0005/0006), Milestone 2 (discovery + candidate workflow) implemented and
+committed (2026-08-18), and Milestone 3 (benchmark ingestion + persistent
+storage) implemented and committed (2026-08-19, owner-authorized against M2
+baseline `a037dfd`). The next defined step is Phase 6 **approval
+materialization + model registry**, gated on a separate owner authorization
+(D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure
+accepted 2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -46,8 +48,12 @@ baseline `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-PLANNING.md` approved
 `decisions/0005-*` and `decisions/0006-*`. Milestone 2 (discovery +
 candidate workflow) implemented and committed 2026-08-18 - `discovery/`
 module, additive `discovery_candidates` table, `[discovery]` config,
-5 discovery event types, review CLI. Implementation milestones 3-6 require
-separate owner authorizations (D-P9).
+5 discovery event types, review CLI. Milestone 3 (benchmark ingestion +
+persistent storage) implemented and committed 2026-08-19 - `benchmark/`
+module, additive `benchmark_runs`/`benchmark_results` tables (ADR-0006),
+`[benchmark]` config, `BENCHMARK_IMPORTED` event, `benchmark import|list`
+CLI. The remaining implementation milestones require separate owner
+authorizations (D-P9).
 
 ---
 
@@ -151,10 +157,16 @@ proposal documents:
 * `decisions/0005-provider-model-discovery-candidates.md` (D-P1, ACCEPTED)
 * `decisions/0006-benchmark-result-storage.md` (D-P3, ACCEPTED)
 
-Milestone 1 (documentation / doc-before-code) and Milestone 2 (discovery +
-candidate workflow) are complete. Milestone 3 (approval materialization +
-model registry) must NOT start until a separate owner authorization prompt is
+Milestone 1 (documentation / doc-before-code), Milestone 2 (discovery +
+candidate workflow) and Milestone 3 (benchmark ingestion + persistent
+storage) are complete. The next milestone (approval materialization + model
+registry) must NOT start until a separate owner authorization prompt is
 provided (D-P9 sequential gates).
+
+Milestone-numbering note: the owner authorized benchmark integration as "M3";
+the approved planning baseline (Section 12) and proposal spec (Section 9)
+number benchmark as M4 and approval materialization as M3. The completion
+checklist below follows the owner's milestone content labels.
 
 ---
 
@@ -166,11 +178,15 @@ provided (D-P9 sequential gates).
 - [x] Milestone 2: discovery + candidate workflow (2026-08-18; `discovery/`
       module, `discovery_candidates` table, `[discovery]` config, 5 event
       types, review CLI; 337/337 Python)
-- [ ] Milestone 3: approval materialization + model registry (requires owner
+- [x] Milestone 3 (owner label; spec "M4"): benchmark ingestion + persistent
+      storage (2026-08-19; `benchmark/` module, `benchmark_runs` /
+      `benchmark_results` tables, `[benchmark]` config, `BENCHMARK_IMPORTED`
+      event, `benchmark import|list` CLI; 384/384 Python)
+- [ ] Milestone (approval materialization + model registry, owner M3 / spec
+      M4-a) - requires owner authorization
+- [ ] Milestone: trend analysis (requires owner authorization)
+- [ ] Milestone: full regression + release package (requires owner
       authorization)
-- [ ] Milestone 4: benchmark integration
-- [ ] Milestone 5: trend analysis
-- [ ] Milestone 6: full regression + release package
 
 ---
 
@@ -180,6 +196,8 @@ provided (D-P9 sequential gates).
 - [x] Approve planning decisions D-P1..D-P9 (2026-08-18)
 - [x] Authorize Milestone 1 documentation (2026-08-18)
 - [x] Authorize Milestone 2 implementation (2026-08-18)
+- [x] Authorize Milestone 3 implementation (benchmark ingestion + persistent
+      storage, 2026-08-19)
 
 ---
 
@@ -215,6 +233,40 @@ Completed (2026-08-18, owner authorization against M1 baseline `d32324a`):
 
 Milestone 3 and every later implementation milestone must each be authorized
 separately by the owner before it starts (D-P9).
+
+---
+
+# Step 3 — Phase 6 Milestone 3 (benchmark ingestion + persistent storage)
+
+Completed (2026-08-19, owner authorization against M2 baseline `a037dfd`;
+owner resolved replay semantics: append NEW run + report `duplicate_of`,
+never silent):
+
+* `benchmark/ingest.py` - curated JSON benchmark file parsing + full
+  validation (top-level/result/mapping keys, secret-key scanning, origin URL
+  sanitization, documented deterministic formulas `identity` /
+  `fraction_to_percent`), model resolution against the existing registry
+  (D-P4), batch ingestion atomic per file (invalid row -> nothing written),
+  `--dry-run` without mutation, replay appends a NEW run + reports
+  `duplicate_of`, scores via `scoring.ingest.set_score` (source `BENCHMARK`,
+  `scored_at` = run date), `BENCHMARK_IMPORTED` event.
+* Additive `benchmark_runs` (name, version, origin, fetched_at, content_hash,
+  imported_at, submitter, mapping) + `benchmark_results` (run_id, model_id,
+  metric, raw_value, norm_value 0-100 CHECK; UNIQUE (run_id, model_id,
+  metric)) tables (ADR-0006) + `EXPECTED_TABLES`.
+* New whitelisted event: `BENCHMARK_IMPORTED`.
+* `[benchmark] import_dir` config (default `data/benchmarks`; mirrored in
+  `config.toml` + `templates/config.toml`); CLI `benchmark import --file
+  <path> [--name <benchmark>] [--dry-run]` and `benchmark list [--run <id>]`.
+* Tests: `tests/test_benchmark.py` (39) + `tests/test_benchmark_cli.py` (10);
+  384/384 Python (337 base + 47 new), adapter/MCP 48/48, VS Code 28/28 + 2/2,
+  `git diff --check` clean. No approval materialization / model registry (not
+  authorized), no trend code (not authorized), connectors untouched (D-P6),
+  `requirements.txt` and npm graph unchanged.
+
+The next milestone (approval materialization + model registry) and every later
+implementation milestone must each be authorized separately by the owner
+before it starts (D-P9).
 
 ---
 
@@ -254,12 +306,13 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 6 (Ecosystem Intelligence),
-**Milestone 3 (approval materialization + model registry)** - gated on
-separate owner authorization. Phase 6 planning baseline (D-P1..D-P9,
-commit `8f01b10`), Milestone 1 documentation, and Milestone 2 (discovery +
-candidate workflow, committed `d32324a` predecessor) are complete (v1.2
-Section 20; proposal spec; ADR-0005/0006; `discovery/` module; 337/337 Python
-green). Do not begin M3 without explicit authorization.
+**approval materialization + model registry** - gated on a separate owner
+authorization. Phase 6 planning baseline (D-P1..D-P9, commit `8f01b10`),
+Milestone 1 documentation, Milestone 2 (discovery + candidate workflow) and
+Milestone 3 (benchmark ingestion + persistent storage, committed 2026-08-19)
+are complete (v1.2 Section 20; proposal spec; ADR-0005/0006; `discovery/`
+module; `benchmark/` module; 384/384 Python green). Do not begin the next
+milestone without explicit authorization.
 
 Recommended input:
 
@@ -270,6 +323,7 @@ Recommended input:
 * docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md
 * decisions/0005-provider-model-discovery-candidates.md
 * decisions/0006-benchmark-result-storage.md
-* discovery/engine.py, discovery/sources.py, app/main.py, database/schema.sql
+* discovery/engine.py, discovery/sources.py, benchmark/ingest.py,
+  app/main.py, database/schema.sql
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md
