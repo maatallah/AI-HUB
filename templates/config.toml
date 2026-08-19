@@ -55,6 +55,15 @@ import_dir = "data/discovery"
 # location used when `benchmark import` is given no explicit path.
 import_dir = "data/benchmarks"
 
+[trend]
+# Phase 6 trend analysis (v1.2 Section 20.4). Read-only, on-demand; never
+# writes to the database and never emits events.
+# Analysis window anchored to the most recent point of the analyzed series.
+window_days = 90
+# Minimum number of valid numeric points in the window before a trend gives
+# direction/magnitude/stability; fewer points is reported as insufficient_data.
+min_points = 3
+
 [logging]
 level = "INFO"
 log_root = "logs"

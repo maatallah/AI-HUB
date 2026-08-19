@@ -4,6 +4,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - trend analysis)
+
+- Trend analysis milestone implemented (2026-08-19, owner-authorized against
+  the canonical M3 baseline `98696d1`; the pre-implementation inspection
+  report and the governing decisions below were approved by the owner).
+- `trend/` module - read-only, deterministic trend analysis over the
+  append-only event-derived history (v1.2 Section 20.4; proposal spec
+  Section 5): `analysis.py` (public `score_trend`, `availability_trend`,
+  `TrendError`) and `__init__.py` (public API + governed semantics). Derives
+  direction (`up` / `down` / `stable` / `insufficient_data`), magnitude and
+  stability over an explicit request window. Strictly derived/read-only: no
+  DB writes, no tables, no `TREND_*` events (core/events.py untouched),
+  ADR-0004 / D-P8 snapshots remain deferred.
+- Owner-authorized trend semantics: Option A availability scalar
+  (`HEALTH_CHECK_OK` -> 1.0, `HEALTH_CHECK_FAILED` -> 0.0; `HEALTH_CHECK_*
+  UNKNOWN` excluded from the numeric scalar; `MONITOR_STATUS_CHANGED` is never
+  a numeric point); window anchored to the most recent series point (not
+  wall-clock); per-dimension grouping (a dimension filter restricts the
+  calculation); stable band `abs(normalized delta) <= 5%` applied
+  symmetrically; magnitude `(last - first) / domain` where the domain is 100
+  for scores (exactly `(last - first) / 100`) and 1 for the availability
+  scalar (domain-relative normalization, owner Option 1); stability =
+  population standard deviation (documented in the module); `min_points = 3`
+  minimum, fewer points -> `insufficient_data` with the threshold exposed,
+  never fabricated (Article 10); the complete raw history is passed through
+  unchanged. Latency is not part of the availability scalar.
+- `[trend]` configuration (validated, defaults `window_days 90`,
+  `min_points 3`) in `app/config.py` (DEFAULT_CONFIG, Config, validate,
+  effective_config_text) and mirrored in `config.toml` +
+  `templates/config.toml`.
+- CLI (additive, existing commands unchanged): `trend scores --model <id>
+  [--dimension <d>] [--days N]`, `trend availability [--provider <id>]
+  [--days N]`; `--days` overrides the analysis window (0 or negative rejected).
+- Tests: `tests/test_trend.py` (31) + `tests/test_trend_cli.py` (14) + 2 new
+  config tests covering
+  up/down/stable, exact +/- 5% boundaries, magnitude, population stability,
+  insufficient-data threshold exposure, 90-day default window anchoring,
+  explicit window/days, per-dimension grouping, OK/FAILED mapping, UNKNOWN and
+  transition exclusion, determinism, read-only/no-write, CLI + invalid input;
+  minimal config-test and CLI-fixture updates for the additive `[trend]`
+  section. Full Python suite 467/467 (420 base + 47 new); adapter/MCP 48/48;
+  VS Code 28/28 unit + 2/2 integration; `git diff --check` clean. No schema
+  changes, no new event types, no connectors changes (D-P6), `requirements.txt`
+  and npm graph unchanged.
+- Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+  The release package milestone remains gated on a separate owner
+  authorization (D-P9).
+
 ### Added (Phase 6 - Ecosystem Intelligence - canonical Milestone 3 - approval materialization + model registry)
 
 - Milestone 3 (approval materialization + model registry, canonical Phase 6

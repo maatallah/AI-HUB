@@ -50,6 +50,7 @@ def cli_conn(tmp_path, monkeypatch):
                     "import_dir": "data/discovery",
                 },
                 "benchmark": {"import_dir": "data/benchmarks"},
+                "trend": {"window_days": 90, "min_points": 3},
                 "logging": {"level": "INFO"},
             }
         )

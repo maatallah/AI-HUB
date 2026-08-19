@@ -40,6 +40,10 @@ import_dir = "data/custom"
 [benchmark]
 import_dir = "data/benchmarks-custom"
 
+[trend]
+window_days = 45
+min_points = 2
+
 [logging]
 level = "DEBUG"
 """
@@ -63,6 +67,8 @@ def test_defaults_used_when_file_missing(tmp_path):
     assert config.discovery_timeout_seconds == 10
     assert config.discovery_import_dir == "data/discovery"
     assert config.benchmark_import_dir == "data/benchmarks"
+    assert config.trend_window_days == 90
+    assert config.trend_min_points == 3
     assert config.logging_level == "INFO"
 
 
@@ -82,6 +88,8 @@ def test_file_overrides_defaults(tmp_path):
     assert config.discovery_timeout_seconds == 5
     assert config.discovery_import_dir == "data/custom"
     assert config.benchmark_import_dir == "data/benchmarks-custom"
+    assert config.trend_window_days == 45
+    assert config.trend_min_points == 2
     assert config.logging_level == "DEBUG"
 
 
@@ -213,6 +221,7 @@ def test_validate_returns_config():
                 "import_dir": "data/disc",
             },
             "benchmark": {"import_dir": "data/bench-custom"},
+            "trend": {"window_days": 120, "min_points": 5},
             "logging": {"level": "CRITICAL"},
         }
     )
@@ -230,6 +239,30 @@ def test_validate_returns_config():
     assert config.discovery_timeout_seconds == 7
     assert config.discovery_import_dir == "data/disc"
     assert config.benchmark_import_dir == "data/bench-custom"
+    assert config.trend_window_days == 120
+    assert config.trend_min_points == 5
+
+
+def test_invalid_trend_window_days_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[trend]\nwindow_days = 0\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "trend.window_days" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for non-positive trend.window_days.")
+
+
+def test_invalid_trend_min_points_rejected(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text("[trend]\nmin_points = 0\n", encoding="utf-8")
+    try:
+        load_config(path)
+    except ConfigError as exc:
+        assert "trend.min_points" in str(exc)
+    else:
+        raise AssertionError("Expected ConfigError for a non-positive trend.min_points.")
 
 
 def test_invalid_discovery_enabled_rejected(tmp_path):

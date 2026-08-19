@@ -73,6 +73,10 @@ DEFAULT_CONFIG: dict = {
     "benchmark": {
         "import_dir": "data/benchmarks",
     },
+    "trend": {
+        "window_days": 90,
+        "min_points": 3,
+    },
     "logging": {
         "level": "INFO",
     },
@@ -102,6 +106,8 @@ class Config:
     discovery_timeout_seconds: int
     discovery_import_dir: str
     benchmark_import_dir: str
+    trend_window_days: int
+    trend_min_points: int
     logging_level: str
 
 
@@ -241,6 +247,12 @@ def validate(data: dict) -> Config:
     if not isinstance(benchmark_.get("import_dir"), str) or not benchmark_["import_dir"].strip():
         raise ConfigError("benchmark.import_dir must be a non-empty string.")
 
+    trend = data["trend"]
+    if not isinstance(trend.get("window_days"), int) or trend["window_days"] <= 0:
+        raise ConfigError("trend.window_days must be a positive integer.")
+    if not isinstance(trend.get("min_points"), int) or trend["min_points"] < 1:
+        raise ConfigError("trend.min_points must be an integer >= 1.")
+
     logging_ = data["logging"]
     level = logging_.get("level")
     if level not in VALID_LOG_LEVELS:
@@ -268,6 +280,8 @@ def validate(data: dict) -> Config:
         discovery_timeout_seconds=discovery_["timeout_seconds"],
         discovery_import_dir=discovery_["import_dir"],
         benchmark_import_dir=benchmark_["import_dir"].strip(),
+        trend_window_days=trend["window_days"],
+        trend_min_points=trend["min_points"],
         logging_level=level,
     )
 
@@ -329,6 +343,9 @@ def effective_config_text(config: Config) -> str:
         + f'import_dir = "{config.discovery_import_dir}"\n'
         + "\n[benchmark]\n"
         + f'import_dir = "{config.benchmark_import_dir}"\n'
+        + "\n[trend]\n"
+        + f"window_days = {config.trend_window_days}\n"
+        + f"min_points = {config.trend_min_points}\n"
         + "\n[logging]\n"
         + f'level = "{config.logging_level}"\n'
     )

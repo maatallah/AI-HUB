@@ -12,25 +12,27 @@
 approved 2026-08-18; Milestone 1 documentation complete; Milestone 2
 (discovery + candidate workflow) implemented 2026-08-18; benchmark ingestion
 + persistent storage implemented 2026-08-19; approval materialization + model
-registry (canonical Milestone 3) implemented and committed 2026-08-19;
-remaining Phase 6 milestones not authorized)
+registry (canonical Milestone 3) implemented and committed 2026-08-19; trend
+analysis implemented and committed 2026-08-19; remaining Phase 6 milestone
+(release package) not authorized)
 
-**Completion %:** ~93% (Phases 1-5 released; Phase 6 planning + M1
+**Completion %:** ~95% (Phases 1-5 released; Phase 6 planning + M1
 documentation + M2 discovery/candidate workflow + benchmark ingestion +
-approval materialization/model registry (canonical M3) complete; remaining
-milestones pending authorization)
+approval materialization/model registry (canonical M3) + trend analysis
+complete; release package pending authorization)
 
 **Last update:** 2026-08-19
 
-**Repository health:** Good (420/420 Python tests passing, no open defects;
+**Repository health:** Good (467/467 Python tests passing, no open defects;
 adapter/MCP 48/48; connectors/vscode 28/28 TS unit tests + 2/2 integration
 tests passing)
 
 **Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
 `8231dce`). Phase 6 planning baseline approved (D-P1..D-P9), M1 doc-before-code
 complete, M2 (discovery + candidate workflow) implemented, benchmark ingestion
-+ persistent storage implemented, and approval materialization + model
-registry (canonical M3) implemented; remaining milestones not yet authorized.
++ persistent storage implemented, approval materialization + model
+registry (canonical M3) implemented, and trend analysis implemented; the
+release package milestone is not yet authorized.
 
 ---
 
@@ -210,8 +212,41 @@ after the read-only milestone reconciliation; baseline `eca910f`):
   npm graph unchanged.
 * Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
 
-Remaining Phase 6 milestones (trend analysis, release package) each require a
-separate owner authorization (D-P9 sequential gates).
+Trend analysis authorized and implemented (2026-08-19, owner authorization
+against the canonical M3 baseline `98696d1`):
+
+* `trend/` module - read-only, deterministic trend analysis over the
+  append-only event-derived history (v1.2 Section 20.4; proposal spec Section
+  5): `analysis.py` (`score_trend`, `availability_trend`, `TrendError`) and
+  `__init__.py`: direction (`up` / `down` / `stable` / `insufficient_data`),
+  magnitude and stability over an explicit request window. Strictly
+  derived/read-only: no DB writes, no tables, no `TREND_*` events (core/
+  events.py untouched); ADR-0004 / D-P8 snapshots remain deferred.
+* Owner-authorized semantics: Option A availability scalar (`HEALTH_CHECK_OK`
+  -> 1.0, `HEALTH_CHECK_FAILED` -> 0.0; `HEALTH_CHECK_UNKNOWN` excluded from
+  the numeric scalar; `MONITOR_STATUS_CHANGED` never a numeric point); window
+  anchored to the most recent series point (not wall-clock); per-dimension
+  grouping (a dimension filter restricts the calculation); stable band `abs
+  (normalized delta) <= 5%` applied symmetrically; magnitude `(last - first) /
+  domain` (domain 100 for scores = exactly `(last - first) / 100`, domain 1
+  for the availability scalar - domain-relative normalization, owner Option
+  1); stability = population standard deviation (documented); `min_points`
+  (default 3) minimum, fewer -> `insufficient_data` with the threshold
+  exposed, never fabricated (Article 10); complete raw history passed through
+  unchanged, latency not part of the availability scalar.
+* `[trend]` config (validated, defaults `window_days 90`, `min_points 3`)
+  mirrored in `config.toml` / `templates/config.toml`.
+* CLI (additive): `trend scores --model <id> [--dimension <d>] [--days N]`,
+  `trend availability [--provider <id>] [--days N]`.
+* Tests: `tests/test_trend.py` (31) + `tests/test_trend_cli.py` (14) + 2 config
+  tests; full Python suite 467/467 (420 + 47 new); adapter/MCP 48/48; VS Code
+  28/28 unit + 2/2 integration; `git diff --check` clean. No schema changes,
+  no new event types, no connectors changes (D-P6), `requirements.txt` and npm
+  graph unchanged.
+* Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
+Remaining Phase 6 milestone (release package) requires a separate owner
+authorization (D-P9 sequential gates).
 
 Release documents:
 
@@ -239,16 +274,15 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Authorize Phase 6 trend analysis (spec Section 9 milestone content; D-P9
-  sequential gates) and the release milestone
+* Authorize the Phase 6 release package milestone (D-P9 sequential gates)
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 6 trend analysis (read-only, deterministic; per the approved planning
-baseline, spec Section 9) — once authorized by the owner. The release package
-follows as a later, separately-authorized milestone.
+Phase 6 release package (full regression + release manifest/closure; per the
+approved planning baseline, spec Section 9) — once authorized by the owner.
+Trend analysis is complete.
 
 ## Open Documentation Items
 

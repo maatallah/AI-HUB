@@ -11,11 +11,13 @@ Milestone 1 (doc-before-code) complete (v1.2 Section 20, proposal spec,
 ADR-0005/0006), Milestone 2 (discovery + candidate workflow) implemented and
 committed (2026-08-18), benchmark ingestion + persistent storage implemented
 and committed (2026-08-19, owner-authorized against M2 baseline `a037dfd`),
-and approval materialization + model registry (canonical Milestone 3)
-implemented and committed (2026-08-19, owner-authorized). The next defined
-step is Phase 6 **trend analysis**, gated on a separate owner authorization
-(D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure
-accepted 2026-08-17).
+approval materialization + model registry (canonical Milestone 3) implemented
+and committed (2026-08-19, owner-authorized), and trend analysis implemented
+and committed (2026-08-19, owner-authorized against the canonical M3 baseline
+`98696d1`). The next defined step is the Phase 6 **release package** (full
+regression + release manifest/closure), gated on a separate owner
+authorization (D-P9). Prior released phases: Phase 4 (`c49ea9b`, 216/216
+tests, closure accepted 2026-08-17).
 
 Phase 1 has been formally closed - see `handover/PHASE-1-CLOSURE.md` and
 `docs/release/PHASE1-CLOSURE-SUMMARY.md`.
@@ -56,8 +58,10 @@ module, additive `benchmark_runs`/`benchmark_results` tables (ADR-0006),
 CLI. Approval materialization + model registry (canonical Milestone 3)
 implemented and committed 2026-08-19 - `core/models.py`, governed
 materialization in `discovery/engine.py`, `MODEL_*` events, `model list`
-CLI. The remaining implementation milestones require separate owner
-authorizations (D-P9).
+CLI. Trend analysis implemented and committed 2026-08-19 - `trend/`
+module (`analysis.py`, `__init__.py`), `[trend]` config, `trend scores|
+availability` CLI. The remaining implementation milestone (release package)
+requires a separate owner authorization (D-P9).
 
 ---
 
@@ -162,10 +166,11 @@ proposal documents:
 * `decisions/0006-benchmark-result-storage.md` (D-P3, ACCEPTED)
 
 Milestone 1 (documentation / doc-before-code), Milestone 2 (discovery +
-candidate workflow), Milestone 3 (benchmark ingestion + persistent storage)
-and approval materialization + model registry (canonical Milestone 3) are
-complete. The next milestone (trend analysis) must NOT start until a separate
-owner authorization prompt is provided (D-P9 sequential gates).
+candidate workflow), Milestone 3 (benchmark ingestion + persistent storage),
+approval materialization + model registry (canonical Milestone 3) and trend
+analysis are complete. The next milestone (release package) must NOT start
+until a separate owner authorization prompt is provided (D-P9 sequential
+gates).
 
 Milestone-numbering note: the owner authorized benchmark integration as "M3";
 the approved planning baseline (Section 12) and proposal spec (Section 9)
@@ -190,7 +195,8 @@ checklist below follows the owner's milestone content labels.
       (2026-08-19; `core/models.py`, governed materialization in
       `discovery/engine.py`, `MODEL_*` events, `model list` CLI; 420/420
       Python)
-- [ ] Milestone: trend analysis (requires owner authorization)
+- [x] Milestone: trend analysis (2026-08-19; `trend/` module, `[trend]`
+      config, `trend scores|availability` CLI; 467/467 Python)
 - [ ] Milestone: full regression + release package (requires owner
       authorization)
 
@@ -206,6 +212,7 @@ checklist below follows the owner's milestone content labels.
       storage, 2026-08-19)
 - [x] Authorize approval materialization + model registry (canonical Phase 6
       M3, 2026-08-19)
+- [x] Authorize trend analysis (2026-08-19)
 
 ---
 
@@ -311,6 +318,47 @@ must each be authorized separately by the owner before it starts (D-P9).
 
 ---
 
+# Step 5 — Phase 6 trend analysis
+
+Completed (2026-08-19, owner authorization against the canonical M3 baseline
+`98696d1`; the pre-implementation inspection report and the governing
+decisions were approved by the owner):
+
+* `trend/` module - read-only, deterministic trend analysis over the
+  append-only event-derived history (v1.2 Section 20.4; proposal spec Section
+  5): `analysis.py` (`score_trend`, `availability_trend`, `TrendError`) and
+  `__init__.py`. Direction (`up` / `down` / `stable` / `insufficient_data`),
+  magnitude and stability over an explicit request window. Strictly
+  derived/read-only: no DB writes, no tables, no `TREND_*` events (core/
+  events.py untouched); ADR-0004 / D-P8 snapshots remain deferred.
+* Owner-authorized semantics: Option A availability scalar (`HEALTH_CHECK_OK`
+  -> 1.0, `HEALTH_CHECK_FAILED` -> 0.0; `HEALTH_CHECK_UNKNOWN` excluded from
+  the numeric scalar; `MONITOR_STATUS_CHANGED` never a numeric point); window
+  anchored to the most recent series point (not wall-clock); per-dimension
+  grouping (a dimension filter restricts the calculation); stable band `abs
+  (normalized delta) <= 5%` applied symmetrically; magnitude `(last - first) /
+  domain` (domain 100 for scores = exactly `(last - first) / 100`, domain 1
+  for the availability scalar - domain-relative normalization, owner Option
+  1); stability = population standard deviation (documented in the module);
+  `min_points` (default 3) minimum - fewer -> `insufficient_data` with the
+  threshold exposed, never fabricated (Article 10); complete raw history
+  passed through unchanged, latency not part of the availability scalar.
+* `[trend]` config (validated, defaults `window_days 90`, `min_points 3`)
+  mirrored in `config.toml` + `templates/config.toml`.
+* CLI (additive, existing commands unchanged): `trend scores --model <id>
+  [--dimension <d>] [--days N]`, `trend availability [--provider <id>]
+  [--days N]`.
+* Tests: `tests/test_trend.py` (31) + `tests/test_trend_cli.py` (14) + 2
+  config tests; 467/467 Python (420 base + 47 new), adapter/MCP 48/48, VS Code
+  28/28 + 2/2, `git diff --check` clean. No schema changes, no new event
+  types, connectors untouched (D-P6), `requirements.txt` and npm graph
+  unchanged.
+
+The next milestone (release package) and every later implementation milestone
+must each be authorized separately by the owner before it starts (D-P9).
+
+---
+
 # Phase 5 Completion Status (historical)
 
 - [x] Spec v1.2 Section 19 (Connectors) (Milestone 1)
@@ -347,14 +395,14 @@ and closed (closure accepted 2026-08-17, baseline `c49ea9b`).
 # Next Recommended Agent
 
 Backend-focused implementation agent for Phase 6 (Ecosystem Intelligence),
-**trend analysis** - gated on a separate owner authorization. Phase 6 planning
+**release package** - gated on a separate owner authorization. Phase 6 planning
 baseline (D-P1..D-P9, commit `8f01b10`), Milestone 1 documentation, Milestone
 2 (discovery + candidate workflow), Milestone 3 (benchmark ingestion +
-persistent storage, committed 2026-08-19) and approval materialization +
-model registry (canonical M3, committed 2026-08-19) are complete (v1.2
-Section 20; proposal spec; ADR-0005/0006; `discovery/` module; `benchmark/`
-module; `core/models.py`; 420/420 Python green). Do not begin the next
-milestone without explicit authorization.
+persistent storage), approval materialization + model registry (canonical M3)
+and trend analysis are complete (v1.2 Section 20; proposal spec; ADR-0005/0006;
+`discovery/` module; `benchmark/` module; `core/models.py`; `trend/` module;
+467/467 Python green). Do not begin the next milestone without explicit
+authorization.
 
 Recommended input:
 
@@ -366,6 +414,6 @@ Recommended input:
 * decisions/0005-provider-model-discovery-candidates.md
 * decisions/0006-benchmark-result-storage.md
 * discovery/engine.py, discovery/sources.py, benchmark/ingest.py,
-  core/models.py, app/main.py, database/schema.sql
+  core/models.py, trend/analysis.py, app/main.py, database/schema.sql
 * handover/CURRENT-STATE.md
 * handover/NEXT-STEPS.md

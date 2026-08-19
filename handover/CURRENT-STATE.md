@@ -6,9 +6,9 @@ Last Updated:
 
 2026-08-19 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved,
 Milestone 1 documentation, Milestone 2 discovery + candidate workflow,
-benchmark ingestion + persistent storage, and approval materialization +
-model registry (canonical Milestone 3) implemented and committed; remaining
-Phase 6 implementation milestones not authorized)
+benchmark ingestion + persistent storage, approval materialization + model
+registry (canonical Milestone 3) and trend analysis implemented and
+committed; the remaining Phase 6 release-package milestone is not authorized)
 
 ---
 
@@ -40,9 +40,10 @@ approved (D-P1..D-P9, commit `8f01b10`) and Milestone 1 (doc-before-code)
 complete: v1.2 Section 20, `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`,
 ADR-0005 (D-P1 discovery candidates) and ADR-0006 (D-P3 benchmark storage).
 Milestone 2 (discovery + candidate workflow), benchmark ingestion +
-persistent storage, and approval materialization + model registry (canonical
-Milestone 3) implemented and committed. The remaining implementation
-milestones require separate owner authorizations (D-P9).
+persistent storage, approval materialization + model registry (canonical
+Milestone 3) and trend analysis implemented and committed. The remaining
+implementation milestone (release package) requires a separate owner
+authorization (D-P9).
 
 Architecture approved.
 
@@ -231,11 +232,44 @@ Completed (Milestone 3 (canonical) - approval materialization + model registry,
   code (not authorized), no connectors changes (D-P6), no schema/config
   changes, `requirements.txt` and npm graph unchanged.
 
+Completed (trend analysis, 2026-08-19, owner-authorized against the canonical
+M3 baseline `98696d1`):
+
+* `trend/` module - read-only, deterministic trend analysis over the
+  append-only event-derived history (v1.2 Section 20.4; proposal spec
+  Section 5): `analysis.py` (`score_trend`, `availability_trend`,
+  `TrendError`) and `__init__.py`. Direction (`up` / `down` / `stable` /
+  `insufficient_data`), magnitude and stability over an explicit request
+  window. Strictly derived/read-only: no DB writes, no tables, no `TREND_*`
+  events (core/events.py untouched); ADR-0004 / D-P8 snapshots remain
+  deferred.
+* Owner-authorized semantics: Option A availability scalar (`HEALTH_CHECK_OK`
+  -> 1.0, `HEALTH_CHECK_FAILED` -> 0.0; `HEALTH_CHECK_UNKNOWN` excluded from
+  the numeric scalar; `MONITOR_STATUS_CHANGED` never a numeric point); window
+  anchored to the most recent series point (not wall-clock); per-dimension
+  grouping (a dimension filter restricts the calculation); stable band `abs
+  (normalized delta) <= 5%` applied symmetrically; magnitude `(last - first) /
+  domain` (domain 100 for scores = exactly `(last - first) / 100`, domain 1
+  for the availability scalar - domain-relative normalization, owner Option
+  1); stability = population standard deviation (documented in the module);
+  `min_points` (default 3) minimum - fewer -> `insufficient_data` with the
+  threshold exposed, never fabricated (Article 10); complete raw history
+  passed through unchanged, latency not part of the availability scalar.
+* `[trend]` config (validated, defaults `window_days 90`, `min_points 3`)
+  mirrored in `config.toml` + `templates/config.toml`.
+* CLI (additive): `trend scores --model <id> [--dimension <d>] [--days N]`,
+  `trend availability [--provider <id>] [--days N]`.
+* Tests: `tests/test_trend.py` (31) + `tests/test_trend_cli.py` (14) + 2 config
+  tests; full Python suite 467/467 (420 + 47 new); adapter/MCP 48/48; VS Code
+  28/28 + 2/2; `git diff --check` clean. No schema changes, no new event
+  types, no connectors changes (D-P6), `requirements.txt` and npm graph
+  unchanged.
+* Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
+
 Pending:
 
-* Phase 6 trend analysis (spec Section 9 content) - requires a separate owner
-  authorization (D-P9). The release package follows as a later,
-  separately-authorized milestone.
+* Phase 6 release package (full regression + release manifest/closure) -
+  requires a separate owner authorization (D-P9).
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -343,6 +377,7 @@ AI-Hub/
   discovery/      __init__.py, sources.py, engine.py (Phase 6 M2 +
                   canonical M3 materialization)
   benchmark/      __init__.py, ingest.py (Phase 6 M3)
+  trend/          __init__.py, analysis.py (Phase 6 trend analysis)
   connectors/     adapter.py, __init__.py, vscode/ (extension workspace),
                   mcp/ (server.py, tools.py) (Phase 5)
   dashboard/      __init__.py, engine.py, reports.py, history.py (Phase 4)
@@ -357,7 +392,8 @@ AI-Hub/
                   test_discovery.py, test_discovery_cli.py,
                   test_benchmark.py, test_benchmark_cli.py,
                   test_models.py, test_models_cli.py
-                  (420 Python tests total)
+                  test_trend.py, test_trend_cli.py
+                  (467 Python tests total)
   scripts/        seed_providers.py
   backup/         (empty)
   docs/           review/ (immutable + Phase 2 plan/spec), release/
@@ -471,10 +507,10 @@ Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
 
 # Not Yet Implemented
 
-* Phase 6 remaining milestones (planning baseline + M1 documentation + M2
+* Phase 6 remaining milestone (planning baseline + M1 documentation + M2
   discovery + benchmark ingestion + approval materialization / model registry
-  complete; each further milestone requires separate owner authorization):
-  trend analysis, release package
+  + trend analysis complete; the final milestone requires separate owner
+  authorization): release package
 * Model seeding
 
 ---
@@ -543,9 +579,9 @@ Phase 6 documentation: High (planning baseline approved 2026-08-18; M1
 doc-before-code complete - v1.2 Section 20, proposal spec, ADR-0005/0006)
 
 Phase 6 implementation: Milestone 2 (discovery + candidate workflow), benchmark
-ingestion + persistent storage, and approval materialization + model registry
-(canonical M3) implemented, tested (420/420 Python, adapter/MCP 48/48, VS Code
-28/28 + 2/2) and committed; remaining milestones require separate owner
-authorization (D-P9)
+ingestion + persistent storage, approval materialization + model registry
+(canonical M3) and trend analysis implemented, tested (467/467 Python,
+adapter/MCP 48/48, VS Code 28/28 + 2/2) and committed; the release package
+milestone requires separate owner authorization (D-P9)
 
 Concept: Validated

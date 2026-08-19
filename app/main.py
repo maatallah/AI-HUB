@@ -27,6 +27,8 @@ Run from the repository root:
     python -m app.main benchmark import --file <path> [--name <benchmark>] [--dry-run]
     python -m app.main benchmark list [--run <id>]
     python -m app.main model list [--provider P]
+    python -m app.main trend scores --model N [--dimension D] [--days N]
+    python -m app.main trend availability [--provider P] [--days N]
 """
 
 from __future__ import annotations
@@ -48,6 +50,7 @@ from monitoring import availability, health, validation
 from recommendation import RecommendationError, list_recommendations, recommend, record_recommendation
 from scoring import ingest as score_ingest
 from scoring import list_scores
+from trend import analysis as trend
 
 
 def _get_db(config) -> Path:
@@ -550,6 +553,95 @@ def cmd_model(args) -> None:
         conn.close()
 
 
+def cmd_trend(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    window_days = config.trend_window_days if args.days is None else args.days
+    try:
+        if args.action == "scores":
+            results = trend.score_trend(
+                conn,
+                args.model,
+                dimension=args.dimension,
+                window_days=window_days,
+                min_points=config.trend_min_points,
+            )
+            _print_score_trends(conn, results)
+        elif args.action == "availability":
+            results = trend.availability_trend(
+                conn,
+                provider_id=args.provider,
+                window_days=window_days,
+                min_points=config.trend_min_points,
+            )
+            _print_availability_trends(results)
+    except trend.TrendError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
+def _num(value) -> str:
+    if value is None:
+        return "-"
+    return repr(float(value))
+
+
+def _model_label(conn, model_id) -> str:
+    row = conn.execute(
+        "SELECT m.model_identifier, p.name AS provider_name"
+        " FROM models m JOIN providers p ON p.id = m.provider_id"
+        " WHERE m.id = ?",
+        (model_id,),
+    ).fetchone()
+    if row is None or row["model_identifier"] is None:
+        return str(model_id)
+    return f"{row['model_identifier']} ({row['provider_name']})"
+
+
+def _print_score_trends(conn, results) -> None:
+    if not results:
+        print("No score history.")
+        return
+    for r in results:
+        meta = f"stdev={r['stdev']} window_days={r['window_days']}"
+        if r["direction"] == trend.DIRECTION_INSUFFICIENT:
+            meta = f"min_points={r['min_points']} " + meta
+        print(
+            f"model={_model_label(conn, r['model_id'])}"
+            f" dimension={r['dimension']}"
+            f" direction={r['direction']}"
+            f" magnitude={_num(r['magnitude'])}"
+            f" stability={_num(r['stability'])}"
+            f" points={r['point_count']}/{r['series_count']}"
+            f" ({meta})"
+        )
+
+
+def _print_availability_trends(results) -> None:
+    if not results:
+        print("No availability history.")
+        return
+    for r in results:
+        meta = (
+            f"domain={_num(r['domain'])} stdev={r['stdev']}"
+            f" window_days={r['window_days']}"
+        )
+        if r["direction"] == trend.DIRECTION_INSUFFICIENT:
+            meta = f"min_points={r['min_points']} " + meta
+        print(
+            f"provider={r['provider_id']}"
+            f" direction={r['direction']}"
+            f" magnitude={_num(r['magnitude'])}"
+            f" stability={_num(r['stability'])}"
+            f" points={r['point_count']}/{r['series_count']}"
+            f" excluded_unknown={r['excluded_unknown']}"
+            f" excluded_transitions={r['excluded_transitions']}"
+            f" ({meta})"
+        )
+
+
 def _benchmark_list(conn, run) -> None:
     if run is not None:
         results = benchmark.list_run_results(conn, run)
@@ -781,6 +873,38 @@ def build_parser() -> argparse.ArgumentParser:
     m_list = mod_sub.add_parser("list", help="List models")
     m_list.add_argument("--provider", type=int, help="Filter by provider id")
     m_list.set_defaults(func=cmd_model)
+
+    tr = sub.add_parser("trend", help="Trend analysis (Phase 6, read-only)")
+    tr_sub = tr.add_subparsers(dest="action", required=True)
+
+    tr_scores = tr_sub.add_parser(
+        "scores", help="Per-dimension score trends for a model (read-only)"
+    )
+    tr_scores.add_argument("--model", type=int, required=True, help="Model id")
+    tr_scores.add_argument(
+        "--dimension", help="Restrict the analysis to one dimension"
+    )
+    tr_scores.add_argument(
+        "--days",
+        type=int,
+        help="Analysis window in days anchored to the most recent point"
+        " (default: trend.window_days)",
+    )
+    tr_scores.set_defaults(func=cmd_trend)
+
+    tr_avail = tr_sub.add_parser(
+        "availability", help="Availability success/failure trends per provider (read-only)"
+    )
+    tr_avail.add_argument(
+        "--provider", type=int, help="Restrict the analysis to one provider"
+    )
+    tr_avail.add_argument(
+        "--days",
+        type=int,
+        help="Analysis window in days anchored to the most recent point"
+        " (default: trend.window_days)",
+    )
+    tr_avail.set_defaults(func=cmd_trend)
 
     return parser
 
