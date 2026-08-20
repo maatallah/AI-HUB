@@ -6,8 +6,7 @@
 
 **Date:** 2026-08-19
 
-**Status:** Final draft (release package created 2026-08-19 per owner
-authorization; release approval and closure acceptance pending)
+**Status:** Final (release review complete; owner approval granted 2026-08-19)
 
 ---
 
@@ -60,12 +59,13 @@ redesign.
 | 3 | Approval materialization + model registry (canonical M3) | `98696d1`; `core/models.py`; governed `approve_candidate`; `MODEL_*` events emitted; `model list`; 36 new tests (420/420) | Done |
 | 4 | Benchmark ingestion + persistent storage (canonical M4; historical owner label "M3") | `eca910f`; `benchmark/` module; `benchmark_runs`/`benchmark_results` (ADR-0006); `BENCHMARK_IMPORTED`; `[benchmark]` config; `benchmark import\|list`; 47 new tests (384/384) | Done |
 | 5 | Trend analysis | `6655def`; `trend/` module; `[trend]` config; `trend scores\|availability`; 47 new tests (467/467) | Done |
-| 6 | Full regression + release package | this commit; full suite green; `docs/release/PHASE6-RELEASE-MANIFEST.md`; this closure report; living docs refreshed | Done (approval pending) |
+| 6 | Full regression + release package | this commit; full suite green; `docs/release/PHASE6-RELEASE-MANIFEST.md`; this closure report; living docs refreshed | Done (approved 2026-08-19) |
 
 Also completed during closure:
 
 * `docs/release/PHASE6-RELEASE-MANIFEST.md` (Phase 6 implementation baseline
-  `6655def`, status PENDING OWNER APPROVAL).
+  `6655def`, status APPROVED - owner review complete, closure accepted
+  2026-08-19).
 * Release review (boundary scans clean; `git diff --check` clean; Phase 1-5
   baselines intact; only the approved Phase 6 scope + release docs changed).
 * Full verification on the release baseline: 467/467 Python, 48/48
@@ -262,12 +262,12 @@ Checklist against the Phase 6 completion criteria (proposal spec sections
 Phase 6 is the final roadmap phase and is complete: all deliverables are
 implemented, all tests pass (467/467 Python; 48/48 adapter/MCP; 28/28 TS
 unit; 2/2 integration), no functional defects remain, and the repository
-constitutes a consistent immutable Phase 6 release baseline pending owner
-approval.
+constitutes the consistent immutable Phase 6 release baseline `03ce2ea`.
 
 Recommended next steps:
 
-1. Owner: approve this Phase 6 release + closure (M6 gate).
+1. Owner approval of this Phase 6 release + closure (M6 gate) recorded
+   2026-08-19.
 2. Owner: provide a SEPARATE explicit instruction to push `main` to
    `origin/main` (push is intentionally not performed by the release work).
 3. No Phase 7 is defined or authorized; the roadmap (v1.2 Section 15) is
@@ -276,9 +276,9 @@ Recommended next steps:
 
 Signature line for the owner:
 
-Approved by: (pending)
+Approved by: maatallah
 
-Date: (pending)
+Date: 2026-08-19
 
 Approval covers the following commits:
 
@@ -288,10 +288,9 @@ Approval covers the following commits:
 * `eca910f` - Phase 6 canonical M4 (historical label "M3") - benchmark
 * `98696d1` - Phase 6 canonical M3 - approval materialization + model registry
 * `6655def` - Phase 6 trend analysis
-* (release manifest / closure commit - the Phase 6 release commit; its SHA is
-  recorded in living docs and the release-package report)
+* `03ce2ea` - Phase 6 release manifest and closure report (release commit)
 
-Action:  [ ] Accept Phase 6 closure   [ ] Request changes
+Action:  [x] Accept Phase 6 closure   [ ] Request changes
 
 ---
 
@@ -335,8 +334,8 @@ tables; 203 new Python tests.
 * ADR-0004 score snapshots deferred (D-P8)
 * ADR-0003 workspace discovery deferred (D-P5)
 
-**Recommendation:** PHASE 6 CLOSED pending owner approval (release approval
-and closure acceptance pending as of 2026-08-19).
+**Recommendation:** PHASE 6 CLOSED (owner approval granted 2026-08-19; release
+baseline `03ce2ea`).
 
 ---
 

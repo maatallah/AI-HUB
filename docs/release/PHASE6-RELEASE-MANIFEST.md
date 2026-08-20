@@ -18,8 +18,7 @@ implementation commit before the release package)
 
 **Current branch:** `main`
 
-**Status:** PENDING OWNER APPROVAL (release package created 2026-08-19 per owner
-authorization; closure acceptance and release approval pending)
+**Status:** APPROVED (owner review complete; closure accepted 2026-08-19)
 
 > This document is the immutable reference baseline for any subsequent work. It
 > records the state at release. Later project evolution must not rewrite it.
@@ -192,8 +191,7 @@ All tests run offline with in-memory/injected SQLite fixtures and data.
 
 ## Approval
 
-Status: PENDING OWNER APPROVAL (release package created 2026-08-19 per owner
-authorization; approval and closure acceptance pending).
+Status: APPROVED (owner review complete; closure accepted 2026-08-19).
 
 Approval covers the following commits:
 
@@ -203,15 +201,14 @@ Approval covers the following commits:
 * `eca910f` - Phase 6 canonical M4 (historical label "M3") - benchmark
 * `98696d1` - Phase 6 canonical M3 - approval materialization + model registry
 * `6655def` - Phase 6 trend analysis
-* (release manifest / closure commit - the Phase 6 release commit; its SHA is
-  recorded in living docs and the release-package report)
+* `03ce2ea` - Phase 6 release manifest and closure report (release commit)
 
-Signed by: (pending)
+Signed by: maatallah
 
-Date: (pending)
+Date: 2026-08-19
 
-Action:  [ ] Approve Phase 6 release   [ ] Request changes
+Action:  [x] Approve Phase 6 release   [ ] Request changes
 
 ---
 
-*End of Phase 6 Release Manifest. Release date 2026-08-19. Approval pending.*
+*End of Phase 6 Release Manifest. Approved 2026-08-19.*
