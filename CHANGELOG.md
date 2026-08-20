@@ -4,6 +4,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added (Phase 6 - Ecosystem Intelligence - release package - manifest + closure)
+
+- Phase 6 release package created (2026-08-19, per owner authorization
+  following the D-P9 release pre-approval reconciliation): full regression
+  (467/467 Python, 48/48 adapter/MCP, 28/28 TS unit, 2/2 integration, `git
+  diff --check` clean) and the release manifest + closure report.
+- `docs/release/PHASE6-RELEASE-MANIFEST.md` - Phase 6 release manifest
+  (baseline `6655def`; milestone commit table; config/event/schema additions;
+  scope boundaries; determinism/provenance; checksums; release reconciliation
+  of the historical milestone-label discrepancy; status PENDING OWNER
+  APPROVAL).
+- `handover/PHASE-6-CLOSURE.md` - Phase 6 closure report (objectives,
+  completed-work milestone table, repository/test statistics, remaining
+  issues, technical debt, deferred items, risks, readiness assessment, final
+  recommendation; approval and closure acceptance pending).
+- Released milestones: planning baseline `8f01b10`; M1 `d32324a`;
+  M2 `a037dfd`; canonical M4 (historical label "M3") benchmark `eca910f`;
+  canonical M3 approval materialization + model registry `98696d1`; trend
+  analysis `6655def`. The release package commit is the Phase 6 immutable
+  release baseline (no milestone number invented for it).
+- Historical milestone-label reconciliation (documentary only): `eca910f`
+  historically carries the owner label "M3" for the benchmark work; the
+  approved planning baseline (Section 12) and proposal spec (Section 9) number
+  benchmark as M4 and approval materialization as M3. The historical commit is
+  not amended, rewritten, renamed or otherwise altered.
+- Living documentation refreshed: `PROJECT-STATUS.md`,
+  `handover/CURRENT-STATE.md`, `handover/NEXT-STEPS.md`. No implementation,
+  schema, config, event or connector changes are part of the release package.
+  Push to `origin/main` remains a separate, explicit owner action.
+
 ### Added (Phase 6 - Ecosystem Intelligence - trend analysis)
 
 - Trend analysis milestone implemented (2026-08-19, owner-authorized against

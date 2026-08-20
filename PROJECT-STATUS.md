@@ -13,26 +13,29 @@ approved 2026-08-18; Milestone 1 documentation complete; Milestone 2
 (discovery + candidate workflow) implemented 2026-08-18; benchmark ingestion
 + persistent storage implemented 2026-08-19; approval materialization + model
 registry (canonical Milestone 3) implemented and committed 2026-08-19; trend
-analysis implemented and committed 2026-08-19; remaining Phase 6 milestone
-(release package) not authorized)
+analysis implemented and committed 2026-08-19; the Phase 6 release package
+(manifest + closure) created 2026-08-19 per owner authorization; release
+approval and closure acceptance pending)
 
-**Completion %:** ~95% (Phases 1-5 released; Phase 6 planning + M1
+**Completion %:** ~100% (Phases 1-5 released; Phase 6 planning + M1
 documentation + M2 discovery/candidate workflow + benchmark ingestion +
-approval materialization/model registry (canonical M3) + trend analysis
-complete; release package pending authorization)
+approval materialization/model registry (canonical M3) + trend analysis +
+release package complete; only owner approval/closure acceptance and the
+separate push action remain)
 
 **Last update:** 2026-08-19
 
-**Repository health:** Good (467/467 Python tests passing, no open defects;
-adapter/MCP 48/48; connectors/vscode 28/28 TS unit tests + 2/2 integration
-tests passing)
+**Repository health:** Good (467/467 Python tests passing at the release
+baseline, no open defects; adapter/MCP 48/48; connectors/vscode 28/28 TS unit
+tests + 2/2 integration tests passing)
 
 **Blocking issues:** None. Phase 5 released and closed (2026-08-18, baseline
 `8231dce`). Phase 6 planning baseline approved (D-P1..D-P9), M1 doc-before-code
 complete, M2 (discovery + candidate workflow) implemented, benchmark ingestion
 + persistent storage implemented, approval materialization + model
-registry (canonical M3) implemented, and trend analysis implemented; the
-release package milestone is not yet authorized.
+registry (canonical M3) implemented, trend analysis implemented, and the Phase
+6 release package (manifest + closure) created 2026-08-19; release approval
+and closure acceptance are pending.
 
 ---
 
@@ -245,8 +248,31 @@ against the canonical M3 baseline `98696d1`):
   graph unchanged.
 * Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
 
-Remaining Phase 6 milestone (release package) requires a separate owner
-authorization (D-P9 sequential gates).
+Release package (2026-08-19, owner-authorized following the D-P9 release
+pre-approval reconciliation):
+
+* Full regression on the release baseline: 467/467 Python passed (389.33s),
+  48/48 adapter/MCP, 28/28 VS Code unit, 2/2 VS Code integration (exit 0),
+  `git diff --check` clean.
+* `docs/release/PHASE6-RELEASE-MANIFEST.md` - Phase 6 release manifest
+  (baseline `6655def`, status PENDING OWNER APPROVAL; milestone commit table;
+  config/event/schema additions; scope boundaries; checksums; historical
+  milestone-label reconciliation).
+* `handover/PHASE-6-CLOSURE.md` - Phase 6 closure report (objectives,
+  completed-work table with commit evidence, statistics, readiness
+  assessment, final recommendation; approval and closure acceptance pending).
+* Historical milestone-label reconciliation (documentary only): `eca910f`
+  historically carries the owner label "M3" (benchmark); canonical Phase 6
+  sequencing is canonical M3 = `98696d1` (approval materialization + model
+  registry) and canonical M4 = `eca910f` (benchmark). No history was amended,
+  rewritten, renamed or otherwise altered.
+* No implementation, schema, config, event or connector changes are part of
+  the release package. Push to `origin/main` remains a separate, explicit
+  owner action.
+
+Remaining Phase 6 actions: owner approval of the release + closure (M6 gate),
+then a separate owner instruction to push `main` to `origin/main`. No Phase 7
+is defined or authorized.
 
 Release documents:
 
@@ -257,6 +283,8 @@ Release documents:
   closure accepted)
 * `docs/release/PHASE5-RELEASE-MANIFEST.md` (immutable, git SHA `8231dce`,
   closure accepted)
+* `docs/release/PHASE6-RELEASE-MANIFEST.md` (Phase 6, baseline `6655def`,
+  release commit, status PENDING OWNER APPROVAL)
 * `docs/review/PHASE3-IMPLEMENTATION-PLAN.md`
 * `docs/review/PHASE3-SCORING-SPEC.md`
 * `docs/review/PHASE4-IMPLEMENTATION-PLAN.md`
@@ -274,15 +302,19 @@ Release documents:
 
 ## Pending Owner Decisions
 
-* Authorize the Phase 6 release package milestone (D-P9 sequential gates)
+* Approve the Phase 6 release + closure (M6 gate; the release package is
+  created and verified, approval/closure acceptance pending)
+* Provide a separate explicit instruction to push `main` to `origin/main`
+  (push is intentionally separate from release approval)
 * Owner-run `npm install` inside `connectors/vscode/` for local builds
   (already executed for verification; required for any later rebuilds)
 
 ## Next Milestone
 
-Phase 6 release package (full regression + release manifest/closure; per the
-approved planning baseline, spec Section 9) — once authorized by the owner.
-Trend analysis is complete.
+Phase 6 is the final roadmap phase; the release package is created and
+awaiting owner approval/closure acceptance. Once approved, the only remaining
+action is the owner-authorized push to `origin/main`. No Phase 7 is defined.
+Future work follows explicit owner direction only.
 
 ## Open Documentation Items
 

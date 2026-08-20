@@ -8,7 +8,8 @@ Last Updated:
 Milestone 1 documentation, Milestone 2 discovery + candidate workflow,
 benchmark ingestion + persistent storage, approval materialization + model
 registry (canonical Milestone 3) and trend analysis implemented and
-committed; the remaining Phase 6 release-package milestone is not authorized)
+committed; Phase 6 release package (manifest + closure) created 2026-08-19
+per owner authorization - release approval and closure acceptance pending)
 
 ---
 
@@ -41,14 +42,15 @@ complete: v1.2 Section 20, `docs/review/PHASE6-ECOSYSTEM-INTELLIGENCE-SPEC.md`,
 ADR-0005 (D-P1 discovery candidates) and ADR-0006 (D-P3 benchmark storage).
 Milestone 2 (discovery + candidate workflow), benchmark ingestion +
 persistent storage, approval materialization + model registry (canonical
-Milestone 3) and trend analysis implemented and committed. The remaining
-implementation milestone (release package) requires a separate owner
-authorization (D-P9).
+Milestone 3) and trend analysis implemented and committed. The Phase 6
+release package (manifest + closure) was created and verified 2026-08-19 per
+owner authorization; release approval, closure acceptance and the separate
+push action to `origin/main` remain owner actions (no Phase 7 defined).
 
 Architecture approved.
 
 Git baseline committed locally (`main` is ahead of `origin/main`; work is not
-pushed until a release).
+pushed until an owner-authorized release).
 
 ---
 
@@ -266,10 +268,30 @@ M3 baseline `98696d1`):
   unchanged.
 * Living documentation refreshed (PROJECT-STATUS, CURRENT-STATE, NEXT-STEPS).
 
+Completed (Phase 6 release package, 2026-08-19, per owner authorization
+following the D-P9 release pre-approval reconciliation):
+
+* Full regression at the release baseline: 467/467 Python passed (389.33s),
+  48/48 adapter/MCP (39.41s), 28/28 VS Code unit (377ms), 2/2 VS Code
+  integration (923ms, exit 0); `git diff --check` clean.
+* `docs/release/PHASE6-RELEASE-MANIFEST.md` (Phase 6 release manifest,
+  baseline `6655def`, status PENDING OWNER APPROVAL) and
+  `handover/PHASE-6-CLOSURE.md` (closure report; approval and closure
+  acceptance pending).
+* Historical milestone-label reconciliation (documentary only): `eca910f`
+  historically carries the owner label "M3" (benchmark); canonical Phase 6
+  sequencing is canonical M3 = `98696d1` (approval materialization + model
+  registry) and canonical M4 = `eca910f` (benchmark). No history was amended,
+  rewritten, renamed or otherwise altered.
+* No implementation, schema, config, event or connector changes are part of
+  the release package. Push to `origin/main` remains a separate, explicit
+  owner action.
+
 Pending:
 
-* Phase 6 release package (full regression + release manifest/closure) -
-  requires a separate owner authorization (D-P9).
+* Phase 6 release approval + closure acceptance (M6 gate, owner).
+* Owner-authorized push of `main` to `origin/main` (separate from release
+  approval).
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -402,10 +424,13 @@ AI-Hub/
   spec/           agent-logging.md, project-registry.md
   decisions/      README.md, 0001-model-score-representation.md (ACCEPTED),
                   0002-agent-logging.md (ACCEPTED),
-                  0003-project-registry.md (ACCEPTED)
+                  0003-project-registry.md (ACCEPTED),
+                  0005-provider-model-discovery-candidates.md (ACCEPTED),
+                  0006-benchmark-result-storage.md (ACCEPTED)
   templates/      config.toml
   handover/       AGENT-HANDOVER.md, CURRENT-STATE.md, NEXT-STEPS.md,
-                  SESSION-SUMMARY.md, PHASE-1-CLOSURE.md
+                  SESSION-SUMMARY.md, PHASE-1-CLOSURE.md,
+                  PHASE-6-CLOSURE.md
   config.toml     documented defaults
   requirements.txt
   CHANGELOG.md
