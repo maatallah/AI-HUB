@@ -29,11 +29,14 @@ Run from the repository root:
     python -m app.main model list [--provider P]
     python -m app.main trend scores --model N [--dimension D] [--days N]
     python -m app.main trend availability [--provider P] [--days N]
+    python -m app.main route decide --task T [--profile P] [--json] [filters]
+    python -m app.main route record < envelope.json
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -47,7 +50,20 @@ from database import database as db_util
 from discovery import engine as discovery
 from fallback import build_chain, check_recovery
 from monitoring import availability, health, validation
-from recommendation import RecommendationError, list_recommendations, recommend, record_recommendation
+from recommendation import (
+    ProfileError,
+    RecommendationError,
+    list_recommendations,
+    recommend,
+    record_recommendation,
+)
+from recommendation.decision import (
+    DecisionError,
+    DecisionPolicy,
+    VALID_CAPABILITIES,
+    build_decision_envelope,
+    record_decision,
+)
 from scoring import ingest as score_ingest
 from scoring import list_scores
 from trend import analysis as trend
@@ -700,6 +716,81 @@ def _print_availability_history(conn, provider_id) -> None:
         )
 
 
+def _ref(value: str):
+    """Accept a numeric id or a literal name for provider/model filters."""
+    stripped = value.strip()
+    try:
+        return int(stripped)
+    except ValueError:
+        return stripped
+
+
+def cmd_route(args) -> None:
+    config = load_config()
+    conn = db_util.connect(_get_db(config))
+    try:
+        if args.action == "decide":
+            envelope = build_decision_envelope(
+                conn,
+                args.task,
+                profile=args.profile or config.recommendation_default_profile,
+                min_context_window=args.min_context,
+                required_capabilities=tuple(args.capability or ()),
+                allowed_providers=[_ref(v) for v in (args.allow_provider or [])],
+                denied_providers=[_ref(v) for v in (args.deny_provider or [])],
+                allowed_models=[_ref(v) for v in (args.allow_model or [])],
+                denied_models=[_ref(v) for v in (args.deny_model or [])],
+                max_stale_days=args.max_stale_days,
+                limit=args.limit,
+                policy=DecisionPolicy.from_config(config),
+            )
+            if args.json:
+                print(json.dumps(envelope, indent=2, sort_keys=True))
+                return
+            print(f"Status: {envelope['status']}")
+            if envelope["selected"]:
+                top = envelope["candidates"][0]
+                flags = ", ".join(top["flags"])
+                print(
+                    f"Selected: {top['provider_name']} {top['model_identifier']}"
+                    f" score={top['final_score']} confidence={top['confidence']}"
+                    + (f" ({flags})" if flags else "")
+                )
+                for i, entry in enumerate(envelope["fallback_chain"], start=1):
+                    cand = envelope["candidates"][entry["rank"]]
+                    flags = ", ".join(cand["flags"])
+                    print(
+                        f"Fallback {i}: {cand['provider_name']}"
+                        f" {cand['model_identifier']}"
+                        + (f" ({flags})" if flags else "")
+                    )
+            if envelope["warnings"]:
+                print("Warnings: " + "; ".join(envelope["warnings"]))
+            print()
+            print(envelope["rationale"])
+        elif args.action == "record":
+            raw = sys.stdin.read()
+            try:
+                envelope = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise DecisionError(f"stdin is not valid JSON: {exc}") from exc
+            result = record_decision(conn, envelope)
+            print(f"Recorded {result['count']} recommendation(s).")
+            print(f"decision_id={result['decision_id']}")
+            candidates = envelope["candidates"]
+            for i, rec_id in enumerate(result["recorded_ids"]):
+                cand = candidates[i]
+                print(
+                    f"id={rec_id} {cand['provider_name']}"
+                    f" {cand['model_identifier']}"
+                )
+    except (DecisionError, ProfileError, RecommendationError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        conn.close()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-hub", description="AI-Hub Phase 1 CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -905,6 +996,55 @@ def build_parser() -> argparse.ArgumentParser:
         " (default: trend.window_days)",
     )
     tr_avail.set_defaults(func=cmd_trend)
+
+    route = sub.add_parser(
+        "route", help="Routing decision plane (post-v1 contract)"
+    )
+    route_sub = route.add_subparsers(dest="action", required=True)
+
+    r_decide = route_sub.add_parser(
+        "decide", help="Compute a routing decision envelope (read-only)"
+    )
+    r_decide.add_argument("--task", required=True)
+    r_decide.add_argument("--profile")
+    r_decide.add_argument(
+        "--min-context", type=int, dest="min_context",
+        help="Minimum context window",
+    )
+    r_decide.add_argument(
+        "--capability", action="append", choices=VALID_CAPABILITIES,
+        help="Required capability (repeatable)",
+    )
+    r_decide.add_argument(
+        "--allow-provider", action="append", dest="allow_provider",
+        help="Only these providers, by id or name (repeatable)",
+    )
+    r_decide.add_argument(
+        "--deny-provider", action="append", dest="deny_provider",
+        help="Never these providers, by id or name (repeatable)",
+    )
+    r_decide.add_argument(
+        "--allow-model", action="append", dest="allow_model",
+        help="Only these models, by id or identifier (repeatable)",
+    )
+    r_decide.add_argument(
+        "--deny-model", action="append", dest="deny_model",
+        help="Never these models, by id or identifier (repeatable)",
+    )
+    r_decide.add_argument(
+        "--max-stale-days", type=int, dest="max_stale_days",
+        help="Exclude candidates whose newest stored evidence is older",
+    )
+    r_decide.add_argument("--limit", type=int, help="Truncate the candidate list")
+    r_decide.add_argument(
+        "--json", action="store_true", help="Print the raw decision envelope"
+    )
+    r_decide.set_defaults(func=cmd_route)
+
+    r_record = route_sub.add_parser(
+        "record", help="Persist a previously produced envelope (reads stdin JSON)"
+    )
+    r_record.set_defaults(func=cmd_route)
 
     return parser
 
