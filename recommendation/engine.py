@@ -186,7 +186,7 @@ def recommend(
 def _sort_key(r: Recommendation):
     """v1.2 Section 7 Step 4 deterministic ordering.
 
-    Final Score desc, Availability desc, Reliability desc, Cost asc,
+    Final Score desc, Availability desc, Reliability desc, Cost desc,
     Latency asc, model_identifier asc. Missing dimensions sort last in each
     descending key and last in ascending keys (never fabricated, Article 10).
     """
@@ -198,7 +198,7 @@ def _sort_key(r: Recommendation):
         -r.final_score,
         -(availability if availability is not None else -1.0),
         -(reliability if reliability is not None else -1.0),
-        (cost if cost is not None else 1e9),
+        -(cost if cost is not None else -1.0),
         (latency if latency is not None else 1e9),
         r.model_identifier,
     )

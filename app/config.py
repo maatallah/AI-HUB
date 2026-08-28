@@ -59,7 +59,7 @@ DEFAULT_CONFIG: dict = {
     },
     "recommendation": {
         "default_profile": "coding",
-        "decision_version": "3.0.0",
+        "decision_version": "3.1.0",
     },
     "dashboard": {
         "refresh_seconds": 60,

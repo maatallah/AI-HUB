@@ -4,6 +4,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed (Post-v1 Adaptive Routing - M3 - Q1 cost semantics)
+
+- Applied the normative canonical cost-direction fix (Feasibility Condition 2) to
+  `recommendation/engine.py::_sort_key`: the `cost` dimension now sorts **descending**
+  (higher = more favorable / cheaper), consistent with every other quality dimension and the
+  weighted-sum formula; missing cost still sorts last (never fabricated, Article 10). This is the
+  owner-ruled Q1 change deferred from M1 and M2, applied in M3.
+- Bumped `recommendation.decision_version` `3.0.0 -> 3.1.0` in `app/config.py`; the new version
+  propagates through the existing DECIDE `policy` echo and RECORD persistence (contract §15).
+  `contract_version` remains `"1"` (additive-only evolution within contract v1).
+- Profiles weighting `cost` `0.00` (e.g. `coding`) are unaffected when a higher-priority sort key
+  decides the order; a crafted cost tie now resolves descending (R3 regression coverage added).
+
 ### Added (Phase 6 - Ecosystem Intelligence - release package - manifest + closure)
 
 - Phase 6 release package created (2026-08-19, per owner authorization

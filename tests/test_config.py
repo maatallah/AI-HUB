@@ -60,7 +60,7 @@ def test_defaults_used_when_file_missing(tmp_path):
     assert config.scoring_derive_operational is True
     assert config.fallback_max_chain_length == 5
     assert config.recommendation_default_profile == "coding"
-    assert config.recommendation_decision_version == "3.0.0"
+    assert config.recommendation_decision_version == "3.1.0"
     assert config.dashboard_refresh_seconds == 60
     assert config.discovery_enabled is False
     assert config.discovery_allowlisted_urls == []

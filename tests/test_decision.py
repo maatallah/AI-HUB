@@ -291,6 +291,24 @@ def test_request_and_policy_echo(conn):
     assert pol["max_chain_length"] == 5
 
 
+def test_decision_version_bumped_to_3_1_0(conn):
+    """R2: the Q1 cost-semantics change is version-visible, contract v1 unchanged.
+
+    DECIDE envelope and RECORD persistence report ``decision_version == 3.1.0``,
+    while ``contract_version`` stays ``"1"`` (additive-only evolution within v1).
+    """
+    assert DEFAULT_POLICY.decision_version == "3.1.0"
+    env = _ok_envelope(conn)
+    assert env["policy"]["decision_version"] == "3.1.0"
+    assert env["contract_version"] == CONTRACT_VERSION == "1"
+    result = record_decision(conn, env)
+    rows = conn.execute(
+        "SELECT decision_version FROM recommendations WHERE id = ?",
+        (result["decision_id"],),
+    ).fetchall()
+    assert rows and all(r["decision_version"] == "3.1.0" for r in rows)
+
+
 # --- filters ------------------------------------------------------------------
 
 
@@ -375,9 +393,34 @@ def test_ordering_follows_sort_key_cost_tie_break(conn):
     _score_many(conn, m2, coding=80, reasoning=60, cost=60)
     env = _decide(conn)
     assert [c["model_identifier"] for c in env["candidates"]] == [
-        "alpha-1",
         "zeta-9",
+        "alpha-1",
     ]
+
+
+def test_cost_zero_weight_profile_ranking_invariant(conn):
+    """R3: a cost-weight 0.00 profile ranks candidates purely on non-cost dimensions.
+
+    The default ``coding`` profile assigns ``cost`` weight 0.00, so its weighted sum
+    (and therefore ranking/selection) must be independent of any cost evidence. A
+    candidate with a higher cost score must not be promoted when a higher-priority
+    key (final_score) already decides the order.
+    """
+    p1 = _provider(conn, "Alpha")
+    p2 = _provider(conn, "Beta")
+    m1 = _model(conn, p1, "alpha-1")
+    m2 = _model(conn, p2, "beta-9")
+    _score_many(conn, m1, coding=90, cost=10)
+    _score_many(conn, m2, coding=80, cost=90)
+    env = _decide(conn)  # default profile = coding (cost weight 0.00)
+    assert env["policy"]["resolved_weights"]["cost"] == 0.0
+    assert [c["model_identifier"] for c in env["candidates"]] == [
+        "alpha-1",
+        "beta-9",
+    ]
+    assert env["selected"] == {"rank": 0}
+    assert env["candidates"][0]["model_identifier"] == "alpha-1"
+    assert env["candidates"][0]["final_score"] > env["candidates"][1]["final_score"]
 
 
 def test_ordering_final_tie_breaks_on_model_identifier(conn):
