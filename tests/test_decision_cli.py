@@ -198,3 +198,31 @@ def test_decide_writes_nothing_between_records(cli_conn, capsys):
     _run(["route", "decide", "--task", "python", "--json"], capsys)
     after = cli_conn.execute("SELECT COUNT(*) AS n FROM recommendations").fetchone()["n"]
     assert before == after == 0
+
+
+def test_route_record_provenance_error_is_handled(cli_conn, capsys, monkeypatch):
+    """F3: a provenance failure during RECORD exits 1 with error text, no traceback."""
+    import io
+    import sys as _sys
+    from recommendation.provenance import ProvenanceError
+
+    _seed(cli_conn)
+    envelope_json = _run(
+        ["route", "decide", "--task", "python", "--json"], capsys
+    )
+
+    def _boom(conn, envelope):
+        raise ProvenanceError("simulated provenance failure")
+
+    monkeypatch.setattr(main, "record_decision", _boom)
+    old = _sys.stdin
+    _sys.stdin = io.StringIO(envelope_json)
+    try:
+        with pytest.raises(SystemExit) as exc:
+            main.main(["route", "record"])
+    finally:
+        _sys.stdin = old
+    assert exc.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error: simulated provenance failure" in captured.err
+    assert "Traceback" not in captured.err

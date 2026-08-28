@@ -34,8 +34,8 @@ test("package.json commands and activation events match FEATURES", () => {
   assert.ok(manifest.activationEvents.includes("onView:ai-hub.reports"));
 });
 
-test("features exposes exactly the seven Phase 5 features", () => {
-  assert.strictEqual(FEATURES.length, 7);
+test("features exposes exactly the eight Phase 5/M2 features", () => {
+  assert.strictEqual(FEATURES.length, 8);
   const ids = FEATURES.map((f) => f.commandId).sort();
   assert.deepStrictEqual(ids, [
     "ai-hub.availabilityHistory",
@@ -43,6 +43,7 @@ test("features exposes exactly the seven Phase 5 features", () => {
     "ai-hub.fallbackChain",
     "ai-hub.modelScores",
     "ai-hub.recommendations",
+    "ai-hub.routeDecide",
     "ai-hub.scoreHistory",
     "ai-hub.status",
   ]);
@@ -55,7 +56,8 @@ test("every feature builds read-only argument lists via -m app.main", () => {
     assert.ok(args.length >= 2, `${f.commandId} should pass a CLI subcommand`);
     assert.ok(
       args[0] === "dashboard" || args[0] === "score" ||
-        args[0] === "recommend" || args[0] === "fallback",
+        args[0] === "recommend" || args[0] === "fallback" ||
+        args[0] === "route",
       `${f.commandId} uses a known read-only CLI subcommand`
     );
   }

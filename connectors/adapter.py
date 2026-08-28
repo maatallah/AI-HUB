@@ -26,6 +26,7 @@ from dashboard import reports as dashboard_reports
 from fallback import build_chain
 from monitoring import availability as availability_mod
 from recommendation import recommend
+from recommendation.decision import build_decision_envelope, record_decision
 
 __all__ = [
     "availability_history",
@@ -35,6 +36,8 @@ __all__ = [
     "provider_list",
     "provider_status",
     "recommend_top",
+    "route_decide",
+    "route_record",
     "score_history",
 ]
 
@@ -132,3 +135,38 @@ def availability_history(
 def provider_list(conn, status: Optional[str] = None) -> list:
     """Provider list (optionally filtered by status) as plain records."""
     return _rows_to_dicts(providers.list_providers(conn, status=status))
+
+
+def route_decide(
+    conn,
+    task: str,
+    *,
+    profile: Optional[str] = None,
+    min_context_window: Optional[int] = None,
+    required_capabilities: Sequence[str] = (),
+    allowed_providers: Sequence = (),
+    denied_providers: Sequence = (),
+    allowed_models: Sequence = (),
+    denied_models: Sequence = (),
+    max_stale_days: Optional[int] = None,
+    limit: Optional[int] = None,
+) -> dict:
+    """Routing decision envelope (read-only; wraps ``build_decision_envelope``)."""
+    return build_decision_envelope(
+        conn,
+        task,
+        profile=profile,
+        min_context_window=min_context_window,
+        required_capabilities=required_capabilities,
+        allowed_providers=allowed_providers,
+        denied_providers=denied_providers,
+        allowed_models=allowed_models,
+        denied_models=denied_models,
+        max_stale_days=max_stale_days,
+        limit=limit,
+    )
+
+
+def route_record(conn, envelope: dict) -> dict:
+    """Persist a previously produced envelope (wraps ``record_decision``)."""
+    return record_decision(conn, envelope)

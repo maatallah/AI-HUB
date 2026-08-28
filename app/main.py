@@ -52,6 +52,7 @@ from fallback import build_chain, check_recovery
 from monitoring import availability, health, validation
 from recommendation import (
     ProfileError,
+    ProvenanceError,
     RecommendationError,
     list_recommendations,
     recommend,
@@ -784,7 +785,7 @@ def cmd_route(args) -> None:
                     f"id={rec_id} {cand['provider_name']}"
                     f" {cand['model_identifier']}"
                 )
-    except (DecisionError, ProfileError, RecommendationError) as exc:
+    except (DecisionError, ProfileError, ProvenanceError, RecommendationError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
     finally:

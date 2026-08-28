@@ -499,10 +499,48 @@ def validate_envelope(envelope) -> dict:
             isinstance(breakdown, dict) and breakdown,
             f"{label} breakdown must be a non-empty object.",
         )
+        for dim, info in breakdown.items():
+            _require(
+                isinstance(info, dict),
+                f"{label} breakdown.{dim} must be an object.",
+            )
+            _require(
+                isinstance(info.get("value"), (int, float)),
+                f"{label} breakdown.{dim}.value must be a number.",
+            )
+            _require(
+                isinstance(info.get("weight"), (int, float)),
+                f"{label} breakdown.{dim}.weight must be a number.",
+            )
+            _require(
+                isinstance(info.get("contribution"), (int, float)),
+                f"{label} breakdown.{dim}.contribution must be a number.",
+            )
+            _require(
+                isinstance(info.get("confidence"), (int, float)),
+                f"{label} breakdown.{dim}.confidence must be a number.",
+            )
+            _require(
+                "source" in info,
+                f"{label} breakdown.{dim}.source is required.",
+            )
+            _require(
+                "aged" in info,
+                f"{label} breakdown.{dim}.aged is required.",
+            )
         flags = cand.get("flags")
         _require(
             isinstance(flags, list) and all(isinstance(f, str) for f in flags),
             f"{label} flags must be a list of strings.",
+        )
+    weight_keys = set(weights.keys())
+    for position, cand in enumerate(candidates):
+        label = f"candidate {position}"
+        breakdown_keys = set(cand.get("breakdown", {}).keys())
+        extra = weight_keys - breakdown_keys
+        _require(
+            not extra,
+            f"{label} breakdown is missing dimensions from resolved_weights: {sorted(extra)}.",
         )
     return envelope
 

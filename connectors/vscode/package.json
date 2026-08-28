@@ -19,6 +19,7 @@
     "onCommand:ai-hub.scoreHistory",
     "onCommand:ai-hub.availabilityHistory",
     "onCommand:ai-hub.dashboardReport",
+    "onCommand:ai-hub.routeDecide",
     "onView:ai-hub.reports"
   ],
   "main": "./out/extension.js",
@@ -57,6 +58,11 @@
       {
         "command": "ai-hub.dashboardReport",
         "title": "AI-Hub: Dashboard Report",
+        "category": "AI-Hub"
+      },
+      {
+        "command": "ai-hub.routeDecide",
+        "title": "AI-Hub: Route Decide",
         "category": "AI-Hub"
       }
     ],

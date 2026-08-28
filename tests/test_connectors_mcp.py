@@ -122,6 +122,8 @@ def test_tools_list_exact_set_deterministic(conn):
         "model_scores",
         "provider_status",
         "recommend_top",
+        "route.decide",
+        "route.record",
         "score_history",
     ]
     assert all(t["inputSchema"]["type"] == "object" for t in response["result"]["tools"])

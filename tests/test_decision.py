@@ -228,7 +228,7 @@ def test_identical_inputs_identical_json(conn):
 
 @pytest.mark.parametrize(
     "seed",
-    ["empty", "evidence", "no_scores"],
+    ["empty", "evidence", "no_scores", "constraint_unsatisfiable", "insufficient_data"],
 )
 def test_decide_never_writes(conn, seed):
     if seed != "empty":
@@ -236,8 +236,20 @@ def test_decide_never_writes(conn, seed):
         m = _model(conn, p, "alpha-1")
         if seed == "evidence":
             _score_many(conn, m, coding=90)
+        elif seed == "no_scores":
+            pass
+        elif seed == "constraint_unsatisfiable":
+            _score_many(conn, m, coding=90)
+        elif seed == "insufficient_data":
+            pass
+    kwargs = {}
+    if seed == "constraint_unsatisfiable":
+        kwargs["denied_providers"] = [p]
+    if seed == "insufficient_data":
+        policy = replace(DEFAULT_POLICY, derive_operational=False)
+        kwargs["policy"] = policy
     before = _fingerprint(conn)
-    env = _decide(conn)
+    env = _decide(conn, **kwargs)
     after = _fingerprint(conn)
     assert before == after
     assert env["provenance"] == {"decision_id": None, "recorded": False}
@@ -537,3 +549,70 @@ def test_decide_after_record_still_zero_write(conn):
     before = _fingerprint(conn)
     _decide(conn)
     assert _fingerprint(conn) == before
+
+
+# --- F2: validation typing hardening (M2 R7) -----------------------------------
+
+
+def test_record_missing_breakdown_dimension_raises_typed_error(conn):
+    env = _ok_envelope(conn)
+    first_breakdown = env["candidates"][0]["breakdown"]
+    missing = next(iter(first_breakdown.keys()))
+    good = env["candidates"][0].copy()
+    good["breakdown"] = {
+        d: info for d, info in first_breakdown.items() if d != missing
+    }
+    bad = dict(env, candidates=[good])
+    with pytest.raises(DecisionError) as exc:
+        record_decision(conn, bad)
+    assert "missing dimensions from resolved_weights" in str(exc.value)
+
+
+def test_record_breakdown_non_object_dimension_raises_typed_error(conn):
+    env = _ok_envelope(conn)
+    first = env["candidates"][0].copy()
+    first["breakdown"] = dict(first["breakdown"])
+    first["breakdown"]["cost"] = "not-an-object"
+    bad = dict(env, candidates=[first])
+    with pytest.raises(DecisionError):
+        record_decision(conn, bad)
+
+
+def test_record_missing_aged_field_raises_typed_error(conn):
+    env = _ok_envelope(conn)
+    first = env["candidates"][0].copy()
+    first["breakdown"] = {
+        d: {k: v for k, v in info.items() if k != "aged"}
+        for d, info in first["breakdown"].items()
+    }
+    bad = dict(env, candidates=[first])
+    with pytest.raises(DecisionError):
+        record_decision(conn, bad)
+
+
+def test_record_missing_source_field_raises_typed_error(conn):
+    env = _ok_envelope(conn)
+    first = env["candidates"][0].copy()
+    first["breakdown"] = {
+        d: {k: v for k, v in info.items() if k != "source"}
+        for d, info in first["breakdown"].items()
+    }
+    bad = dict(env, candidates=[first])
+    with pytest.raises(DecisionError):
+        record_decision(conn, bad)
+
+
+def test_record_bad_breakdown_value_type_raises_typed_error(conn):
+    env = _ok_envelope(conn)
+    first = env["candidates"][0].copy()
+    first["breakdown"] = dict(first["breakdown"])
+    first["breakdown"]["cost"] = dict(first["breakdown"]["cost"], value="high")
+    bad = dict(env, candidates=[first])
+    with pytest.raises(DecisionError):
+        record_decision(conn, bad)
+
+
+def test_record_valid_envelope_still_accepted(conn):
+    env = _ok_envelope(conn)
+    result = record_decision(conn, env)
+    assert result["count"] == len(env["candidates"])

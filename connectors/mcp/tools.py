@@ -44,6 +44,15 @@ def _optional_int(arguments: dict, name: str) -> Any:
     return _require_int(arguments, name)
 
 
+def _optional_list(arguments: dict, name: str) -> Any:
+    value = arguments.get(name)
+    if value is None:
+        return None
+    if not isinstance(value, list):
+        raise ValueError(f"{name} must be a list.")
+    return value
+
+
 def _provider_status(conn, arguments: dict) -> dict:
     return adapter.provider_status(conn)
 
@@ -85,6 +94,30 @@ def _availability_history(conn, arguments: dict) -> list:
     provider_id = _optional_int(arguments, "provider_id")
     limit = _optional_int(arguments, "limit") or 1000
     return adapter.availability_history(conn, provider_id=provider_id, limit=limit)
+
+
+def _route_decide(conn, arguments: dict) -> dict:
+    task = _require_str(arguments, "task")
+    return adapter.route_decide(
+        conn,
+        task,
+        profile=_optional_str(arguments, "profile"),
+        min_context_window=_optional_int(arguments, "min_context_window"),
+        required_capabilities=_optional_list(arguments, "required_capabilities") or (),
+        allowed_providers=_optional_list(arguments, "allowed_providers") or (),
+        denied_providers=_optional_list(arguments, "denied_providers") or (),
+        allowed_models=_optional_list(arguments, "allowed_models") or (),
+        denied_models=_optional_list(arguments, "denied_models") or (),
+        max_stale_days=_optional_int(arguments, "max_stale_days"),
+        limit=_optional_int(arguments, "limit"),
+    )
+
+
+def _route_record(conn, arguments: dict) -> dict:
+    envelope = arguments.get("envelope")
+    if not isinstance(envelope, dict):
+        raise ValueError("envelope must be a JSON object.")
+    return adapter.route_record(conn, envelope)
 
 
 #: Fixed tool set (alphabetical by name for deterministic ``tools/list``).
@@ -179,6 +212,62 @@ _TOOL_DEFS = [
             "additionalProperties": False,
         },
         "handler": _recommend_top,
+    },
+    {
+        "name": "route.decide",
+        "description": (
+            "Compute a deterministic routing decision envelope for a task. "
+            "Read-only; never writes."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "task": {"type": "string"},
+                "profile": {"type": "string"},
+                "min_context_window": {"type": "integer"},
+                "required_capabilities": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "allowed_providers": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "denied_providers": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "allowed_models": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "denied_models": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "max_stale_days": {"type": "integer"},
+                "limit": {"type": "integer"},
+            },
+            "required": ["task"],
+            "additionalProperties": False,
+        },
+        "handler": _route_decide,
+    },
+    {
+        "name": "route.record",
+        "description": (
+            "Persist a previously produced decision envelope via the "
+            "append-only RECORD operation."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "envelope": {"type": "object"},
+            },
+            "required": ["envelope"],
+            "additionalProperties": False,
+        },
+        "handler": _route_record,
     },
     {
         "name": "score_history",

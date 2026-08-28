@@ -9,6 +9,7 @@
 //   - dashboard report <name>        (report builders, read-only)
 //   - score list                     (scoring read path)
 //   - recommend chain --task X       (build_chain; does NOT record provenance)
+//   - route decide --task X --json   (decision envelope; read-only)
 //   - fallback status                (build_chain over default task)
 //   - dashboard history ...          (event reconstruction, read-only)
 // None of these write to the database.
@@ -49,6 +50,12 @@ export const FEATURES: readonly Feature[] = [
     title: "Recommendations",
     requiresInput: "task",
     buildArgs: (task) => ["recommend", "chain", "--task", task],
+  },
+  {
+    commandId: "ai-hub.routeDecide",
+    title: "Route Decision",
+    requiresInput: "task",
+    buildArgs: (task) => ["route", "decide", "--task", task, "--json"],
   },
   {
     commandId: "ai-hub.fallbackChain",
