@@ -1,6 +1,6 @@
 # ADR: Post-V1 Routing Decision Plane — Decision Contract & Read-Only Decision API
 
-**Status:** PROPOSED
+**Status:** ACCEPTED
 
 **Date:** 2026-08-21
 
@@ -171,9 +171,10 @@ without content change.
 This ADR is accepted when:
 
 * the owner confirms Revision R1 (DECIDE/RECORD separation) satisfies the sole revision
-  requirement of the 2026-08-21 review - PENDING
+  requirement of the 2026-08-21 review - YES (confirmed by owner 2026-08-31)
 * any implementation effort is subsequently authorized by its own explicit mandate (spec + tests +
-  milestone gate), never implied by this document
+  milestone gate), never implied by this document - YES (M1-M4 implemented and closed; M4 closure
+  `8b309eb`, 548/548 tests passing, `decision_version` 3.1.0 active)
 
 ---
 

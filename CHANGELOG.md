@@ -4,6 +4,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed (Post-v1 Adaptive Routing - M4 - config/template alignment)
+
+- Aligned the repository's operational configuration and its template mirror with the M3
+  canonical version: `config.toml:42` and `templates/config.toml:34`
+  `[recommendation] decision_version` `3.0.0 -> 3.1.0`. Because `load_config()`
+  deep-merges the tracked `config.toml` over `DEFAULT_CONFIG`, the previously stale `3.0.0`
+  overrode the M3 canonical `3.1.0` in every runtime artifact (CLI `route decide`,
+  adapter/MCP, RECORD persistence). After M4 the effective configured version is `3.1.0`;
+  `contract_version` remains `"1"`.
+- This is a configuration/version alignment only. **M4 did not change routing behavior** — no
+  routing algorithm, decision envelope schema, cost semantics, or `contract_version` change.
+
 ### Changed (Post-v1 Adaptive Routing - M3 - Q1 cost semantics)
 
 - Applied the normative canonical cost-direction fix (Feasibility Condition 2) to

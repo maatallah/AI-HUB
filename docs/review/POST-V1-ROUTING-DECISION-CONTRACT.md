@@ -1,6 +1,6 @@
 # POST-V1 ROUTING DECISION CONTRACT & READ-ONLY DECISION API — SPECIFICATION
 
-Status: **PROPOSED** (documentation-first design; pending owner review — no code exists for anything in this document)
+Status: **IMPLEMENTED** (M1-M4 complete; `decision_version` 3.1.0 active; ADR accepted 2026-08-31)
 Baseline: `515080495a34e106f46d90d151f451c2e94cfca0` ("Post-v1 adaptive routing feasibility baseline")
 Feasibility basis: `docs/review/POST-V1-ADAPTIVE-AI-ROUTING-FEASIBILITY.md` (verdict CONDITIONAL GO)
 Companion decision record: `docs/adr/ADR-POST-V1-ROUTING-DECISION-PLANE.md`
@@ -115,7 +115,7 @@ implementation):
     "limit": null
   },
   "policy": {
-    "decision_version": "3.0.0",
+    "decision_version": "3.1.0",
     "resolved_weights": { "<dimension>": <weight>, "..." : "..." },
     "aging_days": { "fresh": 30, "aging": 90, "old": 180 },
     "latency_threshold_ms": 10000,
@@ -156,7 +156,7 @@ data; **informational** = echo/context).
 | `status` | Callers must distinguish a real recommendation from an evidence failure (Article 10); prevents silent garbage consumption | New; composed from existing eligibility/evidence checks | Derived |
 | `created_at` | Point-in-time anchor; chains/scores age | Timestamps exist throughout (`events.occurred_at`, `recommendations.requested_at`) | Informational |
 | `request.*` | Exact echo so the envelope is self-describing and auditable; reproducibility requires knowing the question | Provenance already stores task/profile; constraints echo is new | Informational |
-| `policy.decision_version` | Reproducibility across logic versions (v1.2 §8) | `config.recommendation.decision_version` (default `3.0.0`), already stored in provenance | Authoritative (config) |
+| `policy.decision_version` | Reproducibility across logic versions (v1.2 §8) | `config.recommendation.decision_version` (default `3.1.0`), already stored in provenance | Authoritative (config) |
 | `policy.resolved_weights` | Ranking is meaningless without the weights actually applied; custom profiles are DB state | `recommendation.profiles.get_profile`; weights already embedded per-dimension in `score_breakdown` | Authoritative (resolved) |
 | `policy.aging_days`, `latency_threshold_ms`, `derive_operational`, `max_chain_length` | These parameters change results; echoing them makes the envelope reproducible without config access | `app.config.DEFAULT_CONFIG` validated fields | Authoritative (config) |
 | `total_eligible` | Distinguishes "truncated by limit" from "few candidates exist" | Computable from the eligible set pre-limit | Derived |

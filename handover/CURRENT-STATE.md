@@ -4,12 +4,9 @@
 
 Last Updated:
 
-2026-08-19 (Phase 5 RELEASED and CLOSED; Phase 6 planning baseline approved,
-Milestone 1 documentation, Milestone 2 discovery + candidate workflow,
-benchmark ingestion + persistent storage, approval materialization + model
-registry (canonical Milestone 3) and trend analysis implemented and
-committed; Phase 6 release package (manifest + closure) created 2026-08-19
-per owner authorization - release approval and closure acceptance pending)
+2026-08-31 (Post-v1 Adaptive Routing M1-M4 complete and governance-reconciled;
+ADR accepted; decision_version 3.1.0 active; 548/548 tests passing; M4
+closure `8b309eb` pushed to origin/main; no M5 authorized)
 
 ---
 
@@ -292,6 +289,32 @@ Pending:
 * Phase 6 release approval + closure acceptance (M6 gate, owner).
 * Owner-authorized push of `main` to `origin/main` (separate from release
   approval).
+
+## Post-v1 Adaptive Routing (M1-M4) - COMPLETE
+
+Completed:
+
+* M1: DECIDE unconditionally read-only (`app/routing/decide.py`); no
+  conditional/mutation path.
+* M2: RECORD append-only persistence (`app/routing/record.py`); DECIDE
+  remains zero-write.
+* M3 (scope `c54a585`, impl `a6846de`, closure `061c8eb`): canonical
+  cost-direction fix in `recommendation/engine.py::_sort_key` (cost sorts
+  descending), plus `recommendation.decision_version` `3.0.0 -> 3.1.0` in
+  `app/config.py` (Q1 owner-ruled change).
+* M4 (scope `7591c2e`, impl `1a465f3`, closure `8b309eb`): repository
+  configuration/template alignment only — `config.toml:42` and
+  `templates/config.toml:34` `decision_version` `3.0.0 -> 3.1.0`. No routing
+  behavior changed; `contract_version` remains `"1"`.
+* Full regression at M4 closure: 548/548 Python tests passing.
+* All five feasibility conditions complete.
+* ADR accepted (owner confirmed Revision R1 satisfies the 2026-08-21 review
+  requirement, 2026-08-31).
+
+Pending:
+
+* No M5 is authorized. Future capabilities require explicit owner
+  authorization and new scope definition.
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 

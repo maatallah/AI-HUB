@@ -8,7 +8,7 @@ Architecture Specification: **v1.1**
 
 Implementation Specification: **v1.2**
 
-Project Status: **Phase 1 Released – Ready for Phase 2 (after owner actions)**
+Project Status: **Phases 1-6 released; Post-v1 Adaptive Routing M1-M4 complete (decision_version 3.1.0); no M5 authorized**
 
 ---
 

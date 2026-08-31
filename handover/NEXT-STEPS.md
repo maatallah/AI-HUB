@@ -420,6 +420,19 @@ acceptance and the separate owner-authorized push to `origin/main`. No Phase 7
 is defined or authorized - do not begin any implementation without explicit
 owner authorization.
 
+Post-v1 Adaptive Routing (M1-M4) is complete and governance-reconciled:
+
+* M1: DECIDE unconditionally read-only (`app/routing/decide.py`, tests).
+* M2: RECORD append-only persistence (`app/routing/record.py`, tests).
+* M3: cost-direction fix (descending sort in `_sort_key`) + `decision_version`
+  bump `3.0.0 -> 3.1.0` in `app/config.py`.
+* M4: config/template alignment (`config.toml:42`, `templates/config.toml:34`
+  `decision_version` `3.0.0 -> 3.1.0`).
+* Closure: `8b309eb`, 548/548 tests passing, `contract_version` `"1"`.
+* ADR accepted (owner confirmed Revision R1, 2026-08-31).
+* No M5 is authorized. Future capabilities require explicit owner authorization
+  and new scope definition.
+
 Recommended input:
 
 * START-HERE.md
