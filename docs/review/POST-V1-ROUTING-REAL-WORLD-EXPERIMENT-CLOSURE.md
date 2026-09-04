@@ -130,9 +130,12 @@ No model handoff occurred.
 | Model handoff occurred | No |
 | Execution quality affected | No — all tasks completed successfully using the executor's own model |
 
-This is an **execution-plane limitation**. AI-Hub computes routing recommendations; the
-executing agent retains full control over which model actually runs. The experiment evaluated
-routing decisions and provenance — not the recommended providers' actual task outputs.
+This is an **architectural limitation** exposed by the experiment. AI-Hub computes routing
+recommendations; the executing agent retains full control over which model actually runs. Whether
+this represents a product deficiency depends on the intended future role of AI-Hub — advisory
+recommendation versus actual model handoff. The experiment itself does **not** establish that
+implementation work is required. The experiment evaluated routing decisions and provenance — not
+the recommended providers' actual task outputs.
 
 ---
 
@@ -159,16 +162,18 @@ fallback chain order.
 
 ### 8.4 Append-Only Provenance
 
-All 48 routing decisions were successfully persisted via `route record`. Each RECORD operation
-produced exactly the expected `RECOMMENDATION_CREATED` events. No existing records were modified
-or deleted. The provenance ledger remained append-only throughout.
+All 60 routing recommendations were successfully persisted via `route record`. Each RECORD
+operation produced exactly the expected `RECOMMENDATION_CREATED` events. No existing records
+were modified or deleted. The provenance ledger remained append-only throughout.
 
 ### 8.5 Execution-Plane Gap
 
 AI-Hub recommended providers/models for each task, but the executing agent (OpenCode) used its
 own model (`mimo-v2-5-free`) in every case. This means the experiment cannot directly evaluate
 the quality of the recommended providers' outputs. The routing recommendation is a suggestion;
-the execution plane decides independently.
+the execution plane decides independently. This is an architectural limitation, not a defect
+established by this experiment. No engineering change is authorized or required as a consequence
+of this finding.
 
 ### 8.6 Observation Discipline
 
@@ -203,6 +208,11 @@ The correct disposition is:
 
 **BLOCKED — TARGET FUNCTION NOT SPECIFIED BY APPROVED EXPERIMENT SCOPE**
 
+This is a **specification and process lesson** for future experiment design: task definitions
+must include complete target specifications. It is already recorded as a BLOCKED finding in
+this closure document and does not constitute an outstanding defect requiring reopening of
+this experiment.
+
 ---
 
 ## 10. Scope Compliance
@@ -219,7 +229,9 @@ The correct disposition is:
 
 | Field | Value |
 |-------|-------|
-| HEAD | `e4698a207535f36dfe61e125fb986fc3a6dc7443` |
+| Current HEAD | `a3535a5` (this closure commit) |
+| Experiment scope baseline | `e4698a2` |
+| M4 closure baseline | `1a465f384071f5eca361463fd97037b93a3998b1` |
 | Branch | `main` |
 | Pre-existing uncommitted changes | `.gitignore`, `CONSTITUTION.md`, `README.md`, `config.toml`, `handover/AGENT-HANDOVER.md` — all untouched by experiment |
 | Untracked files (pre-existing) | 4 synthetic data artifacts — untouched by experiment |
@@ -250,9 +262,11 @@ includes actual provider/model execution.
 ## 13. Unresolved Questions / Follow-up
 
 * Task 8 target function remains unspecified. Any future execution of Task 8 requires a
-  separately authorized clarification or scope decision.
-* The execution-plane gap remains unresolved. Future work may investigate model handoff
-  mechanisms, but this is outside the current experiment scope.
+  separately authorized clarification or scope decision. This is a process lesson, not an
+  outstanding defect.
+* The execution-plane gap is an architectural limitation. Whether to implement model handoff
+  is a product decision outside the scope of this experiment. No engineering change is
+  authorized or required as a consequence of this experiment.
 
 ---
 
