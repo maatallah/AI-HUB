@@ -38,8 +38,11 @@ v1.2
 
 Status:
 
-Phase 1 released (baseline `7ceac80`, branch `main`). Ready for Phase 2 after
-owner commits the MIT `LICENSE` and signs off closure.
+Phases 1–6 released. Post-v1 adaptive routing M1–M4 complete (`decision_version`
+3.1.0). Real-world routing experiment closed (Tasks 1–7 PASS, Task 8 BLOCKED —
+target function not specified by approved scope). No M5 authorized. Current
+state: reconciliation/documentation corrections in progress (see
+`docs/review/POST-V1-RECONCILIATION-CORRECTIONS.md`).
 
 ---
 
@@ -193,20 +196,30 @@ A contributor must:
 
 ---
 
+# Implemented Capabilities
+
+The following are implemented and released:
+
+* Phase 1 — Repository Foundation (baseline `7ceac80`)
+* Phase 2 — Monitoring Engine (health checks, availability/lifecycle, quota, validation)
+* Phase 3 — Scoring / Recommendation / Fallback (scoring engine, recommendation with provenance, fallback chain)
+* Phase 4 — Dashboard / Reporting / History (read-only aggregation, deterministic reports, append-only event history)
+* Phase 5 — Connectors (VS Code extension, MCP server over stdio, shared read-only adapter)
+* Phase 6 — Ecosystem Intelligence (discovery candidates, benchmark ingestion, approval materialization, model registry, trend analysis)
+* Post-v1 Adaptive Routing M1–M4 (read-only DECIDE, append-only RECORD, cost-direction fix, config/template alignment)
+
+---
+
 # Known Future Areas
 
-* Provider API adapters
-* Automated benchmarks
-* VS Code integration
-* MCP integration
-* AI ecosystem discovery
+* M5 adaptive learning — **NOT AUTHORIZED** (requires explicit owner authorization and new scope definition)
 * Community knowledge sharing
 
 ---
 
-# First Implementation Goal
+# First Implementation Goal (Historical — Completed)
 
-Create the minimum working foundation:
+The first implementation goal was to create the minimum working foundation:
 
 * repository structure
 * SQLite database
@@ -214,4 +227,5 @@ Create the minimum working foundation:
 * configuration system
 * manual provider registry
 
-Do not implement automation yet.
+This was completed as Phase 1 (baseline `7ceac80`). It is retained here for
+historical reference only. Do not treat this as a current objective.

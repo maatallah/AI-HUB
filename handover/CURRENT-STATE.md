@@ -4,9 +4,9 @@
 
 Last Updated:
 
-2026-08-31 (Post-v1 Adaptive Routing M1-M4 complete and governance-reconciled;
-ADR accepted; decision_version 3.1.0 active; 548/548 tests passing; M4
-closure `8b309eb` pushed to origin/main; no M5 authorized)
+2026-09-07 (Post-v1 Adaptive Routing M1-M4 complete and governance-reconciled;
+real-world routing experiment closed; documentation reconciliation in progress;
+no M5 authorized)
 
 ---
 
@@ -294,9 +294,9 @@ Pending:
 
 Completed:
 
-* M1: DECIDE unconditionally read-only (`app/routing/decide.py`); no
+* M1: DECIDE unconditionally read-only (`recommendation/decision.py`); no
   conditional/mutation path.
-* M2: RECORD append-only persistence (`app/routing/record.py`); DECIDE
+* M2: RECORD append-only persistence (`recommendation/decision.py`); DECIDE
   remains zero-write.
 * M3 (scope `c54a585`, impl `a6846de`, closure `061c8eb`): canonical
   cost-direction fix in `recommendation/engine.py::_sort_key` (cost sorts
@@ -315,6 +315,16 @@ Pending:
 
 * No M5 is authorized. Future capabilities require explicit owner
   authorization and new scope definition.
+
+Real-world routing experiment:
+
+* Scope: `docs/review/POST-V1-ROUTING-REAL-WORLD-EXPERIMENT-SCOPE.md`
+* Closure: `docs/review/POST-V1-ROUTING-REAL-WORLD-EXPERIMENT-CLOSURE.md`
+* Tasks 1–7: PASS (routing recommendation + provenance recorded)
+* Task 8: BLOCKED — target function not specified by approved scope
+* Classification: COMPLETE WITH BLOCKED TASK
+* No adaptive learning, feedback ingestion, or telemetry was introduced
+* No M5 implementation was authorized by the experiment
 
 ## Phase 4 - Dashboard / Reporting / History (RELEASED)
 
@@ -617,7 +627,8 @@ Phase 4 implementation: High (216 tests passing; released and closed
 2026-08-17)
 
 Phase 5 documentation: High (plan approved, spec written; Milestones 2-3
-implemented and closed; M4/M5 status and release recorded)
+implemented and closed; Phase 5 Milestone 4 and Milestone 5 (hardening/release)
+status and release recorded)
 
 Phase 5 implementation: High (RELEASED and CLOSED 2026-08-18; 264 Python
 tests + 48 MCP/adapter + 28/28 TS unit + 2/2 integration tests passing;

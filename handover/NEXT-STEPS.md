@@ -422,8 +422,8 @@ owner authorization.
 
 Post-v1 Adaptive Routing (M1-M4) is complete and governance-reconciled:
 
-* M1: DECIDE unconditionally read-only (`app/routing/decide.py`, tests).
-* M2: RECORD append-only persistence (`app/routing/record.py`, tests).
+* M1: DECIDE unconditionally read-only (`recommendation/decision.py`, tests).
+* M2: RECORD append-only persistence (`recommendation/decision.py`, tests).
 * M3: cost-direction fix (descending sort in `_sort_key`) + `decision_version`
   bump `3.0.0 -> 3.1.0` in `app/config.py`.
 * M4: config/template alignment (`config.toml:42`, `templates/config.toml:34`
@@ -432,6 +432,15 @@ Post-v1 Adaptive Routing (M1-M4) is complete and governance-reconciled:
 * ADR accepted (owner confirmed Revision R1, 2026-08-31).
 * No M5 is authorized. Future capabilities require explicit owner authorization
   and new scope definition.
+
+Real-world routing experiment:
+
+* Closed: Tasks 1–7 PASS, Task 8 BLOCKED (target function not specified by
+  approved scope). See
+  `docs/review/POST-V1-ROUTING-REAL-WORLD-EXPERIMENT-CLOSURE.md`.
+* No M5 authorization was made by or derived from the experiment.
+* Current state: reconciliation/documentation corrections (see
+  `docs/review/POST-V1-RECONCILIATION-CORRECTIONS.md`).
 
 Recommended input:
 
