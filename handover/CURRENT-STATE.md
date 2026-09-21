@@ -41,8 +41,9 @@ Milestone 2 (discovery + candidate workflow), benchmark ingestion +
 persistent storage, approval materialization + model registry (canonical
 Milestone 3) and trend analysis implemented and committed. The Phase 6
 release package (manifest + closure) was created and verified 2026-08-19 per
-owner authorization; release approval, closure acceptance and the separate
-push action to `origin/main` remain owner actions (no Phase 7 defined).
+owner authorization; release approved and closure accepted 2026-08-19. The
+separate push action to `origin/main` remains an owner action (no Phase 7
+defined).
 
 Architecture approved.
 
@@ -272,9 +273,9 @@ following the D-P9 release pre-approval reconciliation):
   48/48 adapter/MCP (39.41s), 28/28 VS Code unit (377ms), 2/2 VS Code
   integration (923ms, exit 0); `git diff --check` clean.
 * `docs/release/PHASE6-RELEASE-MANIFEST.md` (Phase 6 release manifest,
-  baseline `6655def`, status PENDING OWNER APPROVAL) and
-  `handover/PHASE-6-CLOSURE.md` (closure report; approval and closure
-  acceptance pending).
+  baseline `6655def`, status APPROVED — owner review complete, closure
+  accepted 2026-08-19) and `handover/PHASE-6-CLOSURE.md` (closure report;
+  owner approval granted 2026-08-19).
 * Historical milestone-label reconciliation (documentary only): `eca910f`
   historically carries the owner label "M3" (benchmark); canonical Phase 6
   sequencing is canonical M3 = `98696d1` (approval materialization + model
@@ -286,9 +287,8 @@ following the D-P9 release pre-approval reconciliation):
 
 Pending:
 
-* Phase 6 release approval + closure acceptance (M6 gate, owner).
 * Owner-authorized push of `main` to `origin/main` (separate from release
-  approval).
+  approval; intentionally not performed by the release work).
 
 ## Post-v1 Adaptive Routing (M1-M4) - COMPLETE
 
@@ -565,10 +565,8 @@ Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
 
 # Not Yet Implemented
 
-* Phase 6 remaining milestone (planning baseline + M1 documentation + M2
-  discovery + benchmark ingestion + approval materialization / model registry
-  + trend analysis complete; the final milestone requires separate owner
-  authorization): release package
+* Phase 6 release package push to `origin/main` (owner-authorized push,
+  separate from release approval)
 * Model seeding
 
 ---
@@ -640,7 +638,7 @@ doc-before-code complete - v1.2 Section 20, proposal spec, ADR-0005/0006)
 Phase 6 implementation: Milestone 2 (discovery + candidate workflow), benchmark
 ingestion + persistent storage, approval materialization + model registry
 (canonical M3) and trend analysis implemented, tested (467/467 Python,
-adapter/MCP 48/48, VS Code 28/28 + 2/2) and committed; the release package
-milestone requires separate owner authorization (D-P9)
+adapter/MCP 48/48, VS Code 28/28 + 2/2) and committed; release approved
+and closure accepted 2026-08-19 (release baseline `03ce2ea`)
 
 Concept: Validated
