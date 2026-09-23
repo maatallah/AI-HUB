@@ -41,14 +41,14 @@ Milestone 2 (discovery + candidate workflow), benchmark ingestion +
 persistent storage, approval materialization + model registry (canonical
 Milestone 3) and trend analysis implemented and committed. The Phase 6
 release package (manifest + closure) was created and verified 2026-08-19 per
-owner authorization; release approved and closure accepted 2026-08-19. The
-separate push action to `origin/main` remains an owner action (no Phase 7
-defined).
+owner authorization; release approved and closure accepted 2026-08-19, and
+the push to `origin/main` is complete; the repository operates from the
+released Phase-6 state (no Phase 7 defined).
 
 Architecture approved.
 
-Git baseline committed locally (`main` is ahead of `origin/main`; work is not
-pushed until an owner-authorized release).
+Git baseline committed locally and pushed to `origin/main`; `main` and
+`origin/main` are synchronized.
 
 ---
 
@@ -282,13 +282,8 @@ following the D-P9 release pre-approval reconciliation):
   registry) and canonical M4 = `eca910f` (benchmark). No history was amended,
   rewritten, renamed or otherwise altered.
 * No implementation, schema, config, event or connector changes are part of
-  the release package. Push to `origin/main` remains a separate, explicit
-  owner action.
-
-Pending:
-
-* Owner-authorized push of `main` to `origin/main` (separate from release
-  approval; intentionally not performed by the release work).
+  the release package. The push to `origin/main` is complete; `main` and
+  `origin/main` are synchronized.
 
 ## Post-v1 Adaptive Routing (M1-M4) - COMPLETE
 
@@ -565,8 +560,6 @@ Phase 5 RELEASED and CLOSED 2026-08-18 (baseline `8231dce`, manifest
 
 # Not Yet Implemented
 
-* Phase 6 release package push to `origin/main` (owner-authorized push,
-  separate from release approval)
 * Model seeding
 
 ---

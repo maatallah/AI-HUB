@@ -16,8 +16,9 @@ and committed (2026-08-19, owner-authorized), trend analysis implemented and
 committed (2026-08-19, owner-authorized against the canonical M3 baseline
 `98696d1`), and the Phase 6 **release package** (full regression + release
 manifest/closure) created and verified 2026-08-19 per owner authorization.
-Release approval + closure acceptance and the separate owner-authorized push
-to `origin/main` are the remaining actions. No Phase 7 is defined. Prior
+Release approval + closure acceptance were granted 2026-08-19 and the push to
+`origin/main` is complete; no Phase 6 action remains. No Phase 7 is defined.
+Prior
 released phases: Phase 4 (`c49ea9b`, 216/216 tests, closure accepted
 2026-08-17).
 
@@ -63,8 +64,8 @@ materialization in `discovery/engine.py`, `MODEL_*` events, `model list`
 CLI. Trend analysis implemented and committed 2026-08-19 - `trend/`
 module (`analysis.py`, `__init__.py`), `[trend]` config, `trend scores|
 availability` CLI. The Phase 6 release package (manifest + closure) was created and verified
-2026-08-19 per owner authorization; release approval + closure acceptance and
-the separate owner-authorized push to `origin/main` remain pending. No Phase 7
+2026-08-19 per owner authorization; release approval + closure acceptance were
+granted and the push to `origin/main` is complete. No Phase 7
 is defined or authorized (D-P9; v1.2 Section 15 roadmap complete).
 
 ---
@@ -173,9 +174,9 @@ Milestone 1 (documentation / doc-before-code), Milestone 2 (discovery +
 candidate workflow), Milestone 3 (benchmark ingestion + persistent storage),
 approval materialization + model registry (canonical Milestone 3), trend
 analysis and the release package are complete (release package created and
-verified 2026-08-19 per owner authorization). Release approval + closure
-acceptance and the separate owner-authorized push to `origin/main` remain
-pending; no Phase 7 is defined or authorized (D-P9 sequential gates).
+verified 2026-08-19 per owner authorization; release approval + closure
+acceptance were granted and the push to `origin/main` is complete). No Phase 7
+is defined or authorized (D-P9 sequential gates).
 
 Milestone-numbering note: the owner authorized benchmark integration as "M3";
 the approved planning baseline (Section 12) and proposal spec (Section 9)
@@ -205,9 +206,9 @@ checklist below follows the owner's milestone content labels.
 - [x] Milestone: full regression + release package (2026-08-19, created per
       owner authorization; 467/467 Python + 48/48 adapter/MCP + 28/28 TS unit
       + 2/2 integration; `docs/release/PHASE6-RELEASE-MANIFEST.md` +
-      `handover/PHASE-6-CLOSURE.md`; release approval + closure acceptance and
-      the separate push action pending (D-P9), see the release reconciliation
-      for the historical M3/M4 label note)
+      `handover/PHASE-6-CLOSURE.md`; release approval + closure acceptance were
+      granted and the push action is complete (D-P9), see the release
+      reconciliation for the historical M3/M4 label note)
 
 ---
 
@@ -223,7 +224,7 @@ checklist below follows the owner's milestone content labels.
       M3, 2026-08-19)
 - [x] Authorize trend analysis (2026-08-19)
 - [x] Authorize the Phase 6 release package (2026-08-19; release approval +
-      closure acceptance and the separate push to `origin/main` still pending)
+      closure acceptance granted and the push to `origin/main` complete)
 
 ---
 
@@ -366,8 +367,8 @@ decisions were approved by the owner):
   unchanged.
 
 The Phase 6 release package (manifest + closure) is complete and verified
-(2026-08-19, per owner authorization). Release approval + closure acceptance
-and the separate owner-authorized push to `origin/main` remain pending; no
+(2026-08-19, per owner authorization); release approval + closure acceptance
+were granted and the push to `origin/main` is complete. No
 Phase 7 is defined or authorized (D-P9).
 
 ---
@@ -415,8 +416,8 @@ ingestion + persistent storage; owner label "M3"), canonical Milestone 3
 package (v1.2 Section 20; proposal spec; ADR-0005/0006; `discovery/` module;
 `benchmark/` module; `core/models.py`; `trend/` module; `docs/release/
 PHASE6-RELEASE-MANIFEST.md`; `handover/PHASE-6-CLOSURE.md`; 467/467 Python
-green). Remaining actions are owner-side: release approval + closure
-acceptance and the separate owner-authorized push to `origin/main`. No Phase 7
+green). Remaining actions: release approval + closure acceptance were granted
+2026-08-19 and the push to `origin/main` is complete. No Phase 7
 is defined or authorized - do not begin any implementation without explicit
 owner authorization.
 
